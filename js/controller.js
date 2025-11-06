@@ -51,6 +51,9 @@ const Controller = {
         View.dom.researchInput.addEventListener('input', () => this._saveResearch());
         View.dom.addToPaletteBtn.addEventListener('click', () => this._addSelectedTextToPalette());
         View.dom.analyzeRhymesBtn.addEventListener('click', () => this._analyzeRhymes());
+        if (View.dom.resetRhymesBtn) {
+            View.dom.resetRhymesBtn.addEventListener('click', () => this._resetRhymes());
+        }
         
         View.dom.inspirationPalette.addEventListener('click', e => this._handlePaletteClick(e));
 
@@ -334,6 +337,15 @@ const Controller = {
         } finally {
             View.dom.analyzeRhymesBtn.disabled = false;
         }
+    },
+
+    _resetRhymes() {
+        View.showConfirmation('Naozaj chcete vymazať všetky analyzované rýmy (paletu inšpirácie)?', () => {
+            Model.clearPalette();
+            View.renderFullPalette(Model.state.paletteItems);
+            this._markAsDirty();
+            showNotification('Rýmy boli vymazané.');
+        });
     },
     
     _initializeSession() {

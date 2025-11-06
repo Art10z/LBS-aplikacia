@@ -28,6 +28,7 @@ const View = {
             researchInput: document.getElementById('research-input'),
             addToPaletteBtn: document.getElementById('addToPaletteBtn'),
             analyzeRhymesBtn: document.getElementById('analyzeRhymesBtn'),
+            resetRhymesBtn: document.getElementById('resetRhymesBtn'),
             inspirationPalette: document.getElementById('inspiration-palette'),
             templateInserter: document.getElementById('template-inserter'),
             projectTabsContainer: document.getElementById('project-tabs-container'),

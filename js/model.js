@@ -109,6 +109,10 @@ const Model = {
     removePaletteItem(itemId) {
         this.state.paletteItems = this.state.paletteItems.filter(item => item.id !== itemId);
     },
+
+    clearPalette() {
+        this.state.paletteItems = [];
+    },
     
     moveBar(barId, oldSectionId, newSectionId, newIndex) {
         const oldSection = this.state.trackData.find(s => s.id === oldSectionId);
