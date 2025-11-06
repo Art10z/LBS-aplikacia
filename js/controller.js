@@ -54,10 +54,13 @@ const Controller = {
         if (View.dom.resetRhymesBtn) {
             View.dom.resetRhymesBtn.addEventListener('click', () => this._resetRhymes());
         }
+        if (View.dom.resetRhymesMainBtn) {
+            View.dom.resetRhymesMainBtn.addEventListener('click', () => this._resetRhymes());
+        }
         
         View.dom.inspirationPalette.addEventListener('click', e => this._handlePaletteClick(e));
 
-        View.dom.projectTabsContainer.addEventListener('click', e => this._handleTabsClick(e));
+    View.dom.projectTabsContainer.addEventListener('click', e => this._handleTabsClick(e));
         View.dom.projectTabsContainer.addEventListener('dblclick', e => this._handleTabDoubleClick(e));
         View.dom.projectTabsContainer.addEventListener('focusout', e => this._handleTabBlur(e));
         View.dom.projectTabsContainer.addEventListener('keydown', e => this._handleTabKeyDown(e));
