@@ -59,6 +59,9 @@ const Controller = {
         }
         
         View.dom.inspirationPalette.addEventListener('click', e => this._handlePaletteClick(e));
+        if (View.dom.resetRhymesMainBtn) {
+            View.dom.resetRhymesMainBtn.addEventListener('click', () => this._resetRhymes());
+        }
 
     View.dom.projectTabsContainer.addEventListener('click', e => this._handleTabsClick(e));
         View.dom.projectTabsContainer.addEventListener('dblclick', e => this._handleTabDoubleClick(e));
