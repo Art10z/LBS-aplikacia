@@ -18,14 +18,38 @@ const Controller = {
     projects: [],
     activeProjectName: null,
     MAX_PROJECTS: 5,
+    singleProjectMode: false,
 
     init() {
         View.init();
         this.debouncedSave = debounce(() => this._performAutoSave(), 1500);
         this._attachEventListeners();
         Storage.init();
-        this._initializeSession();
+        // Detect preferred project from global variable or URL and enable single-project mode if present
+        const preferred = this._readProjectFromURL();
+        if (preferred) this.singleProjectMode = true;
+        this._initializeSession(preferred);
         this._loadResearchForActive();
+    },
+
+    _readProjectFromURL() {
+        try {
+            // Highest priority: explicit global set by launcher page
+            if (typeof window !== 'undefined' && window.PROJECT_NAME && String(window.PROJECT_NAME).trim()) {
+                return String(window.PROJECT_NAME).trim();
+            }
+            const url = new URL(window.location.href);
+            const p = url.searchParams.get('project') || url.searchParams.get('p');
+            if (p && p.trim()) return decodeURIComponent(p.trim());
+            // Support hash format like #p=Projekt%201
+            if (url.hash) {
+                const hash = url.hash.replace(/^#/, '');
+                const params = new URLSearchParams(hash);
+                const hp = params.get('project') || params.get('p');
+                if (hp && hp.trim()) return decodeURIComponent(hp.trim());
+            }
+        } catch (e) { /* ignore */ }
+        return null;
     },
 
     _attachEventListeners() {
@@ -403,7 +427,7 @@ const Controller = {
         }
     },
     
-    _initializeSession() {
+    _initializeSession(preferredProjectName = null) {
         this.projects = Model.getProjectList();
         this.activeProjectName = Storage.getActive();
 
@@ -413,8 +437,31 @@ const Controller = {
             this.activeProjectName = defaultProjectName;
             Model.init();
             Model.saveProject(defaultProjectName);
-        } else if (!this.activeProjectName || !this.projects.includes(this.activeProjectName)) {
+        }
+
+        // If URL requested a specific project, switch/create it
+        if (preferredProjectName) {
+            if (!this.projects.includes(preferredProjectName)) {
+                if (this.projects.length < this.MAX_PROJECTS) {
+                    this.projects.push(preferredProjectName);
+                    Model.init();
+                    Model.saveProject(preferredProjectName);
+                } else {
+                    showNotification('Nie je možné vytvoriť ďalší projekt (limit 5).', 'danger');
+                }
+            }
+            if (this.projects.includes(preferredProjectName)) {
+                this.activeProjectName = preferredProjectName;
+            }
+        }
+
+        if (!this.activeProjectName || !this.projects.includes(this.activeProjectName)) {
             this.activeProjectName = this.projects.sort()[0];
+        }
+
+        // In single-project mode, restrict visible list to the active one
+        if (this.singleProjectMode) {
+            this.projects = [this.activeProjectName];
         }
 
         this._loadAndDisplayProject(this.activeProjectName);
@@ -432,7 +479,7 @@ const Controller = {
     },
 
     _updateAllViews() {
-        View.renderProjectTabs(this.projects, this.activeProjectName, this.projects.length < this.MAX_PROJECTS);
+        View.renderProjectTabs(this.projects, this.activeProjectName, this.projects.length < this.MAX_PROJECTS, this.singleProjectMode);
         this._updateCanvasAndMaketa();
         View.renderFullPalette(Model.state.paletteItems);
     },

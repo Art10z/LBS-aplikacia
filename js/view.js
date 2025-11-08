@@ -250,7 +250,7 @@ const View = {
         this.dom.modalCancelBtn.addEventListener('click', cancelHandler, { once: true });
     },
 
-    renderProjectTabs(projects, activeProjectName, canCreateNew) {
+    renderProjectTabs(projects, activeProjectName, canCreateNew, singleProjectMode = false) {
         this.dom.projectTabsContainer.innerHTML = '';
         const fragment = document.createDocumentFragment();
 
@@ -259,8 +259,10 @@ const View = {
             fragment.appendChild(tabEl);
         });
 
-        const newBtn = this._createNewProjectButtonElement(canCreateNew);
-        fragment.appendChild(newBtn);
+        if (!singleProjectMode) {
+            const newBtn = this._createNewProjectButtonElement(canCreateNew);
+            fragment.appendChild(newBtn);
+        }
         
         this.dom.projectTabsContainer.appendChild(fragment);
     },
