@@ -34,6 +34,7 @@ const View = {
             templateInserter: document.getElementById('template-inserter'),
             projectTabsContainer: document.getElementById('project-tabs-container'),
             saveStatus: document.getElementById('save-status'),
+            exportAllBtn: document.getElementById('exportAllBtn'),
         };
     },
     

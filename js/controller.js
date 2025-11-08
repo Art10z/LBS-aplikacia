@@ -1,7 +1,8 @@
 
 import Model from './model.js';
 import View from './view.js';
-import { MAX_BAR_LENGTH } from './constants.js';
+import { MAX_BAR_LENGTH, ACTIVE_PROJECT_KEY } from './constants.js';
+import * as Storage from './storage.js';
 import { showNotification, debounce } from './utils.js';
 import { RhymeAnalyzer } from './rhymeAnalyzer.js';
 
@@ -22,8 +23,9 @@ const Controller = {
         View.init();
         this.debouncedSave = debounce(() => this._performAutoSave(), 1500);
         this._attachEventListeners();
-        this._initializeSession();
-        this._loadResearch();
+    Storage.init();
+    this._initializeSession();
+    this._loadResearchForActive();
     },
 
     _attachEventListeners() {
@@ -56,6 +58,9 @@ const Controller = {
         }
         if (View.dom.resetRhymesMainBtn) {
             View.dom.resetRhymesMainBtn.addEventListener('click', () => this._resetRhymes());
+        }
+        if (View.dom.exportAllBtn) {
+            View.dom.exportAllBtn.addEventListener('click', () => this._exportAll());
         }
         
         View.dom.inspirationPalette.addEventListener('click', e => this._handlePaletteClick(e));
@@ -353,10 +358,30 @@ const Controller = {
             showNotification('Rýmy boli vymazané.');
         });
     },
+
+    _exportAll() {
+        try {
+            const json = Storage.exportAll();
+            const blob = new Blob([json], { type: 'application/json;charset=utf-8' });
+            const a = document.createElement('a');
+            a.href = URL.createObjectURL(blob);
+            const dt = new Date();
+            const ts = dt.toISOString().replace(/[:.]/g,'-');
+            a.download = `lbs-backup-${ts}.json`;
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(a.href);
+            showNotification('Export dokončený.');
+        } catch (e) {
+            console.error(e);
+            showNotification('Export zlyhal.', 'danger');
+        }
+    },
     
     _initializeSession() {
         this.projects = Model.getProjectList();
-        this.activeProjectName = localStorage.getItem('lyricalBlueprint_activeProject');
+        this.activeProjectName = Storage.getActive();
 
         if (this.projects.length === 0) {
             const defaultProjectName = "Projekt 1";
@@ -376,7 +401,7 @@ const Controller = {
             Model.init(); // Fallback to empty state
         }
         this.activeProjectName = projectName;
-        localStorage.setItem('lyricalBlueprint_activeProject', projectName);
+    Storage.setActive(projectName);
         this.isDirty = false;
         this._updateAllViews();
         View.updateSaveStatus('saved');
@@ -393,8 +418,8 @@ const Controller = {
         View.renderMaketa(Model.state.trackData);
     },
     
-    _saveResearch() { localStorage.setItem('lyricalBlueprintResearch_v2.0', View.dom.researchInput.value); },
-    _loadResearch() { View.dom.researchInput.value = localStorage.getItem('lyricalBlueprintResearch_v2.0') || ''; },
+    _saveResearch() { Storage.saveResearch(this.activeProjectName, View.dom.researchInput.value); },
+    _loadResearchForActive() { View.dom.researchInput.value = Storage.loadResearch(this.activeProjectName) || ''; },
 
     // DRAG & DROP LOGIC
     // --- ZMENENÁ FUNKCIA ---
