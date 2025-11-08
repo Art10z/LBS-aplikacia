@@ -21,6 +21,7 @@ const Controller = {
     singleProjectMode: false,
     _hlTimer: null,
     _hlScrollBound: new WeakSet(),
+    highlightEnabled: true,
 
     init() {
         View.init();
@@ -32,6 +33,7 @@ const Controller = {
         if (preferred) this.singleProjectMode = true;
         this._initializeSession(preferred);
         this._loadResearchForActive();
+        this._initHighlightToggle();
     },
 
     _readProjectFromURL() {
@@ -119,6 +121,9 @@ const Controller = {
         }
         if (View.dom.exportAllBtn) {
             View.dom.exportAllBtn.addEventListener('click', () => this._exportAll());
+        }
+        if (View.dom.toggleHighlightBtn) {
+            View.dom.toggleHighlightBtn.addEventListener('click', () => this._toggleHighlight());
         }
         
         if (View.dom.inspirationPalette) {
@@ -796,6 +801,7 @@ const Controller = {
     _updateAllHighlights() {
         document.querySelectorAll('.bar-item textarea.bar-input').forEach(ta => {
             this._updateTextareaHighlight(ta);
+                if (!this.highlightEnabled) return;
             this._bindScrollOnce(ta);
             this._syncLayerScroll(ta);
         });
@@ -805,6 +811,7 @@ const Controller = {
             this._bindScrollOnce(researchTa);
             this._syncLayerScroll(researchTa);
         }
+                if (!this.highlightEnabled) return;
     },
     _scheduleHighlights() {
         clearTimeout(this._hlTimer);
@@ -823,6 +830,41 @@ const Controller = {
             } catch {}
         }) : null;
         if (ro) ro.observe(ta);
+    },
+
+    // ================= Highlight toggle UI =================
+    _initHighlightToggle() {
+        try {
+            const saved = localStorage.getItem('lbs_highlight_enabled');
+            if (saved === '0') this.highlightEnabled = false;
+        } catch {}
+        this._applyHighlightUIState();
+        // Initial render update/hide
+        if (this.highlightEnabled) this._scheduleHighlights();
+    },
+    _applyHighlightUIState() {
+        const btn = View.dom.toggleHighlightBtn;
+        const body = document.body;
+        if (!btn || !body) return;
+        if (this.highlightEnabled) {
+            body.classList.remove('highlight-off');
+            btn.classList.add('active');
+            btn.setAttribute('aria-pressed', 'true');
+            const lbl = btn.querySelector('.toggle-label');
+            if (lbl) lbl.textContent = 'Highlight ON';
+        } else {
+            body.classList.add('highlight-off');
+            btn.classList.remove('active');
+            btn.setAttribute('aria-pressed', 'false');
+            const lbl = btn.querySelector('.toggle-label');
+            if (lbl) lbl.textContent = 'Highlight OFF';
+        }
+    },
+    _toggleHighlight() {
+        this.highlightEnabled = !this.highlightEnabled;
+        try { localStorage.setItem('lbs_highlight_enabled', this.highlightEnabled ? '1' : '0'); } catch {}
+        this._applyHighlightUIState();
+        if (this.highlightEnabled) this._scheduleHighlights();
     },
 
     // NEW PROJECT TABS LOGIC

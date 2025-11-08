@@ -36,6 +36,7 @@ const View = {
             projectTabsContainer: document.getElementById('project-tabs-container'),
             saveStatus: document.getElementById('save-status'),
             exportAllBtn: document.getElementById('exportAllBtn'),
+            toggleHighlightBtn: document.getElementById('toggleHighlightBtn'),
         };
     },
     
