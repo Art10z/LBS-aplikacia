@@ -75,7 +75,9 @@ body {
 
 #main-content {
     display: grid;
-    grid-template-columns: var(--column-width-io) 1fr var(--column-width-palette);
+    /* Jemná úprava šírok: ľavý panel +4%, pravý panel +4% (spolu ~8%), stred sa o toľko zmenší. */
+    /* Percentá s bezpečnými minimami, aby sa nerozbilo na menších rozlíšeniach. */
+    grid-template-columns: minmax(360px, 25vw) 1fr minmax(260px, 20vw);
     gap: 10px;
     padding: 10px;
     overflow: hidden;

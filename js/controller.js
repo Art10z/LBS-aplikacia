@@ -220,7 +220,6 @@ const Controller = {
             showNotification('Plátno je prázdne – nič na synchronizáciu.', 'warning');
             return;
         }
-        showLoading('Synchronizujem importér…', 150);
         const lines = [];
         Model.state.trackData.forEach(section => {
             lines.push(`[${section.type}]`);
@@ -230,7 +229,6 @@ const Controller = {
             });
         });
         View.dom.sourceInput.value = lines.join('\n');
-        hideLoading();
         showNotification('Importér bol aktualizovaný z plátna.');
     },
     
@@ -563,7 +561,6 @@ const Controller = {
     },
 
     _loadAndDisplayProject(projectName) {
-        showLoading('Načítavam projekt…', 150);
         if (!projectName || !Model.loadProject(projectName)) {
             Model.init(); // Fallback to empty state
         }
@@ -574,7 +571,6 @@ const Controller = {
         // Ensure research textarea reflects the active project's research
         this._loadResearchForActive();
         View.updateSaveStatus('saved');
-        hideLoading();
     },
 
     _updateAllViews() {
@@ -838,8 +834,11 @@ const Controller = {
         if (!ta) return;
         const layer = this._ensureLayerForTextarea(ta);
         if (!layer) return;
-        this._positionLayerUnderTextarea(layer, ta);
         const text = ta.value || '';
+        // Skip work if unchanged (cache last text on layer)
+        if (layer.__lastText === text) return;
+        layer.__lastText = text;
+        this._positionLayerUnderTextarea(layer, ta);
         const freq = this._buildWordFreqFor(text);
         layer.innerHTML = this._renderWithFreq(text, freq);
     },
@@ -920,6 +919,8 @@ const Controller = {
             btn.setAttribute('aria-pressed', 'true');
             const lbl = btn.querySelector('.toggle-label');
             if (lbl) lbl.textContent = 'Highlight ON';
+            // ensure layers exist after enabling
+            this._scheduleHighlights();
         } else {
             body.classList.add('highlight-off');
             btn.classList.remove('active');
