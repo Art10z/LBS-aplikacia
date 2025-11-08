@@ -113,7 +113,8 @@ const View = {
             const barsContainer = sectionEl.querySelector('.bars-container');
             const barEl = this._createBarElement(bar, sectionId);
             barsContainer.appendChild(barEl);
-            barEl.querySelector('input').focus();
+            const ta = barEl.querySelector('textarea');
+            if (ta) ta.focus();
         }
     },
 
@@ -198,11 +199,11 @@ const View = {
         dragHandle.textContent = '⠿';
         dragHandle.draggable = true; // --- ZMENA: Pridané ---
 
-        const input = document.createElement('input');
-        input.type = 'text';
-        input.className = 'bar-input';
-        input.value = bar.text; 
-        input.maxLength = MAX_BAR_LENGTH;
+    const input = document.createElement('textarea');
+    input.className = 'bar-input';
+    input.value = bar.text;
+    input.maxLength = MAX_BAR_LENGTH;
+    input.rows = 1;
 
         const counter = document.createElement('span');
         counter.className = 'char-counter';
