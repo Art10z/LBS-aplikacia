@@ -212,7 +212,7 @@ body.is-dragging, body.is-dragging * {
 /* --- KONIEC PRIDANÝCH ŠTÝLOV --- */
 
 .bar-item { position: relative; }
-.bar-input { flex-grow: 1; background-color: transparent; border: none; color: var(--text-primary); padding: 2px 0; font-size: 0.85rem; outline: none; font-family: var(--font-mono); resize: vertical; min-height: 28px; line-height: 1.35; }
+.bar-input { flex-grow: 1; background-color: transparent; border: none; color: var(--text-primary); padding: 2px 0; font-size: 0.85rem; outline: none; font-family: var(--font-mono); resize: none; min-height: 28px; line-height: 1.35; overflow-y: hidden; }
 .char-counter { font-family: var(--font-mono); font-size: 0.75rem; color: var(--text-secondary); min-width: 50px; text-align: right; user-select: none; }
 .remove-bar-btn { background: none; border: none; color: var(--text-secondary); cursor: pointer; visibility: hidden; opacity: 0; transition: all 0.2s ease; font-size: 1.2rem; }
 .bar-item:hover .remove-bar-btn { visibility: visible; opacity: 1; }

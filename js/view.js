@@ -206,6 +206,7 @@ const View = {
     input.value = bar.text;
     input.maxLength = MAX_BAR_LENGTH;
     input.rows = 1;
+    input.setAttribute('wrap', 'off');
 
         const counter = document.createElement('span');
         counter.className = 'char-counter';

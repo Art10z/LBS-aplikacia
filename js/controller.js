@@ -88,6 +88,8 @@ const Controller = {
             View.dom.assemblerContent.addEventListener('input', e => this._handleCanvasInput(e));
             View.dom.assemblerContent.addEventListener('focusout', e => this._handleCanvasBlur(e));
             View.dom.assemblerContent.addEventListener('click', e => this._handleCanvasClick(e));
+            View.dom.assemblerContent.addEventListener('keydown', e => this._handleBarKeydown(e));
+            View.dom.assemblerContent.addEventListener('paste', e => this._handleBarPaste(e));
             View.dom.assemblerContent.addEventListener('dragstart', e => this._handleDragStart(e));
             View.dom.assemblerContent.addEventListener('dragover', e => this._handleDragOver(e)); // --- ZMENA ---
             View.dom.assemblerContent.addEventListener('drop', e => this._handleDrop(e));
@@ -324,6 +326,10 @@ const Controller = {
     _handleCanvasInput(e) {
         if (e.target.classList.contains('bar-input')) {
             this._markAsDirty();
+            // Enforce single-line and limit
+            if (e.target.value.includes('\n')) {
+                e.target.value = e.target.value.replace(/\r?\n/g, ' ');
+            }
             const counter = e.target.nextElementSibling;
             if(counter?.classList.contains('char-counter')) {
                 counter.textContent = `${e.target.value.length}/${MAX_BAR_LENGTH}`;
@@ -335,6 +341,39 @@ const Controller = {
                 }
             } catch (e) { /* ignore */ }
         }
+    },
+    _handleBarKeydown(e) {
+        if (!e.target.classList || !e.target.classList.contains('bar-input')) return;
+        if (e.key === 'Enter') {
+            e.preventDefault();
+        }
+    },
+    _handleBarPaste(e) {
+        if (!e.target.classList || !e.target.classList.contains('bar-input')) return;
+        e.preventDefault();
+        const ta = e.target;
+        const data = (e.clipboardData || window.clipboardData)?.getData('text') || '';
+        const sanitized = data.replace(/\r?\n/g, ' ');
+        const start = ta.selectionStart ?? ta.value.length;
+        const end = ta.selectionEnd ?? ta.value.length;
+        const before = ta.value.slice(0, start);
+        const after = ta.value.slice(end);
+        const allowed = Math.max(0, MAX_BAR_LENGTH - (before.length + after.length));
+        const insert = sanitized.slice(0, allowed);
+        ta.value = before + insert + after;
+        const caret = before.length + insert.length;
+        ta.setSelectionRange(caret, caret);
+        this._markAsDirty();
+        const counter = ta.nextElementSibling;
+        if(counter?.classList.contains('char-counter')) {
+            counter.textContent = `${ta.value.length}/${MAX_BAR_LENGTH}`;
+        }
+        try {
+            if (this.highlightEnabled) {
+                this._updateTextareaHighlight(ta);
+                this._syncLayerScroll(ta);
+            }
+        } catch {}
     },
 
     _handleCanvasBlur(e) {
@@ -788,7 +827,7 @@ const Controller = {
         layer.style.fontSize = cs.fontSize;
         layer.style.lineHeight = cs.lineHeight;
         layer.style.letterSpacing = cs.letterSpacing;
-        layer.style.whiteSpace = 'pre-wrap';
+        layer.style.whiteSpace = ta.classList.contains('bar-input') ? 'pre' : 'pre-wrap';
     },
     _updateTextareaHighlight(ta) {
         if (!ta) return;
@@ -884,6 +923,7 @@ const Controller = {
             if (saved === '0') this.highlightResearchEnabled = false;
         } catch {}
         this._applyResearchHighlightUIState();
+        // Only schedule if enabled; otherwise skip initial render for research textarea
         if (this.highlightResearchEnabled) this._scheduleHighlights();
     },
     _applyResearchHighlightUIState() {
