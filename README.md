@@ -34,6 +34,11 @@ README.md             # Tento dokument
 - Debounce s možnosťou `cancel()` – používané pri autosave.
 - Export JSON pokrýva všetky projekty + ich výskum.
 - TXT export finálnej makety (`saveAsTxtBtn`).
+- Nový systém zvýraznenia duplicitných slov: frekvenčný režim nahradený za per‑riadkový detektor bezprostredných duplikátov ("slovo slovo"):
+  - V dynamickom plátne zvýrazňuje druhý výskyt v páre.
+  - Vo Výskume ignoruje názvy sekcií (napr. `Intro`, `Verse 1`, `[Chorus]`, `Bridge:`).
+  - Prepínače: hlavný (plátno) `#toggleHighlightBtn`, výskum `#toggleResearchHighlightBtn`.
+  - Štýl triedy: `.hl-layer .duppair` (žlté podfarbenie).
 
 ## Storage API (zhrnutie)
 Metódy v `storage.js`:
@@ -67,6 +72,7 @@ fetch('backup.json').then(r => r.text()).then(txt => Storage.importAll(txt));
 6. Pridaj zopár slov do palety (limit ~300 – definované v konštantách).
 7. „Analyzovať rýmy“ v paneli výskumu → skontroluj paletu.
 8. Export JSON, otvor súbor a over štruktúru.
+9. Over zvýraznenie duplikátov: do baru napíš `ja ja idem` → druhé `ja` má žlté pozadie. Vo výskume riadok `[Verse]` alebo `Verse:` sa nehighlightuje.
 
 ## Limity a výkonnosť
 - Paleta má horný limit (predvolene 300) kvôli DOM výkonu.
@@ -78,6 +84,7 @@ fetch('backup.json').then(r => r.text()).then(txt => Storage.importAll(txt));
 - Nastavenia pre úpravu limitov palety.
 - Export do formátov (.md / .docx) – externý konvertor.
 - Možný Electron wrapper pre offline režim.
+- Rozšírenie duplikátového zvýraznenia o analýzu vzdialených opakovaní (voliteľný "freq" mód).
 
 ## Bezpečnostné poznámky
 - Dáta sú v `localStorage`; pre úplné zálohy používaj export JSON.

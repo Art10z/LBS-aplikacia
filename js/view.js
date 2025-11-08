@@ -39,6 +39,13 @@ const View = {
             exportAllBtn: document.getElementById('exportAllBtn'),
             toggleHighlightBtn: document.getElementById('toggleHighlightBtn'),
             toggleResearchHighlightBtn: document.getElementById('toggleResearchHighlightBtn'),
+            // Unified analysis UI
+            canvasModeRhymeBtn: document.getElementById('canvasModeRhymeBtn'),
+            canvasModeDupBtn: document.getElementById('canvasModeDupBtn'),
+            researchModeRhymeBtn: document.getElementById('researchModeRhymeBtn'),
+            researchModeDupBtn: document.getElementById('researchModeDupBtn'),
+            canvasAnalysisLayer: document.getElementById('canvas-analysis-layer'),
+            researchAnalysisLayer: document.getElementById('research-analysis-layer'),
         };
     },
     

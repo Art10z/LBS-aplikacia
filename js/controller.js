@@ -5,6 +5,7 @@ import { MAX_BAR_LENGTH } from './constants.js';
 import * as Storage from './storage.js';
 import { showNotification, debounce, showLoading, hideLoading } from './utils.js';
 import { RhymeAnalyzer } from './rhymeAnalyzer.js';
+import { initUnifiedAnalyzer } from './unifiedAnalysis.js';
 
 // =================================================================================
 // CONTROLLER ("The Conductor" / "Dirigent")
@@ -24,6 +25,8 @@ const Controller = {
     _hlRAF: new WeakMap(),
     highlightEnabled: true,
     highlightResearchEnabled: true,
+    _uaResearch: null,
+    _uaCanvas: null,
 
     init() {
         View.init();
@@ -37,6 +40,7 @@ const Controller = {
         this._loadResearchForActive();
         this._initHighlightToggle();
         this._initResearchHighlightToggle();
+        this._initUnifiedAnalysis();
     },
 
     _readProjectFromURL() {
@@ -57,6 +61,76 @@ const Controller = {
             }
         } catch (e) { /* ignore */ }
         return null;
+    },
+
+    // ========= Unified Analysis (research + canvas) =========
+    _initUnifiedAnalysis() {
+        // Research analyzer
+        const researchInput = View.dom.researchInput;
+        const researchLayer = View.dom.researchAnalysisLayer;
+        if (researchInput && researchLayer) {
+            this._uaResearch = initUnifiedAnalyzer({
+                getText: () => researchInput.value || '',
+                layerEl: researchLayer,
+                mode: 'rhyme',
+                debounceMs: 200
+            });
+            // Mode switches
+            View.dom.researchModeRhymeBtn?.addEventListener('click', () => {
+                this._uaResearch?.setMode('rhyme');
+                this._setActive(View.dom.researchModeRhymeBtn, [View.dom.researchModeDupBtn]);
+                this._uaResearch?.update();
+            });
+            View.dom.researchModeDupBtn?.addEventListener('click', () => {
+                this._uaResearch?.setMode('duplicates');
+                this._setActive(View.dom.researchModeDupBtn, [View.dom.researchModeRhymeBtn]);
+                this._uaResearch?.update();
+            });
+            this._setActive(View.dom.researchModeRhymeBtn, [View.dom.researchModeDupBtn]);
+            researchInput.addEventListener('input', () => this._uaResearch?.update());
+        }
+
+        // Canvas analyzer — concatenates all bar texts as lines
+        const canvasLayer = View.dom.canvasAnalysisLayer;
+        if (canvasLayer && View.dom.assemblerContent) {
+            const getCanvasText = () => {
+                const bars = View.dom.assemblerContent.querySelectorAll('.bar-item textarea.bar-input');
+                const lines = [];
+                bars.forEach(ta => lines.push(ta.value || ''));
+                return lines.join('\n');
+            };
+            this._uaCanvas = initUnifiedAnalyzer({
+                getText: getCanvasText,
+                layerEl: canvasLayer,
+                mode: 'duplicates',
+                debounceMs: 200
+            });
+            // Mode switches
+            View.dom.canvasModeRhymeBtn?.addEventListener('click', () => {
+                this._uaCanvas?.setMode('rhyme');
+                this._setActive(View.dom.canvasModeRhymeBtn, [View.dom.canvasModeDupBtn]);
+                this._uaCanvas?.update();
+            });
+            View.dom.canvasModeDupBtn?.addEventListener('click', () => {
+                this._uaCanvas?.setMode('duplicates');
+                this._setActive(View.dom.canvasModeDupBtn, [View.dom.canvasModeRhymeBtn]);
+                this._uaCanvas?.update();
+            });
+            this._setActive(View.dom.canvasModeDupBtn, [View.dom.canvasModeRhymeBtn]);
+
+            // When canvas text changes, update analyzer
+            View.dom.assemblerContent.addEventListener('input', (e) => {
+                if (e.target && e.target.classList && e.target.classList.contains('bar-input')) {
+                    this._uaCanvas?.update();
+                }
+            });
+        }
+    },
+
+    _setActive(activeBtn, others = []) {
+        if (!activeBtn) return;
+        activeBtn.classList.add('active');
+        others.forEach(b => b && b.classList.remove('active'));
     },
 
     _attachEventListeners() {
@@ -780,20 +854,79 @@ const Controller = {
         }
         return freq;
     },
+    // Restored original frequency renderer for bar inputs (shows counts: dup2/dup3)
     _renderWithFreq(text, freq) {
         const re = /[\p{L}\p{N}]+/gu;
         let out = '', last = 0, m;
         while ((m = re.exec(text)) !== null) {
             const start = m.index, end = start + m[0].length;
-            if (start > last) out += `<span class="t">${this._escapeHtml(text.slice(last, start))}</span>`;
+            if (start > last) out += `<span class=\"t\">${this._escapeHtml(text.slice(last, start))}</span>`;
             const key = this._normalizeWord(m[0]);
             const cnt = freq.get(key) || 0;
-            if (cnt >= 3) out += `<span class="t dup3">${this._escapeHtml(m[0])}</span>`;
-            else if (cnt === 2) out += `<span class="t dup2">${this._escapeHtml(m[0])}</span>`;
-            else out += `<span class="t">${this._escapeHtml(m[0])}</span>`;
+            if (cnt >= 3) out += `<span class=\"t dup3\">${this._escapeHtml(m[0])}</span>`;
+            else if (cnt === 2) out += `<span class=\"t dup2\">${this._escapeHtml(m[0])}</span>`;
+            else out += `<span class=\"t\">${this._escapeHtml(m[0])}</span>`;
             last = end;
         }
-        if (last < text.length) out += `<span class="t">${this._escapeHtml(text.slice(last))}</span>`;
+        if (last < text.length) out += `<span class=\"t\">${this._escapeHtml(text.slice(last))}</span>`;
+        return out || '<span class=\"t\"></span>';
+    },
+    /**
+     * Render highlighting for immediate duplicate words: "word word".
+     * - Works per line (no cross-line matches)
+     * - Optionally ignores bracket-only lines like "[Verse]" (for importer-like inputs)
+     */
+    _renderWithDupePairs(text, { ignoreBracketLines = false } = {}) {
+        if (!text) return '<span class="t"></span>';
+        const lines = text.split('\n');
+
+        // Regex: (word)(spaces)(same word) — case-insensitive, Unicode letters with optional hyphen/apostrophe segments
+        const dupeRE = /(\b(\p{L}+(?:['’\-]\p{L}+)*)\b)(\s+)(\2\b)/giu;
+        const HEADING_WORDS = ['intro','verse','chorus','refrén','bridge','most','outro','pre-chorus','predrefrén','prechorus','tag','solo','interlude'];
+        const isHeadingLine = (raw) => {
+            const t = raw.trim();
+            if (!t) return false;
+            // [Verse], [Verse 1], etc.
+            if (/^\[[^\]]+\]$/.test(t)) return true;
+            // Verse:, Chorus 2:, Refrén:
+            if (/^[\p{L}\p{N} .#\-]+:\s*$/.test(t)) {
+                const base = t.replace(/:\s*$/, '').replace(/\s*\d+$/, '').toLowerCase();
+                if (HEADING_WORDS.includes(base)) return true;
+            }
+            // Plain heading word with optional number ("Verse 1")
+            const base = t.replace(/\s*\d+$/, '').toLowerCase();
+            if (HEADING_WORDS.includes(base)) return true;
+            return false;
+        };
+
+        let out = '';
+        for (let i = 0; i < lines.length; i++) {
+            const line = lines[i];
+            const trimmed = line.trim();
+            if (ignoreBracketLines && isHeadingLine(trimmed)) {
+                // Output as-is (transparent text on layer), no highlights
+                out += this._escapeHtml(line);
+            } else {
+                let last = 0; let m;
+                while ((m = dupeRE.exec(line)) !== null) {
+                    const start = m.index;
+                    const end = start + m[0].length;
+                    const firstToken = m[1];
+                    const gap = m[3];
+                    const secondToken = m[4];
+                    if (start > last) out += this._escapeHtml(line.slice(last, start));
+                    // Emit first token + gap as normal text (transparent on layer)
+                    out += this._escapeHtml(firstToken + gap);
+                    // Highlight only the second token
+                    out += `<span class="duppair">${this._escapeHtml(secondToken)}</span>`;
+                    last = end;
+                    if (dupeRE.lastIndex <= start) dupeRE.lastIndex = start + 1; // safety
+                }
+                if (last < line.length) out += this._escapeHtml(line.slice(last));
+            }
+            if (i < lines.length - 1) out += '\n';
+            dupeRE.lastIndex = 0; // reset for next line
+        }
         return out || '<span class="t"></span>';
     },
     _ensureLayerForTextarea(ta) {
@@ -839,8 +972,13 @@ const Controller = {
         if (layer.__lastText === text) return;
         layer.__lastText = text;
         this._positionLayerUnderTextarea(layer, ta);
-        const freq = this._buildWordFreqFor(text);
-        layer.innerHTML = this._renderWithFreq(text, freq);
+        if (ta.id === 'research-input') {
+            const ignoreBracketLines = true;
+            layer.innerHTML = this._renderWithDupePairs(text, { ignoreBracketLines });
+        } else {
+            const freq = this._buildWordFreqFor(text);
+            layer.innerHTML = this._renderWithFreq(text, freq);
+        }
     },
     _syncLayerScroll(ta) {
         const parent = ta.parentElement;
