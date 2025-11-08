@@ -13,6 +13,7 @@ const View = {
             sourceInput: document.getElementById('source-input'),
             refreshProjectBtn: document.getElementById('refreshProjectBtn'),
             syncImporterBtn: document.getElementById('syncImporterBtn'),
+            addTemplateTagBtn: document.getElementById('addTemplateTagBtn'),
             assemblerContent: document.getElementById('assembler-content'),
             addSectionBtn: document.getElementById('addSectionBtn'),
             maketaOutput: document.getElementById('maketaOutput'),

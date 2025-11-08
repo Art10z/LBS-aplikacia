@@ -108,13 +108,13 @@ body {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    padding: 8px 12px;
+    padding: 6px 12px;
     border-bottom: 1px solid var(--border-color);
     background-color: rgba(1, 4, 9, 0.5);
     flex-shrink: 0;
 }
-.panel-header h2 { font-size: 0.9rem; font-weight: 600; }
-.panel-content { padding: 10px; overflow-y: auto; }
+.panel-header h2 { font-size: 0.9rem; font-weight: 600; line-height: 1; }
+.panel-content { padding: 12px; overflow-y: auto; }
 
 /* PANEL VSTUPU A VÝSTUPU */
 .source-content { display: flex; flex-direction: column; flex-grow: 1; }
@@ -138,23 +138,11 @@ body {
 
 /* TEMPLATE TAGS */
 .template-inserter {
-    display: flex;
-    gap: 5px;
-    margin-bottom: 10px;
+    display: none;
 }
 
 .template-tag-btn {
-    background-color: var(--bg-input);
-    color: var(--text-secondary);
-    border: 1px solid var(--border-color);
-    padding: 5px 10px;
-    border-radius: 4px;
-    font-family: var(--font-mono);
-    font-size: 0.8rem;
-    cursor: pointer;
-    transition: all 0.2s ease;
-    flex-grow: 1;
-    text-align: center;
+    display: none;
 }
 
 .template-tag-btn:hover {
@@ -474,6 +462,10 @@ body.research-highlight-off #research-overlay .hl-layer { display: none !importa
 }
 .panel-header { background: linear-gradient(180deg,#1e242b 0%, #191e23 100%); }
 .panel-header h2 { letter-spacing:.7px; text-transform:uppercase; }
+
+/* Tools toolbar inside panels */
+.panel-tools { display:flex; flex-wrap:wrap; gap:8px; margin-bottom:10px; }
+.panel-tools .btn { padding:4px 10px; font-size:12.5px; line-height:1.2; }
 
 /* Buttons overhaul (keeping existing class names) */
 button, .btn {

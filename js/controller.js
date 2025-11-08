@@ -82,6 +82,9 @@ const Controller = {
         if (View.dom.templateInserter) {
             View.dom.templateInserter.addEventListener('click', (e) => this._handleTagButtonClick(e));
         }
+        if (View.dom.addTemplateTagBtn) {
+            View.dom.addTemplateTagBtn.addEventListener('click', () => this._insertTextAtCursor(View.dom.sourceInput, '[ Značka ]'));
+        }
         
         document.addEventListener('keydown', e => this._handleGlobalKeyDown(e));
 
