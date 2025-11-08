@@ -59,29 +59,50 @@ const Controller = {
         if (View.dom.syncImporterBtn) {
             View.dom.syncImporterBtn.addEventListener('click', () => this._syncImporterFromCanvas());
         }
-        View.dom.addSectionBtn.addEventListener('click', () => this._addSection());
-        View.dom.updateMaketaBtn.addEventListener('click', () => View.renderMaketa(Model.state.trackData));
-        View.dom.copyBtn.addEventListener('click', () => this._copyMaketa());
-        View.dom.saveAsTxtBtn.addEventListener('click', () => this._saveMaketaAsTxt()); // PRIDANÝ RIADOK
+        if (View.dom.addSectionBtn) {
+            View.dom.addSectionBtn.addEventListener('click', () => this._addSection());
+        }
+        if (View.dom.updateMaketaBtn) {
+            View.dom.updateMaketaBtn.addEventListener('click', () => View.renderMaketa(Model.state.trackData));
+        }
+        if (View.dom.copyBtn) {
+            View.dom.copyBtn.addEventListener('click', () => this._copyMaketa());
+        }
+        if (View.dom.saveAsTxtBtn) {
+            View.dom.saveAsTxtBtn.addEventListener('click', () => this._saveMaketaAsTxt()); // PRIDANÝ RIADOK
+        }
         
-        View.dom.templateInserter.addEventListener('click', (e) => this._handleTagButtonClick(e));
+        if (View.dom.templateInserter) {
+            View.dom.templateInserter.addEventListener('click', (e) => this._handleTagButtonClick(e));
+        }
         
         document.addEventListener('keydown', e => this._handleGlobalKeyDown(e));
 
-        View.dom.assemblerContent.addEventListener('input', e => this._handleCanvasInput(e));
-        View.dom.assemblerContent.addEventListener('focusout', e => this._handleCanvasBlur(e));
-        View.dom.assemblerContent.addEventListener('click', e => this._handleCanvasClick(e));
-        
-        View.dom.assemblerContent.addEventListener('dragstart', e => this._handleDragStart(e));
-        View.dom.assemblerContent.addEventListener('dragover', e => this._handleDragOver(e)); // --- ZMENA ---
-        View.dom.assemblerContent.addEventListener('drop', e => this._handleDrop(e));
-        View.dom.assemblerContent.addEventListener('dragend', () => this._handleDragEnd());
+        if (View.dom.assemblerContent) {
+            View.dom.assemblerContent.addEventListener('input', e => this._handleCanvasInput(e));
+            View.dom.assemblerContent.addEventListener('focusout', e => this._handleCanvasBlur(e));
+            View.dom.assemblerContent.addEventListener('click', e => this._handleCanvasClick(e));
+            View.dom.assemblerContent.addEventListener('dragstart', e => this._handleDragStart(e));
+            View.dom.assemblerContent.addEventListener('dragover', e => this._handleDragOver(e)); // --- ZMENA ---
+            View.dom.assemblerContent.addEventListener('drop', e => this._handleDrop(e));
+            View.dom.assemblerContent.addEventListener('dragend', () => this._handleDragEnd());
+        }
 
-        View.dom.openResearchBtn.addEventListener('click', () => View.dom.researchOverlay.classList.remove('hidden'));
-        View.dom.closeResearchBtn.addEventListener('click', () => View.dom.researchOverlay.classList.add('hidden'));
-        View.dom.researchInput.addEventListener('input', () => this._saveResearch());
-        View.dom.addToPaletteBtn.addEventListener('click', () => this._addSelectedTextToPalette());
-        View.dom.analyzeRhymesBtn.addEventListener('click', () => this._analyzeRhymes());
+        if (View.dom.openResearchBtn) {
+            View.dom.openResearchBtn.addEventListener('click', () => View.dom.researchOverlay.classList.remove('hidden'));
+        }
+        if (View.dom.closeResearchBtn) {
+            View.dom.closeResearchBtn.addEventListener('click', () => View.dom.researchOverlay.classList.add('hidden'));
+        }
+        if (View.dom.researchInput) {
+            View.dom.researchInput.addEventListener('input', () => this._saveResearch());
+        }
+        if (View.dom.addToPaletteBtn) {
+            View.dom.addToPaletteBtn.addEventListener('click', () => this._addSelectedTextToPalette());
+        }
+        if (View.dom.analyzeRhymesBtn) {
+            View.dom.analyzeRhymesBtn.addEventListener('click', () => this._analyzeRhymes());
+        }
         if (View.dom.resetRhymesBtn) {
             View.dom.resetRhymesBtn.addEventListener('click', () => this._resetRhymes());
         }
@@ -92,13 +113,17 @@ const Controller = {
             View.dom.exportAllBtn.addEventListener('click', () => this._exportAll());
         }
         
-        View.dom.inspirationPalette.addEventListener('click', e => this._handlePaletteClick(e));
+        if (View.dom.inspirationPalette) {
+            View.dom.inspirationPalette.addEventListener('click', e => this._handlePaletteClick(e));
+        }
         // removed duplicate binding of resetRhymesMainBtn
 
-    View.dom.projectTabsContainer.addEventListener('click', e => this._handleTabsClick(e));
-        View.dom.projectTabsContainer.addEventListener('dblclick', e => this._handleTabDoubleClick(e));
-        View.dom.projectTabsContainer.addEventListener('focusout', e => this._handleTabBlur(e));
-        View.dom.projectTabsContainer.addEventListener('keydown', e => this._handleTabKeyDown(e));
+        if (View.dom.projectTabsContainer) {
+            View.dom.projectTabsContainer.addEventListener('click', e => this._handleTabsClick(e));
+            View.dom.projectTabsContainer.addEventListener('dblclick', e => this._handleTabDoubleClick(e));
+            View.dom.projectTabsContainer.addEventListener('focusout', e => this._handleTabBlur(e));
+            View.dom.projectTabsContainer.addEventListener('keydown', e => this._handleTabKeyDown(e));
+        }
     },
 
     _handleGlobalKeyDown(e) {
