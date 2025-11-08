@@ -37,6 +37,7 @@ const View = {
             saveStatus: document.getElementById('save-status'),
             exportAllBtn: document.getElementById('exportAllBtn'),
             toggleHighlightBtn: document.getElementById('toggleHighlightBtn'),
+            toggleResearchHighlightBtn: document.getElementById('toggleResearchHighlightBtn'),
         };
     },
     

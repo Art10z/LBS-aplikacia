@@ -22,6 +22,7 @@ const Controller = {
     _hlTimer: null,
     _hlScrollBound: new WeakSet(),
     highlightEnabled: true,
+    highlightResearchEnabled: true,
 
     init() {
         View.init();
@@ -34,6 +35,7 @@ const Controller = {
         this._initializeSession(preferred);
         this._loadResearchForActive();
         this._initHighlightToggle();
+        this._initResearchHighlightToggle();
     },
 
     _readProjectFromURL() {
@@ -102,8 +104,10 @@ const Controller = {
             View.dom.researchInput.addEventListener('input', () => {
                 this._saveResearch();
                 try {
-                    this._updateTextareaHighlight(View.dom.researchInput);
-                    this._syncLayerScroll(View.dom.researchInput);
+                    if (this.highlightResearchEnabled) {
+                        this._updateTextareaHighlight(View.dom.researchInput);
+                        this._syncLayerScroll(View.dom.researchInput);
+                    }
                 } catch (e) { /* ignore */ }
             });
         }
@@ -124,6 +128,9 @@ const Controller = {
         }
         if (View.dom.toggleHighlightBtn) {
             View.dom.toggleHighlightBtn.addEventListener('click', () => this._toggleHighlight());
+        }
+        if (View.dom.toggleResearchHighlightBtn) {
+            View.dom.toggleResearchHighlightBtn.addEventListener('click', () => this._toggleResearchHighlight());
         }
         
         if (View.dom.inspirationPalette) {
@@ -322,8 +329,10 @@ const Controller = {
                 counter.textContent = `${e.target.value.length}/${MAX_BAR_LENGTH}`;
             }
             try {
-                this._updateTextareaHighlight(e.target);
-                this._syncLayerScroll(e.target);
+                if (this.highlightEnabled) {
+                    this._updateTextareaHighlight(e.target);
+                    this._syncLayerScroll(e.target);
+                }
             } catch (e) { /* ignore */ }
         }
     },
@@ -799,19 +808,20 @@ const Controller = {
         layer.scrollLeft = ta.scrollLeft;
     },
     _updateAllHighlights() {
-        document.querySelectorAll('.bar-item textarea.bar-input').forEach(ta => {
-            this._updateTextareaHighlight(ta);
-                if (!this.highlightEnabled) return;
-            this._bindScrollOnce(ta);
-            this._syncLayerScroll(ta);
-        });
+        const bars = document.querySelectorAll('.bar-item textarea.bar-input');
+        if (this.highlightEnabled) {
+            bars.forEach(ta => {
+                this._updateTextareaHighlight(ta);
+                this._bindScrollOnce(ta);
+                this._syncLayerScroll(ta);
+            });
+        }
         const researchTa = document.getElementById('research-input');
-        if (researchTa) {
+        if (researchTa && this.highlightResearchEnabled) {
             this._updateTextareaHighlight(researchTa);
             this._bindScrollOnce(researchTa);
             this._syncLayerScroll(researchTa);
         }
-                if (!this.highlightEnabled) return;
     },
     _scheduleHighlights() {
         clearTimeout(this._hlTimer);
@@ -865,6 +875,44 @@ const Controller = {
         try { localStorage.setItem('lbs_highlight_enabled', this.highlightEnabled ? '1' : '0'); } catch {}
         this._applyHighlightUIState();
         if (this.highlightEnabled) this._scheduleHighlights();
+    },
+
+    // Research highlight toggle
+    _initResearchHighlightToggle() {
+        try {
+            const saved = localStorage.getItem('lbs_highlight_research_enabled');
+            if (saved === '0') this.highlightResearchEnabled = false;
+        } catch {}
+        this._applyResearchHighlightUIState();
+        if (this.highlightResearchEnabled) this._scheduleHighlights();
+    },
+    _applyResearchHighlightUIState() {
+        const btn = View.dom.toggleResearchHighlightBtn;
+        const body = document.body;
+        if (!body) return;
+        if (this.highlightResearchEnabled) {
+            body.classList.remove('research-highlight-off');
+            if (btn) {
+                btn.classList.add('active');
+                btn.setAttribute('aria-pressed', 'true');
+                const lbl = btn.querySelector('.toggle-label');
+                if (lbl) lbl.textContent = 'Highlight ON';
+            }
+        } else {
+            body.classList.add('research-highlight-off');
+            if (btn) {
+                btn.classList.remove('active');
+                btn.setAttribute('aria-pressed', 'false');
+                const lbl = btn.querySelector('.toggle-label');
+                if (lbl) lbl.textContent = 'Highlight OFF';
+            }
+        }
+    },
+    _toggleResearchHighlight() {
+        this.highlightResearchEnabled = !this.highlightResearchEnabled;
+        try { localStorage.setItem('lbs_highlight_research_enabled', this.highlightResearchEnabled ? '1' : '0'); } catch {}
+        this._applyResearchHighlightUIState();
+        if (this.highlightResearchEnabled) this._scheduleHighlights();
     },
 
     // NEW PROJECT TABS LOGIC
