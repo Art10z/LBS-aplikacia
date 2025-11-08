@@ -39,13 +39,15 @@ const View = {
             exportAllBtn: document.getElementById('exportAllBtn'),
             toggleHighlightBtn: document.getElementById('toggleHighlightBtn'),
             toggleResearchHighlightBtn: document.getElementById('toggleResearchHighlightBtn'),
-            // Unified analysis UI
-            canvasModeRhymeBtn: document.getElementById('canvasModeRhymeBtn'),
-            canvasModeDupBtn: document.getElementById('canvasModeDupBtn'),
-            researchModeRhymeBtn: document.getElementById('researchModeRhymeBtn'),
-            researchModeDupBtn: document.getElementById('researchModeDupBtn'),
-            canvasAnalysisLayer: document.getElementById('canvas-analysis-layer'),
-            researchAnalysisLayer: document.getElementById('research-analysis-layer'),
+            // Legacy per-panel unified analysis removed; new global analysis overlay
+            openAnalysisBtn: document.getElementById('openAnalysisBtn'),
+            analysisOverlay: document.getElementById('analysis-overlay'),
+            closeAnalysisBtn: document.getElementById('closeAnalysisBtn'),
+            analysisSourceCanvasBtn: document.getElementById('analysisSourceCanvasBtn'),
+            analysisSourceResearchBtn: document.getElementById('analysisSourceResearchBtn'),
+            analysisModeRhymeBtn: document.getElementById('analysisModeRhymeBtn'),
+            analysisModeDupBtn: document.getElementById('analysisModeDupBtn'),
+            analysisLayer: document.getElementById('analysis-layer'),
         };
     },
     

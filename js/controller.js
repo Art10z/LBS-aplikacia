@@ -25,8 +25,10 @@ const Controller = {
     _hlRAF: new WeakMap(),
     highlightEnabled: true,
     highlightResearchEnabled: true,
-    _uaResearch: null,
-    _uaCanvas: null,
+    _uaOverlay: null,
+    analysisSource: 'canvas',
+    // Unicode regex capability detection (for fallback patterns)
+    _hasUnicodeProps: (() => { try { new RegExp('\\p{L}', 'u'); return true; } catch { return false; } })(),
 
     init() {
         View.init();
@@ -40,7 +42,7 @@ const Controller = {
         this._loadResearchForActive();
         this._initHighlightToggle();
         this._initResearchHighlightToggle();
-        this._initUnifiedAnalysis();
+    this._initUnifiedAnalysis();
     },
 
     _readProjectFromURL() {
@@ -63,68 +65,74 @@ const Controller = {
         return null;
     },
 
-    // ========= Unified Analysis (research + canvas) =========
+    // ========= Unified Analysis (global overlay) =========
     _initUnifiedAnalysis() {
-        // Research analyzer
-        const researchInput = View.dom.researchInput;
-        const researchLayer = View.dom.researchAnalysisLayer;
-        if (researchInput && researchLayer) {
-            this._uaResearch = initUnifiedAnalyzer({
-                getText: () => researchInput.value || '',
-                layerEl: researchLayer,
-                mode: 'rhyme',
-                debounceMs: 200
-            });
-            // Mode switches
-            View.dom.researchModeRhymeBtn?.addEventListener('click', () => {
-                this._uaResearch?.setMode('rhyme');
-                this._setActive(View.dom.researchModeRhymeBtn, [View.dom.researchModeDupBtn]);
-                this._uaResearch?.update();
-            });
-            View.dom.researchModeDupBtn?.addEventListener('click', () => {
-                this._uaResearch?.setMode('duplicates');
-                this._setActive(View.dom.researchModeDupBtn, [View.dom.researchModeRhymeBtn]);
-                this._uaResearch?.update();
-            });
-            this._setActive(View.dom.researchModeRhymeBtn, [View.dom.researchModeDupBtn]);
-            researchInput.addEventListener('input', () => this._uaResearch?.update());
-        }
+        const overlay = View.dom.analysisOverlay;
+        const layer = View.dom.analysisLayer;
+        if (!overlay || !layer) return;
 
-        // Canvas analyzer — concatenates all bar texts as lines
-        const canvasLayer = View.dom.canvasAnalysisLayer;
-        if (canvasLayer && View.dom.assemblerContent) {
-            const getCanvasText = () => {
-                const bars = View.dom.assemblerContent.querySelectorAll('.bar-item textarea.bar-input');
-                const lines = [];
-                bars.forEach(ta => lines.push(ta.value || ''));
-                return lines.join('\n');
-            };
-            this._uaCanvas = initUnifiedAnalyzer({
-                getText: getCanvasText,
-                layerEl: canvasLayer,
-                mode: 'duplicates',
-                debounceMs: 200
-            });
-            // Mode switches
-            View.dom.canvasModeRhymeBtn?.addEventListener('click', () => {
-                this._uaCanvas?.setMode('rhyme');
-                this._setActive(View.dom.canvasModeRhymeBtn, [View.dom.canvasModeDupBtn]);
-                this._uaCanvas?.update();
-            });
-            View.dom.canvasModeDupBtn?.addEventListener('click', () => {
-                this._uaCanvas?.setMode('duplicates');
-                this._setActive(View.dom.canvasModeDupBtn, [View.dom.canvasModeRhymeBtn]);
-                this._uaCanvas?.update();
-            });
-            this._setActive(View.dom.canvasModeDupBtn, [View.dom.canvasModeRhymeBtn]);
+        const getCanvasText = () => {
+            const lines = [];
+            const bars = View.dom.assemblerContent?.querySelectorAll('.bar-item textarea.bar-input');
+            if (bars) bars.forEach(ta => lines.push(ta.value || ''));
+            return lines.join('\n');
+        };
+        const getResearchText = () => View.dom.researchInput?.value || '';
+        const getText = () => this.analysisSource === 'canvas' ? getCanvasText() : getResearchText();
 
-            // When canvas text changes, update analyzer
-            View.dom.assemblerContent.addEventListener('input', (e) => {
-                if (e.target && e.target.classList && e.target.classList.contains('bar-input')) {
-                    this._uaCanvas?.update();
-                }
-            });
-        }
+        this._uaOverlay = initUnifiedAnalyzer({
+            getText,
+            layerEl: layer,
+            mode: 'duplicates',
+            debounceMs: 220
+        });
+
+        // Open/close controls
+        View.dom.openAnalysisBtn?.addEventListener('click', () => {
+            overlay.classList.remove('hidden');
+            // Default active states on open
+            this._setActive(View.dom.analysisSourceCanvasBtn, [View.dom.analysisSourceResearchBtn]);
+            this._setActive(View.dom.analysisModeDupBtn, [View.dom.analysisModeRhymeBtn]);
+            this.analysisSource = 'canvas';
+            this._uaOverlay?.setMode('duplicates');
+            this._uaOverlay?.update();
+        });
+        View.dom.closeAnalysisBtn?.addEventListener('click', () => overlay.classList.add('hidden'));
+
+        // Source switches
+        View.dom.analysisSourceCanvasBtn?.addEventListener('click', () => {
+            this.analysisSource = 'canvas';
+            this._setActive(View.dom.analysisSourceCanvasBtn, [View.dom.analysisSourceResearchBtn]);
+            this._uaOverlay?.update();
+        });
+        View.dom.analysisSourceResearchBtn?.addEventListener('click', () => {
+            this.analysisSource = 'research';
+            this._setActive(View.dom.analysisSourceResearchBtn, [View.dom.analysisSourceCanvasBtn]);
+            this._uaOverlay?.update();
+        });
+
+        // Mode switches
+        View.dom.analysisModeRhymeBtn?.addEventListener('click', () => {
+            this._uaOverlay?.setMode('rhyme');
+            this._setActive(View.dom.analysisModeRhymeBtn, [View.dom.analysisModeDupBtn]);
+            this._uaOverlay?.update();
+        });
+        View.dom.analysisModeDupBtn?.addEventListener('click', () => {
+            this._uaOverlay?.setMode('duplicates');
+            this._setActive(View.dom.analysisModeDupBtn, [View.dom.analysisModeRhymeBtn]);
+            this._uaOverlay?.update();
+        });
+
+        // Auto-refresh analyzer when source texts change (only if overlay visible)
+        const maybeRefresh = () => {
+            if (!overlay.classList.contains('hidden')) this._uaOverlay?.update();
+        };
+        View.dom.assemblerContent?.addEventListener('input', (e) => {
+            if (e.target && e.target.classList && e.target.classList.contains('bar-input')) {
+                maybeRefresh();
+            }
+        });
+        View.dom.researchInput?.addEventListener('input', () => maybeRefresh());
     },
 
     _setActive(activeBtn, others = []) {
@@ -227,6 +235,14 @@ const Controller = {
         if (e.ctrlKey && e.key === 's') {
             e.preventDefault();
             this._performManualSave();
+        }
+        if (e.key === 'Escape') {
+            // Close whichever overlay is open (analysis takes priority)
+            if (View.dom.analysisOverlay && !View.dom.analysisOverlay.classList.contains('hidden')) {
+                View.dom.analysisOverlay.classList.add('hidden');
+            } else if (View.dom.researchOverlay && !View.dom.researchOverlay.classList.contains('hidden')) {
+                View.dom.researchOverlay.classList.add('hidden');
+            }
         }
     },
     
@@ -842,9 +858,15 @@ const Controller = {
         return s.replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;','\'':'&#39;'}[c]));
     },
     _normalizeWord(w) { return w.toLocaleLowerCase(); },
+    _getWordRegex() { return this._hasUnicodeProps ? /[\p{L}\p{N}]+/gu : /[A-Za-z0-9À-ÖØ-öø-ÿĀ-ž]+/g; },
+    _getDupePairRegex() {
+        return this._hasUnicodeProps
+            ? /(\b(\p{L}+(?:['’\-]\p{L}+)*)\b)(\s+)(\2\b)/giu
+            : /(\b([A-Za-zÀ-ÖØ-öø-ÿĀ-ž]+(?:['’\-][A-Za-zÀ-ÖØ-öø-ÿĀ-ž]+)*)\b)(\s+)(\2\b)/gi;
+    },
     _buildWordFreqFor(text) {
         const freq = new Map();
-        const re = /[\p{L}\p{N}]+/gu;
+        const re = this._getWordRegex();
         let m;
         while ((m = re.exec(text)) !== null) {
             const raw = m[0];
@@ -856,7 +878,7 @@ const Controller = {
     },
     // Restored original frequency renderer for bar inputs (shows counts: dup2/dup3)
     _renderWithFreq(text, freq) {
-        const re = /[\p{L}\p{N}]+/gu;
+        const re = this._getWordRegex();
         let out = '', last = 0, m;
         while ((m = re.exec(text)) !== null) {
             const start = m.index, end = start + m[0].length;
@@ -881,7 +903,7 @@ const Controller = {
         const lines = text.split('\n');
 
         // Regex: (word)(spaces)(same word) — case-insensitive, Unicode letters with optional hyphen/apostrophe segments
-        const dupeRE = /(\b(\p{L}+(?:['’\-]\p{L}+)*)\b)(\s+)(\2\b)/giu;
+        const dupeRE = this._getDupePairRegex();
         const HEADING_WORDS = ['intro','verse','chorus','refrén','bridge','most','outro','pre-chorus','predrefrén','prechorus','tag','solo','interlude'];
         const isHeadingLine = (raw) => {
             const t = raw.trim();
@@ -889,7 +911,8 @@ const Controller = {
             // [Verse], [Verse 1], etc.
             if (/^\[[^\]]+\]$/.test(t)) return true;
             // Verse:, Chorus 2:, Refrén:
-            if (/^[\p{L}\p{N} .#\-]+:\s*$/.test(t)) {
+            const headingRe = this._hasUnicodeProps ? /^[\p{L}\p{N} .#\-]+:\s*$/u : /^[A-Za-z0-9À-ÖØ-öø-ÿĀ-ž .#\-]+:\s*$/;
+            if (headingRe.test(t)) {
                 const base = t.replace(/:\s*$/, '').replace(/\s*\d+$/, '').toLowerCase();
                 if (HEADING_WORDS.includes(base)) return true;
             }

@@ -375,6 +375,14 @@ body.is-dragging, body.is-dragging * {
 #research-input { width: 100%; height: 100%; flex-grow: 1; background-color: var(--bg-input); border: 1px solid var(--border-color); border-radius: 5px; color: var(--text-primary); padding: 15px; font-family: var(--font-mono); font-size: 0.9rem; line-height: 1.7; resize: none; }
 #research-input:focus { outline: none; border-color: var(--accent-primary); box-shadow: 0 0 0 3px var(--accent-glow); }
 
+/* ANALYTICKÝ PANEL (štýl zhodný s výskumným) */
+.analysis-overlay { position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background-color: var(--bg-main); display: flex; z-index: 1500; opacity: 1; transition: opacity 0.3s ease-in-out, transform 0.3s ease-in-out; transform: scale(1); }
+.analysis-overlay.hidden { opacity: 0; pointer-events: none; transform: scale(0.98); }
+.analysis-panel { width: 100%; height: 100%; display: flex; flex-direction: column; background-color: transparent; }
+.analysis-panel .panel-header { border-radius: 0; display: flex; justify-content: space-between; align-items: center; }
+.analysis-panel .panel-header > div { display: flex; gap: 10px; }
+.analysis-panel .panel-content { flex-grow: 1; display: flex; padding: 10px; }
+
 /* VLASTNÉ SCROLLBARY PRE MODERNÝ VZHĽAD */
 /* Pre Firefox */
 html, .panel-content, #maketaOutput, #project-list, #research-input {
@@ -554,5 +562,7 @@ textarea, #source-input, #research-input { line-height:1.55; }
 .ua-token.rhyme-token { outline:1px solid rgba(0,0,0,0.25); border-radius:2px; }
 .rhyme-badge { font-size:0.65rem; padding:1px 5px; background:#222; color:#fff; border-radius:3px; letter-spacing:.5px; }
 /* Buttons active state tweak for analysis mode */
-#canvasModeRhymeBtn.active, #researchModeRhymeBtn.active { background:#2d3a45; border-color:#3e4d59; }
-#canvasModeDupBtn.active, #researchModeDupBtn.active { background:#3a2d2d; border-color:#523c3c; }
+#analysisModeRhymeBtn.active { background:#2d3a45; border-color:#3e4d59; }
+#analysisModeDupBtn.active { background:#3a2d2d; border-color:#523c3c; }
+/* Active state for source buttons */
+#analysisSourceCanvasBtn.active, #analysisSourceResearchBtn.active { background:#333942; border-color:#46525e; }

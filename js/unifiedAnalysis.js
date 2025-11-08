@@ -37,24 +37,40 @@ const HEADING_WORDS = [
   'tag','solo','interlude'
 ];
 
+// Feature detection for Unicode property escapes (\p{L}) support.
+const SUPPORTS_UNICODE_PROPS = (() => {
+  try { new RegExp('\\p{L}','u'); return true; } catch { return false; }
+})();
+
 function isHeadingLine(text) {
   const t = (text || '').trim();
   if (!t) return false;
-  if (/^\[[^\]]+\]$/.test(t)) return true;            // [Verse], [Chorus 2]
-  if (/^[\p{L}\p{N} .#\-]+\:\s*$/u.test(t)) return true; // Verse:, Refrén:
-  const base = t.replace(/\s*\d+$/u,'').toLowerCase();
+  if (/^\[[^\]]+\]$/.test(t)) return true; // [Verse], [Chorus 2]
+  // Fallback pattern without Unicode property escapes for older engines.
+  const headingRegex = SUPPORTS_UNICODE_PROPS
+    ? /^[\p{L}\p{N} .#\-]+:\s*$/u
+    : /^[A-Za-z0-9ÁÄáäČĎčďÉéÍíÓóÔôÚúÝýŽžŤťŇňŔŕŠšŽž .#\-]+:\s*$/;
+  if (headingRegex.test(t)) return true; // Verse:, Refrén:
+  const base = t.replace(/\s*\d+$/,'').toLowerCase(); // remove trailing number safely without /u
   return HEADING_WORDS.includes(base);
 }
 
 function stripDiacritics(s) {
   try {
-    return s.normalize('NFD').replace(/\p{Diacritic}/gu, '').replace(/[\u0300-\u036f]/g,'').toLowerCase();
+    // Older engines may not understand \p{Diacritic}; use generic combining mark range.
+    return s.normalize('NFD').replace(/[\u0300-\u036f]/g,'').toLowerCase();
   } catch {
     return s.toLowerCase();
   }
 }
 
-function tokenize(line) { return line.match(/\p{L}+(?:['’\-]\p{L}+)*|\d+/gu) || []; }
+function tokenize(line) {
+  if (SUPPORTS_UNICODE_PROPS) {
+    return line.match(/\p{L}+(?:['’\-]\p{L}+)*|\d+/gu) || [];
+  }
+  // Fallback: approximate word matching including slovak diacritics explicitly.
+  return line.match(/[A-Za-zÁÄáäČĎčďÉéÍíÓóÔôÚúÝýŽžŤťŇňŔŕŠšŽž]+(?:['’\-][A-Za-zÁÄáäČĎčďÉéÍíÓóÔôÚúÝýŽžŤťŇňŔŕŠšŽž]+)*|\d+/g) || [];
+}
 function normalizeFullWord(raw) { return stripDiacritics(raw); }
 
 function deriveRhymeKey(raw) {
