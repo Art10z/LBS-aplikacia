@@ -2,13 +2,18 @@
 <html lang="sk">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="refresh" content="0; url=index.html?project=Projekt%205">
     <title>LBS – Projekt 5</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <script>
+        (function(){
+            var dest = 'index.html?project=' + encodeURIComponent('Projekt 5') + window.location.hash;
+            window.location.replace(dest);
+        })();
+    </script>
     <link rel="stylesheet" href="./style.css">
 </head>
 <body>
-    <script>window.PROJECT_NAME = 'Projekt 5';</script>
-    <div id="app-container"></div>
-    <script type="module" src="./js/main.js"></script>
+    <p>Presmerúvam na Projekt 5… ak sa nič nedeje, klikni <a href="index.html?project=Projekt%205">sem</a>.</p>
 </body>
 </html>

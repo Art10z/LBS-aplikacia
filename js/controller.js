@@ -1,7 +1,7 @@
 
 import Model from './model.js';
 import View from './view.js';
-import { MAX_BAR_LENGTH, ACTIVE_PROJECT_KEY, RESEARCH_KEY } from './constants.js';
+import { MAX_BAR_LENGTH } from './constants.js';
 import * as Storage from './storage.js';
 import { showNotification, debounce } from './utils.js';
 import { RhymeAnalyzer } from './rhymeAnalyzer.js';
@@ -129,7 +129,9 @@ const Controller = {
     _performManualSave() {
         if (!this.activeProjectName) return;
         // Cancel any pending auto-save
-        clearTimeout(this.debouncedSave);
+        if (this.debouncedSave && this.debouncedSave.cancel) {
+            this.debouncedSave.cancel();
+        }
         
         View.updateSaveStatus('saving');
         Model.saveProject(this.activeProjectName);
@@ -475,6 +477,8 @@ const Controller = {
     Storage.setActive(projectName);
         this.isDirty = false;
         this._updateAllViews();
+        // Ensure research textarea reflects the active project's research
+        this._loadResearchForActive();
         View.updateSaveStatus('saved');
     },
 
@@ -767,7 +771,7 @@ const Controller = {
             this.projects = this.projects.map(p => p === oldName ? newName : p);
             if (this.activeProjectName === oldName) {
                 this.activeProjectName = newName;
-                localStorage.setItem('lyricalBlueprint_activeProject', newName);
+                Storage.setActive(newName);
             }
             this._updateAllViews();
             showNotification(`Projekt premenovaný na "${newName}".`);

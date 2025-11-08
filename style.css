@@ -370,6 +370,9 @@ body.is-dragging, body.is-dragging * {
 .notification.show { transform: translateX(-50%) translateY(0); opacity: 1; }
 .notification.success { background-color: var(--accent-success); }
 .notification.danger { background-color: var(--accent-danger); }
+/* Added variants used in code */
+.notification.info { background-color: var(--accent-primary); }
+.notification.warning { background-color: var(--accent-warning); color: #1b1b1b; }
 
 /* VÝSKUMNÝ PANEL */
 .research-overlay { position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background-color: var(--bg-main); display: flex; z-index: 1500; opacity: 1; transition: opacity 0.3s ease-in-out, transform 0.3s ease-in-out; transform: scale(1); }
