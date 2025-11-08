@@ -409,3 +409,67 @@ html, .panel-content, #maketaOutput, #project-list, #research-input {
 *::-webkit-scrollbar-thumb:hover {
   background-color: var(--text-secondary);
 }
+
+/* === PRO LOOK REFINEMENT LAYER (append) ===================================== */
+:root {
+    --shadow-1: 0 2px 4px -1px rgba(0,0,0,0.5), 0 4px 14px -2px rgba(0,0,0,0.35);
+    --radius-xs: 3px; --radius-sm: 5px; --radius-md: 8px; --radius-lg: 12px;
+    --focus-ring: 0 0 0 2px #1b2735, 0 0 0 4px rgba(88, 166, 255, 0.45);
+    --trans-fast: 120ms; --trans-med: 200ms;
+}
+
+/* Panel refinement */
+.panel {
+    background: linear-gradient(180deg,var(--bg-panel) 0%, #1a1f26 100%);
+    box-shadow: var(--shadow-1);
+}
+.panel-header { background: linear-gradient(180deg,#1e242b 0%, #191e23 100%); }
+.panel-header h2 { letter-spacing:.7px; text-transform:uppercase; }
+
+/* Buttons overhaul (keeping existing class names) */
+button, .btn {
+    transition: background var(--trans-fast), color var(--trans-fast), border-color var(--trans-fast), transform var(--trans-fast);
+    font-weight:500; letter-spacing:.3px;
+}
+button:focus-visible, .btn:focus-visible { outline:none; box-shadow: var(--focus-ring); }
+button:active, .btn:active { transform: translateY(1px); }
+button[disabled], .btn[disabled] { opacity:.55; cursor:not-allowed; }
+
+/* Tag / palette refinement */
+.palette-item { border-radius: 999px; padding:6px 12px; background:#1f252b; border-color:#2d343c; font-size:12.5px; line-height:1.25; }
+.palette-item:hover { background:#272e35; border-color:#3a434c; }
+.remove-palette-item-btn { font-size:14px; }
+
+/* Section / bar elevated look */
+.section-container { background:#14191e; border:1px solid #262d34; }
+.section-container:hover { border-color:#3a444e; }
+.bar-item { background:#1d2328; border-color:#2a333b; }
+.bar-item:hover { background:#253038; }
+.bar-item.dragging { background:rgba(88,166,255,.15); }
+
+/* Notification redesign (existing classes reused) */
+.notification { bottom:auto; top:16px; left:auto; right:16px; transform:translateY(-20px); border-radius:6px; box-shadow:0 4px 18px -4px rgba(0,0,0,.55); font-size:13px; }
+.notification.show { transform:translateY(0); }
+.notification.success, .notification.danger, .notification.info, .notification.warning { color:#fff; }
+.notification.warning { color:#1b1b1b; }
+
+/* Modal refinement */
+.modal { box-shadow: var(--shadow-1); background: linear-gradient(180deg,#1b2025 0%, #161a1e 100%); }
+.modal-buttons .btn { min-width:110px; }
+
+/* Text areas refinement */
+textarea, #source-input, #research-input { line-height:1.55; }
+#maketaOutput { background:#0f1317; border:1px solid #22292f; border-radius:6px; }
+
+/* Drag handle visual improvement if present */
+.section-drag-handle, .bar-drag-handle { opacity:.7; transition:opacity var(--trans-fast); }
+.section-drag-handle:hover, .bar-drag-handle:hover { opacity:1; }
+
+/* Scrollbar subtle tweak override */
+*::-webkit-scrollbar-thumb { background:#2b333b; border:2px solid #14181c; }
+*::-webkit-scrollbar-thumb:hover { background:#374149; }
+
+/* Focus utility */
+.is-focusable:focus-visible { outline:none; box-shadow: var(--focus-ring); }
+
+/* END refinement layer ======================================================== */
