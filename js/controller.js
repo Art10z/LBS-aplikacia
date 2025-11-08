@@ -19,6 +19,7 @@ const Controller = {
     activeProjectName: null,
     MAX_PROJECTS: 5,
     singleProjectMode: false,
+    _hlTimer: null,
 
     init() {
         View.init();
@@ -95,7 +96,10 @@ const Controller = {
             View.dom.closeResearchBtn.addEventListener('click', () => View.dom.researchOverlay.classList.add('hidden'));
         }
         if (View.dom.researchInput) {
-            View.dom.researchInput.addEventListener('input', () => this._saveResearch());
+            View.dom.researchInput.addEventListener('input', () => {
+                this._saveResearch();
+                try { this._updateTextareaHighlight(View.dom.researchInput); } catch (e) { /* ignore */ }
+            });
         }
         if (View.dom.addToPaletteBtn) {
             View.dom.addToPaletteBtn.addEventListener('click', () => this._addSelectedTextToPalette());
@@ -308,6 +312,7 @@ const Controller = {
             if(counter?.classList.contains('char-counter')) {
                 counter.textContent = `${e.target.value.length}/${MAX_BAR_LENGTH}`;
             }
+            try { this._updateTextareaHighlight(e.target); } catch (e) { /* ignore */ }
         }
     },
 
@@ -511,15 +516,20 @@ const Controller = {
         View.renderProjectTabs(this.projects, this.activeProjectName, this.projects.length < this.MAX_PROJECTS, this.singleProjectMode);
         this._updateCanvasAndMaketa();
         View.renderFullPalette(Model.state.paletteItems);
+        try { this._scheduleHighlights(); } catch (e) { /* ignore */ }
     },
 
     _updateCanvasAndMaketa() {
         View.renderInitialCanvas(Model.state.trackData);
         View.renderMaketa(Model.state.trackData);
+        try { this._scheduleHighlights(); } catch (e) { /* ignore */ }
     },
     
     _saveResearch() { Storage.saveResearch(this.activeProjectName, View.dom.researchInput.value); },
-    _loadResearchForActive() { View.dom.researchInput.value = Storage.loadResearch(this.activeProjectName) || ''; },
+    _loadResearchForActive() { 
+        View.dom.researchInput.value = Storage.loadResearch(this.activeProjectName) || '';
+        try { this._updateTextareaHighlight(View.dom.researchInput); } catch (e) { /* ignore */ }
+    },
 
     // DRAG & DROP LOGIC
     // --- ZMENENÁ FUNKCIA ---
@@ -691,6 +701,88 @@ const Controller = {
     },
     
     // --- KONIEC PRIDANÝCH FUNKCIÍ ---
+
+    // ================= REPEATED WORDS HIGHLIGHT (PER TEXTAREA) =================
+    _escapeHtml(s) {
+        return s.replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;','\'':'&#39;'}[c]));
+    },
+    _normalizeWord(w) { return w.toLocaleLowerCase(); },
+    _buildWordFreqFor(text) {
+        const freq = new Map();
+        const re = /[\p{L}\p{N}]+/gu;
+        let m;
+        while ((m = re.exec(text)) !== null) {
+            const raw = m[0];
+            if (raw.length < 2) continue;
+            const key = this._normalizeWord(raw);
+            freq.set(key, (freq.get(key) || 0) + 1);
+        }
+        return freq;
+    },
+    _renderWithFreq(text, freq) {
+        const re = /[\p{L}\p{N}]+/gu;
+        let out = '', last = 0, m;
+        while ((m = re.exec(text)) !== null) {
+            const start = m.index, end = start + m[0].length;
+            if (start > last) out += `<span class="t">${this._escapeHtml(text.slice(last, start))}</span>`;
+            const key = this._normalizeWord(m[0]);
+            const cnt = freq.get(key) || 0;
+            if (cnt >= 3) out += `<span class="t dup3">${this._escapeHtml(m[0])}</span>`;
+            else if (cnt === 2) out += `<span class="t dup2">${this._escapeHtml(m[0])}</span>`;
+            else out += `<span class="t">${this._escapeHtml(m[0])}</span>`;
+            last = end;
+        }
+        if (last < text.length) out += `<span class="t">${this._escapeHtml(text.slice(last))}</span>`;
+        return out || '<span class="t"></span>';
+    },
+    _ensureLayerForTextarea(ta) {
+        const parent = ta.parentElement;
+        if (!parent) return null;
+        const cs = getComputedStyle(parent);
+        if (cs.position === 'static') parent.style.position = 'relative';
+        let layer = parent.querySelector(':scope > .hl-layer');
+        if (!layer) {
+            layer = document.createElement('div');
+            layer.className = 'hl-layer';
+            parent.insertBefore(layer, ta); // beneath textarea (z-index 0)
+        }
+        return layer;
+    },
+    _positionLayerUnderTextarea(layer, ta) {
+        if (ta.id === 'research-input') {
+            const parent = ta.parentElement;
+            const csParent = getComputedStyle(parent);
+            if (csParent.position === 'static') parent.style.position = 'relative';
+            layer.style.position = 'absolute';
+            layer.style.top = ta.offsetTop + 'px';
+            layer.style.left = ta.offsetLeft + 'px';
+            layer.style.width = ta.clientWidth + 'px';
+            layer.style.height = ta.clientHeight + 'px';
+            const cs = getComputedStyle(ta);
+            layer.style.paddingTop = cs.paddingTop;
+            layer.style.paddingRight = cs.paddingRight;
+            layer.style.paddingBottom = cs.paddingBottom;
+            layer.style.paddingLeft = cs.paddingLeft;
+        } // bar-item uses CSS inset
+    },
+    _updateTextareaHighlight(ta) {
+        if (!ta) return;
+        const layer = this._ensureLayerForTextarea(ta);
+        if (!layer) return;
+        this._positionLayerUnderTextarea(layer, ta);
+        const text = ta.value || '';
+        const freq = this._buildWordFreqFor(text);
+        layer.innerHTML = this._renderWithFreq(text, freq);
+    },
+    _updateAllHighlights() {
+        document.querySelectorAll('.bar-item textarea.bar-input').forEach(ta => this._updateTextareaHighlight(ta));
+        const researchTa = document.getElementById('research-input');
+        if (researchTa) this._updateTextareaHighlight(researchTa);
+    },
+    _scheduleHighlights() {
+        clearTimeout(this._hlTimer);
+        this._hlTimer = setTimeout(() => this._updateAllHighlights(), 120);
+    },
 
     // NEW PROJECT TABS LOGIC
     _handleTabsClick(e) {
