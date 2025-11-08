@@ -1,5 +1,6 @@
 
-import { PROJECT_KEY_PREFIX } from './constants.js';
+import { PROJECT_KEY_PREFIX, PALETTE_MAX_ITEMS } from './constants.js';
+import * as Storage from './storage.js';
 
 // =================================================================================
 // MODEL ("The Brain" / "Mozog")
@@ -81,6 +82,7 @@ const Model = {
             text: text.trim()
         };
         this.state.paletteItems.unshift(newItem);
+        this._enforcePaletteCap();
         return newItem;
     },
 
@@ -102,6 +104,8 @@ const Model = {
                 existingTexts.add(trimmedText.toLowerCase());
             }
         });
+
+        this._enforcePaletteCap();
 
         return newItems;
     },
@@ -164,41 +168,28 @@ const Model = {
 
     saveProject(projectName) {
         if (!projectName) return false;
-        const projectData = {
-            trackData: this.state.trackData,
-            paletteItems: this.state.paletteItems
-        };
-        localStorage.setItem(PROJECT_KEY_PREFIX + projectName, JSON.stringify(projectData));
+        const projectData = { trackData: this.state.trackData, paletteItems: this.state.paletteItems };
+        Storage.saveProject(projectName, projectData);
         return true;
     },
 
     loadProject(projectName) {
-        const savedData = localStorage.getItem(PROJECT_KEY_PREFIX + projectName);
-        if (savedData) {
-            this.setData(JSON.parse(savedData));
-            return true;
-        }
+        const data = Storage.loadProject(projectName);
+        if (data) { this.setData(data); return true; }
         return false;
     },
 
-    deleteProject(projectName) {
-        localStorage.removeItem(PROJECT_KEY_PREFIX + projectName);
-    },
+    deleteProject(projectName) { Storage.deleteProject(projectName); },
 
-    renameProject(oldName, newName) {
-        const data = localStorage.getItem(PROJECT_KEY_PREFIX + oldName);
-        if (data) {
-            localStorage.setItem(PROJECT_KEY_PREFIX + newName, data);
-            localStorage.removeItem(PROJECT_KEY_PREFIX + oldName);
-            return true;
+    renameProject(oldName, newName) { return Storage.renameProject(oldName, newName); },
+
+    getProjectList() { return Storage.listProjects(); },
+
+    // Enforce palette cap after adding items
+    _enforcePaletteCap() {
+        if (this.state.paletteItems.length > PALETTE_MAX_ITEMS) {
+            this.state.paletteItems = this.state.paletteItems.slice(0, PALETTE_MAX_ITEMS);
         }
-        return false;
-    },
-
-    getProjectList() {
-        return Object.keys(localStorage)
-            .filter(key => key.startsWith(PROJECT_KEY_PREFIX))
-            .map(key => key.replace(PROJECT_KEY_PREFIX, ''));
     }
 };
 
