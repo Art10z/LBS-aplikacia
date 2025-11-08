@@ -20,6 +20,7 @@ const Controller = {
     MAX_PROJECTS: 5,
     singleProjectMode: false,
     _hlTimer: null,
+    _hlScrollBound: new WeakSet(),
 
     init() {
         View.init();
@@ -98,7 +99,10 @@ const Controller = {
         if (View.dom.researchInput) {
             View.dom.researchInput.addEventListener('input', () => {
                 this._saveResearch();
-                try { this._updateTextareaHighlight(View.dom.researchInput); } catch (e) { /* ignore */ }
+                try {
+                    this._updateTextareaHighlight(View.dom.researchInput);
+                    this._syncLayerScroll(View.dom.researchInput);
+                } catch (e) { /* ignore */ }
             });
         }
         if (View.dom.addToPaletteBtn) {
@@ -312,7 +316,10 @@ const Controller = {
             if(counter?.classList.contains('char-counter')) {
                 counter.textContent = `${e.target.value.length}/${MAX_BAR_LENGTH}`;
             }
-            try { this._updateTextareaHighlight(e.target); } catch (e) { /* ignore */ }
+            try {
+                this._updateTextareaHighlight(e.target);
+                this._syncLayerScroll(e.target);
+            } catch (e) { /* ignore */ }
         }
     },
 
@@ -749,21 +756,25 @@ const Controller = {
         return layer;
     },
     _positionLayerUnderTextarea(layer, ta) {
-        if (ta.id === 'research-input') {
-            const parent = ta.parentElement;
-            const csParent = getComputedStyle(parent);
-            if (csParent.position === 'static') parent.style.position = 'relative';
-            layer.style.position = 'absolute';
-            layer.style.top = ta.offsetTop + 'px';
-            layer.style.left = ta.offsetLeft + 'px';
-            layer.style.width = ta.clientWidth + 'px';
-            layer.style.height = ta.clientHeight + 'px';
-            const cs = getComputedStyle(ta);
-            layer.style.paddingTop = cs.paddingTop;
-            layer.style.paddingRight = cs.paddingRight;
-            layer.style.paddingBottom = cs.paddingBottom;
-            layer.style.paddingLeft = cs.paddingLeft;
-        } // bar-item uses CSS inset
+        const parent = ta.parentElement;
+        const csParent = getComputedStyle(parent);
+        if (csParent.position === 'static') parent.style.position = 'relative';
+        layer.style.position = 'absolute';
+        layer.style.top = ta.offsetTop + 'px';
+        layer.style.left = ta.offsetLeft + 'px';
+        layer.style.width = ta.clientWidth + 'px';
+        layer.style.height = ta.clientHeight + 'px';
+        const cs = getComputedStyle(ta);
+        layer.style.paddingTop = cs.paddingTop;
+        layer.style.paddingRight = cs.paddingRight;
+        layer.style.paddingBottom = cs.paddingBottom;
+        layer.style.paddingLeft = cs.paddingLeft;
+        // Mirror font metrics for precise wrapping
+        layer.style.fontFamily = cs.fontFamily;
+        layer.style.fontSize = cs.fontSize;
+        layer.style.lineHeight = cs.lineHeight;
+        layer.style.letterSpacing = cs.letterSpacing;
+        layer.style.whiteSpace = 'pre-wrap';
     },
     _updateTextareaHighlight(ta) {
         if (!ta) return;
@@ -774,14 +785,44 @@ const Controller = {
         const freq = this._buildWordFreqFor(text);
         layer.innerHTML = this._renderWithFreq(text, freq);
     },
+    _syncLayerScroll(ta) {
+        const parent = ta.parentElement;
+        if (!parent) return;
+        const layer = parent.querySelector(':scope > .hl-layer');
+        if (!layer) return;
+        layer.scrollTop = ta.scrollTop;
+        layer.scrollLeft = ta.scrollLeft;
+    },
     _updateAllHighlights() {
-        document.querySelectorAll('.bar-item textarea.bar-input').forEach(ta => this._updateTextareaHighlight(ta));
+        document.querySelectorAll('.bar-item textarea.bar-input').forEach(ta => {
+            this._updateTextareaHighlight(ta);
+            this._bindScrollOnce(ta);
+            this._syncLayerScroll(ta);
+        });
         const researchTa = document.getElementById('research-input');
-        if (researchTa) this._updateTextareaHighlight(researchTa);
+        if (researchTa) {
+            this._updateTextareaHighlight(researchTa);
+            this._bindScrollOnce(researchTa);
+            this._syncLayerScroll(researchTa);
+        }
     },
     _scheduleHighlights() {
         clearTimeout(this._hlTimer);
         this._hlTimer = setTimeout(() => this._updateAllHighlights(), 120);
+    },
+    _bindScrollOnce(ta) {
+        if (this._hlScrollBound.has(ta)) return;
+        this._hlScrollBound.add(ta);
+        ta.addEventListener('scroll', () => this._syncLayerScroll(ta));
+        // adjust on resize of textarea via input (rows change) or container resize
+        const ro = ('ResizeObserver' in window) ? new ResizeObserver(() => {
+            try {
+                const parent = ta.parentElement;
+                const layer = parent && parent.querySelector(':scope > .hl-layer');
+                if (layer) this._positionLayerUnderTextarea(layer, ta);
+            } catch {}
+        }) : null;
+        if (ro) ro.observe(ta);
     },
 
     // NEW PROJECT TABS LOGIC
