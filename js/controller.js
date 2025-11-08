@@ -3,7 +3,7 @@ import Model from './model.js';
 import View from './view.js';
 import { MAX_BAR_LENGTH } from './constants.js';
 import * as Storage from './storage.js';
-import { showNotification, debounce } from './utils.js';
+import { showNotification, debounce, showLoading, hideLoading } from './utils.js';
 import { RhymeAnalyzer } from './rhymeAnalyzer.js';
 
 // =================================================================================
@@ -21,6 +21,7 @@ const Controller = {
     singleProjectMode: false,
     _hlTimer: null,
     _hlScrollBound: new WeakSet(),
+    _hlRAF: new WeakMap(),
     highlightEnabled: true,
     highlightResearchEnabled: true,
 
@@ -106,10 +107,7 @@ const Controller = {
             View.dom.researchInput.addEventListener('input', () => {
                 this._saveResearch();
                 try {
-                    if (this.highlightResearchEnabled) {
-                        this._updateTextareaHighlight(View.dom.researchInput);
-                        this._syncLayerScroll(View.dom.researchInput);
-                    }
+                    if (this.highlightResearchEnabled) this._scheduleTAHighlight(View.dom.researchInput);
                 } catch (e) { /* ignore */ }
             });
         }
@@ -199,14 +197,17 @@ const Controller = {
             showNotification('Importér je prázdny – nič na aktualizáciu.', 'warning');
             return;
         }
+        showLoading('Aktualizujem plátno…');
         const newTrackData = this._parseImporterText(raw);
         if (newTrackData.length === 0) {
+            hideLoading();
             showNotification('Žiadne použiteľné riadky.', 'warning');
             return;
         }
         Model.setData({ trackData: newTrackData, paletteItems: Model.state.paletteItems });
         this._updateCanvasAndMaketa();
         this._markAsDirty();
+        hideLoading();
         showNotification('Projekt bol aktualizovaný z importéru.');
     },
 
@@ -326,7 +327,6 @@ const Controller = {
     _handleCanvasInput(e) {
         if (e.target.classList.contains('bar-input')) {
             this._markAsDirty();
-            // Enforce single-line and limit
             if (e.target.value.includes('\n')) {
                 e.target.value = e.target.value.replace(/\r?\n/g, ' ');
             }
@@ -334,12 +334,7 @@ const Controller = {
             if(counter?.classList.contains('char-counter')) {
                 counter.textContent = `${e.target.value.length}/${MAX_BAR_LENGTH}`;
             }
-            try {
-                if (this.highlightEnabled) {
-                    this._updateTextareaHighlight(e.target);
-                    this._syncLayerScroll(e.target);
-                }
-            } catch (e) { /* ignore */ }
+            try { if (this.highlightEnabled) this._scheduleTAHighlight(e.target); } catch (e) { /* ignore */ }
         }
     },
     _handleBarKeydown(e) {
@@ -457,6 +452,7 @@ const Controller = {
         }
 
         showNotification('Analyzujem text...', 'info');
+        showLoading('Analyzujem rýmy…', 200);
         View.dom.analyzeRhymesBtn.disabled = true;
         try {
             const words = RhymeAnalyzer.extractWords(researchText);
@@ -487,6 +483,7 @@ const Controller = {
             showNotification('Chyba pri analýze rýmov.', 'danger');
         } finally {
             View.dom.analyzeRhymesBtn.disabled = false;
+            hideLoading();
         }
     },
 
@@ -501,6 +498,7 @@ const Controller = {
 
     _exportAll() {
         try {
+            showLoading('Exportujem projekty…', 200);
             const json = Storage.exportAll();
             const blob = new Blob([json], { type: 'application/json;charset=utf-8' });
             const a = document.createElement('a');
@@ -516,7 +514,7 @@ const Controller = {
         } catch (e) {
             console.error(e);
             showNotification('Export zlyhal.', 'danger');
-        }
+        } finally { hideLoading(); }
     },
     
     _initializeSession(preferredProjectName = null) {
@@ -588,7 +586,7 @@ const Controller = {
     _saveResearch() { Storage.saveResearch(this.activeProjectName, View.dom.researchInput.value); },
     _loadResearchForActive() { 
         View.dom.researchInput.value = Storage.loadResearch(this.activeProjectName) || '';
-        try { this._updateTextareaHighlight(View.dom.researchInput); } catch (e) { /* ignore */ }
+        try { if (this.highlightResearchEnabled) this._scheduleTAHighlight(View.dom.researchInput); } catch (e) { /* ignore */ }
     },
 
     // DRAG & DROP LOGIC
@@ -845,6 +843,20 @@ const Controller = {
         if (!layer) return;
         layer.scrollTop = ta.scrollTop;
         layer.scrollLeft = ta.scrollLeft;
+    },
+    _scheduleTAHighlight(ta) {
+        const prev = this._hlRAF.get(ta);
+        if (prev) cancelAnimationFrame(prev);
+        const id = requestAnimationFrame(() => {
+            try {
+                this._updateTextareaHighlight(ta);
+                this._bindScrollOnce(ta);
+                this._syncLayerScroll(ta);
+            } finally {
+                this._hlRAF.delete(ta);
+            }
+        });
+        this._hlRAF.set(ta, id);
     },
     _updateAllHighlights() {
         const bars = document.querySelectorAll('.bar-item textarea.bar-input');

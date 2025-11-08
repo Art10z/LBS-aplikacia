@@ -36,3 +36,25 @@ export function debounce(func, delay) {
     debounced.cancel = () => { clearTimeout(timeout); };
     return debounced;
 }
+
+// Loading overlay helpers (with delayed show to avoid flicker)
+let loadingTimer = null;
+export function showLoading(message = 'Načítavam…', delayMs = 150) {
+    const overlay = document.getElementById('loading-overlay');
+    if (!overlay) return;
+    const msg = overlay.querySelector('#loading-message');
+    if (msg) msg.textContent = message;
+    overlay.setAttribute('aria-busy', 'true');
+    clearTimeout(loadingTimer);
+    loadingTimer = setTimeout(() => {
+        overlay.classList.remove('hidden');
+    }, delayMs);
+}
+
+export function hideLoading() {
+    const overlay = document.getElementById('loading-overlay');
+    if (!overlay) return;
+    overlay.setAttribute('aria-busy', 'false');
+    clearTimeout(loadingTimer);
+    overlay.classList.add('hidden');
+}

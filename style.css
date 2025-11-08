@@ -411,6 +411,14 @@ html, .panel-content, #maketaOutput, #project-list, #research-input {
   background-color: var(--text-secondary);
 }
 
+/* === Loading overlay ======================================================== */
+.loading-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.45); display: flex; align-items: center; justify-content: center; z-index: 3000; backdrop-filter: blur(2px); transition: opacity .2s ease; opacity: 1; }
+.loading-overlay.hidden { opacity: 0; pointer-events: none; }
+.loading-content { background: linear-gradient(180deg,#1b2025 0%, #161a1e 100%); border: 1px solid #2a3138; border-radius: 10px; padding: 20px 24px; display:flex; align-items:center; gap: 12px; box-shadow: var(--shadow-1); }
+.loading-content .message { color: var(--text-primary); font-weight: 600; letter-spacing: .3px; }
+.spinner { width: 18px; height: 18px; border: 2px solid #33404c; border-top-color: var(--accent-primary); border-radius: 50%; animation: spin .8s linear infinite; }
+@keyframes spin { to { transform: rotate(360deg); } }
+
 /* === Per-textarea duplicate words highlighting ============================= */
 .hl-layer {
     position: absolute;
@@ -475,6 +483,15 @@ button, .btn {
 button:focus-visible, .btn:focus-visible { outline:none; box-shadow: var(--focus-ring); }
 button:active, .btn:active { transform: translateY(1px); }
 button[disabled], .btn[disabled] { opacity:.55; cursor:not-allowed; }
+
+/* Consistent secondary buttons */
+.btn.btn-secondary { border-color:#2b333b; background: #1c2228; color: var(--text-primary); }
+.btn.btn-secondary:hover { border-color:#3b4651; background:#232a31; }
+.btn.btn-secondary:active { background:#1a2127; }
+.btn.btn-primary { background: #238636; border-color:#2ea043; color:#fff; }
+.btn.btn-primary:hover { background:#2ea043; }
+.btn.btn-danger { border-color:#3a2a2a; color:#ffb3b3; }
+.btn.btn-danger:hover { border-color:#a44; color:#fff; background: rgba(164, 68, 68, .18); }
 
 /* Tag / palette refinement */
 .palette-item { border-radius: 999px; padding:6px 12px; background:#1f252b; border-color:#2d343c; font-size:12.5px; line-height:1.25; }
