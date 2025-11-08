@@ -220,6 +220,7 @@ const Controller = {
             showNotification('Plátno je prázdne – nič na synchronizáciu.', 'warning');
             return;
         }
+        showLoading('Synchronizujem importér…', 150);
         const lines = [];
         Model.state.trackData.forEach(section => {
             lines.push(`[${section.type}]`);
@@ -229,6 +230,7 @@ const Controller = {
             });
         });
         View.dom.sourceInput.value = lines.join('\n');
+        hideLoading();
         showNotification('Importér bol aktualizovaný z plátna.');
     },
     
@@ -561,6 +563,7 @@ const Controller = {
     },
 
     _loadAndDisplayProject(projectName) {
+        showLoading('Načítavam projekt…', 150);
         if (!projectName || !Model.loadProject(projectName)) {
             Model.init(); // Fallback to empty state
         }
@@ -571,6 +574,7 @@ const Controller = {
         // Ensure research textarea reflects the active project's research
         this._loadResearchForActive();
         View.updateSaveStatus('saved');
+        hideLoading();
     },
 
     _updateAllViews() {

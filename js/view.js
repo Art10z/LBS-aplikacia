@@ -53,24 +53,80 @@ const View = {
     },
 
     renderInitialCanvas(trackData) {
-        this.dom.assemblerContent.innerHTML = '';
-        trackData.forEach(section => {
-            this.dom.assemblerContent.appendChild(this._createSectionElement(section));
+        // Efficient re-render: reuse existing sections where possible, minimal DOM churn.
+        const container = this.dom.assemblerContent;
+        const existingMap = new Map();
+        container.querySelectorAll('.section-container').forEach(sec => {
+            existingMap.set(sec.dataset.sectionId, sec);
         });
+
+        const fragment = document.createDocumentFragment();
+        const newIds = new Set();
+        trackData.forEach(section => {
+            newIds.add(section.id);
+            let el = existingMap.get(section.id);
+            if (el) {
+                // Update type input + label only (bars handled separately)
+                const typeInput = el.querySelector('.section-type-input');
+                if (typeInput && typeInput.value !== section.type) typeInput.value = section.type;
+                const labelEl = el.querySelector('.section-label');
+                if (labelEl && labelEl.textContent !== section.label) labelEl.textContent = section.label;
+                // Sync bars
+                this._syncBars(el.querySelector('.bars-container'), section);
+            } else {
+                el = this._createSectionElement(section);
+            }
+            fragment.appendChild(el);
+        });
+        // Remove stale sections
+        existingMap.forEach((el, id) => { if (!newIds.has(id)) el.remove(); });
+        container.innerHTML = '';
+        container.appendChild(fragment);
+    },
+
+    _syncBars(barsContainer, section) {
+        const existingBars = new Map();
+        barsContainer.querySelectorAll('.bar-item').forEach(b => existingBars.set(b.dataset.barId, b));
+        const frag = document.createDocumentFragment();
+        const newIds = new Set();
+        section.bars.forEach(bar => {
+            newIds.add(bar.id);
+            let barEl = existingBars.get(bar.id);
+            if (barEl) {
+                const ta = barEl.querySelector('.bar-input');
+                if (ta && ta.value !== bar.text) ta.value = bar.text;
+                const counter = barEl.querySelector('.char-counter');
+                if (counter) {
+                    const len = bar.text.length;
+                    const current = counter.textContent.split('/')[0];
+                    if (String(len) !== current) counter.textContent = `${len}/${MAX_BAR_LENGTH}`;
+                }
+            } else {
+                barEl = this._createBarElement(bar, section.id);
+            }
+            frag.appendChild(barEl);
+        });
+        // Remove stale
+        existingBars.forEach((el, id) => { if (!newIds.has(id)) el.remove(); });
+        barsContainer.innerHTML = '';
+        barsContainer.appendChild(frag);
     },
 
     renderFullPalette(paletteItems) {
-        this.dom.inspirationPalette.innerHTML = '';
+        const pal = this.dom.inspirationPalette;
+        pal.innerHTML = '';
         if (paletteItems.length === 0) {
-            this.dom.inspirationPalette.classList.add('placeholder');
-            this.dom.inspirationPalette.innerHTML = `
+            pal.classList.add('placeholder');
+            pal.innerHTML = `
                 <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
                   <path stroke-linecap="round" stroke-linejoin="round" d="M9.953 2.224a15.22 15.22 0 014.094 0l.248.047a.912.912 0 00.912-.767 1.5 1.5 0 012.84 1.132 6.723 6.723 0 01-2.032 4.158c-.183.183-.366.365-.548.548a6.723 6.723 0 01-4.158 2.032 1.5 1.5 0 01-1.132-2.84.912.912 0 00.767-.912l-.047-.248zM14.047 21.776a15.22 15.22 0 01-4.094 0l-.248-.047a.912.912 0 00-.912.767 1.5 1.5 0 01-2.84-1.132 6.723 6.723 0 012.032-4.158c.183-.183.366.365.548.548a6.723 6.723 0 014.158-2.032 1.5 1.5 0 011.132 2.84.912.912 0 00-.767.912l.047.248z" />
                 </svg>
                 <p>Označ text vo výskume a pridaj ho sem ako inšpiráciu.</p>`;
         } else {
-            this.dom.inspirationPalette.classList.remove('placeholder');
-            paletteItems.forEach(item => this.addPaletteItemToDOM(item));
+            pal.classList.remove('placeholder');
+            const frag = document.createDocumentFragment();
+            paletteItems.forEach(item => frag.appendChild(this._createPaletteItemElement(item)));
+            pal.appendChild(frag);
         }
     },
     
