@@ -11,7 +11,8 @@ const View = {
     init() {
         this.dom = {
             sourceInput: document.getElementById('source-input'),
-            processTextBtn: document.getElementById('processTextBtn'),
+            refreshProjectBtn: document.getElementById('refreshProjectBtn'),
+            syncImporterBtn: document.getElementById('syncImporterBtn'),
             assemblerContent: document.getElementById('assembler-content'),
             addSectionBtn: document.getElementById('addSectionBtn'),
             maketaOutput: document.getElementById('maketaOutput'),

@@ -1,7 +1,7 @@
 
 import Model from './model.js';
 import View from './view.js';
-import { MAX_BAR_LENGTH } from './constants.js';
+import { MAX_BAR_LENGTH, RESEARCH_KEY } from './constants.js';
 import { showNotification, debounce } from './utils.js';
 import { RhymeAnalyzer } from './rhymeAnalyzer.js';
 
@@ -27,7 +27,12 @@ const Controller = {
     },
 
     _attachEventListeners() {
-        View.dom.processTextBtn.addEventListener('click', () => this._processSourceText());
+        if (View.dom.refreshProjectBtn) {
+            View.dom.refreshProjectBtn.addEventListener('click', () => this._forceRefreshFromImporter());
+        }
+        if (View.dom.syncImporterBtn) {
+            View.dom.syncImporterBtn.addEventListener('click', () => this._syncImporterFromCanvas());
+        }
         View.dom.addSectionBtn.addEventListener('click', () => this._addSection());
         View.dom.updateMaketaBtn.addEventListener('click', () => View.renderMaketa(Model.state.trackData));
         View.dom.copyBtn.addEventListener('click', () => this._copyMaketa());
@@ -59,9 +64,7 @@ const Controller = {
         }
         
         View.dom.inspirationPalette.addEventListener('click', e => this._handlePaletteClick(e));
-        if (View.dom.resetRhymesMainBtn) {
-            View.dom.resetRhymesMainBtn.addEventListener('click', () => this._resetRhymes());
-        }
+        // removed duplicate binding of resetRhymesMainBtn
 
     View.dom.projectTabsContainer.addEventListener('click', e => this._handleTabsClick(e));
         View.dom.projectTabsContainer.addEventListener('dblclick', e => this._handleTabDoubleClick(e));
@@ -109,32 +112,57 @@ const Controller = {
         }, 150); // Short delay for user feedback
     },
 
-    _processSourceText() {
-        const text = View.dom.sourceInput.value;
-        if (!text.trim()) {
-            showNotification('Vložte text na spracovanie.', 'danger');
+    // removed legacy _processSourceText (duplicate of refresh)
+
+    // Prepíše plátno okamžite podľa aktuálneho textu v importéri (bez potvrdenia)
+    _forceRefreshFromImporter() {
+        const raw = View.dom.sourceInput.value;
+        if (!raw.trim()) {
+            showNotification('Importér je prázdny – nič na aktualizáciu.', 'warning');
             return;
         }
-        
-        if (Model.state.trackData.length > 0) {
-            View.showConfirmation('Spracovaním textu nahradíte obsah na plátne. Prajete si pokračovať?', () => this._performTextProcessing(text));
-        } else {
-            this._performTextProcessing(text);
+        const newTrackData = this._parseImporterText(raw);
+        if (newTrackData.length === 0) {
+            showNotification('Žiadne použiteľné riadky.', 'warning');
+            return;
         }
+        Model.setData({ trackData: newTrackData, paletteItems: Model.state.paletteItems });
+        this._updateCanvasAndMaketa();
+        this._markAsDirty();
+        showNotification('Projekt bol aktualizovaný z importéru.');
+    },
+
+    // Zapíše späť do importéra aktuálnu štruktúru z plátna – zjednoduší cyklus úpravy
+    _syncImporterFromCanvas() {
+        if (Model.state.trackData.length === 0) {
+            showNotification('Plátno je prázdne – nič na synchronizáciu.', 'warning');
+            return;
+        }
+        const lines = [];
+        Model.state.trackData.forEach(section => {
+            lines.push(`[${section.type}]`);
+            section.bars.forEach(bar => {
+                const txt = (bar.text || '').trim();
+                if (txt) lines.push(txt); else lines.push('');
+            });
+        });
+        View.dom.sourceInput.value = lines.join('\n');
+        showNotification('Importér bol aktualizovaný z plátna.');
     },
     
-    _performTextProcessing(text) {
-        const lines = text.split('\n').map(line => line.trim()).filter(line => line !== '');
+    // removed legacy _performTextProcessing (now using _forceRefreshFromImporter + _parseImporterText)
+
+    // Jednotná logika parsovania importéra -> trackData (odstránená duplicita)
+    _parseImporterText(raw) {
+        const lines = raw.split('\n').map(line => line.trim()).filter(line => line !== '');
         const newTrackData = [];
         let currentSection = null;
-    
+
         lines.forEach(line => {
             const sectionMatch = line.match(/^\[\s*(.+?)\s*\]$/);
-    
             if (sectionMatch) {
                 const sectionName = sectionMatch[1].trim();
                 currentSection = {
-                    // Temporary IDs will be replaced by Model.setData
                     id: `temp-section-${newTrackData.length}`,
                     type: sectionName,
                     label: '',
@@ -148,11 +176,7 @@ const Controller = {
                 });
             }
         });
-    
-        Model.setData({ trackData: newTrackData, paletteItems: Model.state.paletteItems });
-        this._updateCanvasAndMaketa();
-        this._markAsDirty();
-        showNotification('Text bol úspešne spracovaný.');
+        return newTrackData;
     },
     
     _addSection() {
@@ -393,8 +417,8 @@ const Controller = {
         View.renderMaketa(Model.state.trackData);
     },
     
-    _saveResearch() { localStorage.setItem('lyricalBlueprintResearch_v2.0', View.dom.researchInput.value); },
-    _loadResearch() { View.dom.researchInput.value = localStorage.getItem('lyricalBlueprintResearch_v2.0') || ''; },
+    _saveResearch() { localStorage.setItem(RESEARCH_KEY, View.dom.researchInput.value); },
+    _loadResearch() { View.dom.researchInput.value = localStorage.getItem(RESEARCH_KEY) || ''; },
 
     // DRAG & DROP LOGIC
     // --- ZMENENÁ FUNKCIA ---
