@@ -26,11 +26,10 @@
       </div>
       <div class="header-right-controls">
         <span id="save-status" class="save-status"></span>
-        <button id="openResearchBtn" class="btn btn-secondary">
+        <button id="openResearchBtn" class="btn btn-secondary icon-btn" title="Výskum" aria-label="Výskum">
            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M12 6.042A8.967 8.967 0 006 3.75c-1.052 0-2.062.18-3 .512v14.25A8.987 8.987 0 006 18c2.305 0 4.408.867 6 2.292m0-14.25a8.966 8.966 0 016-2.292c1.052 0 2.062.18 3 .512v14.25A8.987 8.987 0 0018 18a8.967 8.967 0 00-6 2.292m0-14.25v14.25"/></svg>
-          <span>Výskum</span>
         </button>
-        <button id="toggleHighlightBtn" class="btn btn-secondary" title="Zapnúť/vypnúť zvýraznenie duplicitných slov">
+        <button id="toggleHighlightBtn" class="btn btn-secondary icon-btn" title="Zapnúť/vypnúť zvýraznenie duplicitných slov" aria-label="Prepínač zvýraznenia">
           <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" fill="none"><path stroke-linecap="round" stroke-linejoin="round" d="M2.25 12c0 1.593.555 3.217 1.545 4.545a11.966 11.966 0 001.778 1.86c.637.57 1.586.538 2.18-.07l2.1-2.164a1.88 1.88 0 012.714 0l2.1 2.164c.594.608 1.543.64 2.18.07a11.966 11.966 0 001.778-1.86A9.708 9.708 0 0021.75 12c0-1.593-.555-3.217-1.545-4.545a11.966 11.966 0 00-1.778-1.86c-.637-.57-1.586-.538-2.18.07l-2.1 2.164a1.88 1.88 0 01-2.714 0l-2.1-2.164c-.594-.608-1.543-.64-2.18-.07a11.966 11.966 0 00-1.778 1.86A9.708 9.708 0 002.25 12z"/></svg>
           <span class="toggle-label">Highlight</span>
         </button>
@@ -45,15 +44,15 @@
           </div>
           <div class="panel-content source-content">
             <div class="panel-tools">
-              <button id="refreshProjectBtn" class="btn btn-secondary" title="Prepísať plátno z importu bez potvrdenia">
+              <button id="refreshProjectBtn" class="btn btn-secondary icon-btn" title="Prepísať plátno z importu bez potvrdenia" aria-label="Aktualizovať projekt">
                 <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M4.5 4.5v6h6m9 9v-6h-6M4.5 15a7.5 7.5 0 0112.546-5.303L21 13.5M19.5 9a7.5 7.5 0 01-12.546 5.303L3 10.5" /></svg>
-                <span>Aktualizovať projekt</span>
               </button>
-              <button id="syncImporterBtn" class="btn btn-secondary" title="Prepísať importér podľa aktuálneho plátna">
+              <button id="syncImporterBtn" class="btn btn-secondary icon-btn" title="Prepísať importér podľa aktuálneho plátna" aria-label="Sync z plátna">
                 <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M12 3v4.5m0 9V21m6.364-13.364l-3.182 3.182M8.818 14.182l-3.182 3.182M21 12h-4.5M7.5 12H3m13.364 6.364l-3.182-3.182M8.818 9.818l-3.182-3.182" /></svg>
-                <span>Sync z plátna</span>
               </button>
-              <button id="addTemplateTagBtn" class="btn btn-secondary" title="Vložiť značku [ Značka ]">+ Značka</button>
+              <button id="addTemplateTagBtn" class="btn btn-secondary icon-btn" title="Vložiť značku [ Značka ]" aria-label="Pridať značku">
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path stroke-linecap="round" stroke-linejoin="round" d="M7 7h6a2 2 0 012 2v6l-5 5-6-6 5-5z"/><path stroke-linecap="round" stroke-linejoin="round" d="M12 9v4m-2-2h4"/></svg>
+              </button>
             </div>
             <textarea id="source-input" placeholder="Vlož sem svoj text alebo použi šablóny vyššie. Názvy sekcií uveď v hranatých zátvorkách, napr. [Verse]. Každý riadok bude samostatný bar."></textarea>
           </div>
@@ -64,16 +63,18 @@
           </div>
           <div class="panel-content output-content">
             <div class="panel-tools">
-              <button id="updateMaketaBtn" class="btn btn-secondary" title="Aktualizovať maketu">
+              <button id="updateMaketaBtn" class="btn btn-secondary icon-btn" title="Aktualizovať maketu" aria-label="Aktualizovať maketu">
                 <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M16.023 9.348h4.992v-.001M2.985 19.644v-4.992m0 0h4.992m-4.993 0l3.181 3.183a8.25 8.25 0 0011.667 0l3.181-3.183m-4.991-2.695v4.992h-4.992m0 0l-3.181-3.183a8.25 8.25 0 0111.667 0l3.181 3.183" /></svg>
               </button>
-              <button id="saveAsTxtBtn" class="btn btn-secondary" title="Stiahnuť ako .txt">
+              <button id="saveAsTxtBtn" class="btn btn-secondary icon-btn" title="Stiahnuť ako .txt" aria-label="Stiahnuť ako .txt">
                 <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M3 16.5v2.25A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75V16.5M16.5 12L12 16.5m0 0L7.5 12m4.5 4.5V3" /></svg>
               </button>
-              <button id="copyBtn" class="btn btn-secondary" title="Kopírovať do schránky">
+              <button id="copyBtn" class="btn btn-secondary icon-btn" title="Kopírovať do schránky" aria-label="Kopírovať do schránky">
                  <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M15.75 17.25v3.375c0 .621-.504 1.125-1.125 1.125h-9.75a1.125 1.125 0 01-1.125-1.125V7.875c0-.621.504-1.125 1.125-1.125H6.75a9.06 9.06 0 011.5 .124m7.5 10.376h3.375c.621 0 1.125-.504 1.125-1.125V11.25c0-4.46-3.243-8.161-7.5-8.876a9.06 9.06 0 00-1.5-.124H9.375c-.621 0-1.125.504-1.125 1.125v3.5m7.5 10.375H9.375a1.125 1.125 0 01-1.125-1.125v-9.25m12 6.625v-1.875a3.375 3.375 0 00-3.375-3.375h-1.5a1.125 1.125 0 01-1.125-1.125v-1.5a3.375 3.375 0 00-3.375-3.375H9.75" /></svg>
               </button>
-              <button id="exportAllBtn" class="btn btn-secondary" title="Exportovať všetky projekty a výskumy do JSON">Export JSON</button>
+              <button id="exportAllBtn" class="btn btn-secondary icon-btn" title="Exportovať všetky projekty a výskumy do JSON" aria-label="Export JSON">
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path stroke-linecap="round" stroke-linejoin="round" d="M12 3v12m0 0l-3.5-3.5M12 15l3.5-3.5M5 21h14a2 2 0 002-2v-3H3v3a2 2 0 002 2z"/></svg>
+              </button>
             </div>
             <pre id="maketaOutput"></pre>
           </div>
@@ -86,9 +87,8 @@
         </div>
         <div class="panel-content">
           <div class="panel-tools">
-            <button id="addSectionBtn" class="btn btn-primary">
+            <button id="addSectionBtn" class="btn btn-primary icon-btn" title="Pridať sekciu" aria-label="Pridať sekciu">
               <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M12 9v6m3-3H9m12 0a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
-              <span>Pridať Sekciu</span>
             </button>
           </div>
           <div id="assembler-content"></div>
@@ -101,7 +101,9 @@
         </div>
         <div class="panel-content">
           <div class="panel-tools">
-            <button id="resetRhymesMainBtn" class="btn btn-secondary" title="Vymazať všetky analyzované rýmy">Vymazať rýmy</button>
+            <button id="resetRhymesMainBtn" class="btn btn-secondary icon-btn" title="Vymazať všetky analyzované rýmy" aria-label="Vymazať rýmy">
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path stroke-linecap="round" stroke-linejoin="round" d="M3 6h18M8 6V4h8v2m-1 0v14a2 2 0 01-2 2H9a2 2 0 01-2-2V6h10z"/></svg>
+            </button>
           </div>
           <div id="inspiration-palette"></div>
         </div>
@@ -134,14 +136,22 @@
       <div class="panel-header">
         <h2>Výskum & Zdrojový Materiál</h2>
         <div>
-          <button id="toggleResearchHighlightBtn" class="btn btn-secondary" title="Zapnúť/vypnúť zvýraznenie vo výskume">
+          <button id="toggleResearchHighlightBtn" class="btn btn-secondary icon-btn" title="Zapnúť/vypnúť zvýraznenie vo výskume" aria-label="Prepínač zvýraznenia výskumu">
             <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" fill="none"><path stroke-linecap="round" stroke-linejoin="round" d="M2.25 12c0 1.593.555 3.217 1.545 4.545a11.966 11.966 0 001.778 1.86c.637.57 1.586.538 2.18-.07l2.1-2.164a1.88 1.88 0 012.714 0l2.1 2.164c.594.608 1.543.64 2.18.07a11.966 11.966 0 001.778-1.86A9.708 9.708 0 0021.75 12c0-1.593-.555-3.217-1.545-4.545a11.966 11.966 0 00-1.778-1.86c-.637-.57-1.586-.538-2.18.07l-2.1 2.164a1.88 1.88 0 01-2.714 0l-2.1-2.164c-.594-.608-1.543-.64-2.18-.07a11.966 11.966 0 00-1.778 1.86A9.708 9.708 0 002.25 12z"/></svg>
             <span class="toggle-label">Highlight</span>
           </button>
-          <button id="analyzeRhymesBtn" class="btn btn-secondary">Analyzovať rýmy</button>
-          <button id="resetRhymesBtn" class="btn btn-secondary" title="Vymazať všetky analyzované rýmy">Vymazať rýmy</button>
-          <button id="addToPaletteBtn" class="btn">Pridať do Palety</button>
-          <button id="closeResearchBtn" class="btn btn-danger">Zatvoriť</button>
+          <button id="analyzeRhymesBtn" class="btn btn-secondary icon-btn" title="Analyzovať rýmy" aria-label="Analyzovať rýmy">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path stroke-linecap="round" stroke-linejoin="round" d="M4 16l4-4 4 4 4-4 4 4"/></svg>
+          </button>
+          <button id="resetRhymesBtn" class="btn btn-secondary icon-btn" title="Vymazať všetky analyzované rýmy" aria-label="Vymazať rýmy">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path stroke-linecap="round" stroke-linejoin="round" d="M3 6h18M8 6V4h8v2m-1 0v14a2 2 0 01-2 2H9a2 2 0 01-2-2V6h10z"/></svg>
+          </button>
+          <button id="addToPaletteBtn" class="btn icon-btn" title="Pridať označený text do Palety" aria-label="Pridať do Palety">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16M4 12h16"/></svg>
+          </button>
+          <button id="closeResearchBtn" class="btn btn-danger icon-btn" title="Zatvoriť" aria-label="Zatvoriť">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path stroke-linecap="round" stroke-linejoin="round" d="M6 6l12 12M18 6l-12 12"/></svg>
+          </button>
         </div>
       </div>
       <div class="panel-content">
