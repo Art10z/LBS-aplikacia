@@ -856,29 +856,41 @@ const Controller = {
         return out || '<span class=\"t\"></span>';
     },
     /**
-     * Render highlighting for immediate duplicate words: "word word".
-     * - Works per line (no cross-line matches)
-     * - Optionally ignores bracket-only lines like "[Verse]" (for importer-like inputs)
+     * UNIFIED DUPLICATE HIGHLIGHTING
+     * Používa DuplicateHighlighter modul pre konzistentnú detekciu
+     * Podporuje oba režimy: pair detection (word word) a all duplicates
      */
-    _renderWithDupePairs(text, { ignoreBracketLines = false } = {}) {
+    _renderWithDupePairs(text, { ignoreBracketLines = false, mode = 'pairs' } = {}) {
         if (!text) return '<span class="t"></span>';
-        const lines = text.split('\n');
 
-        // Regex: (word)(spaces)(same word) — case-insensitive, Unicode letters with optional hyphen/apostrophe segments
+        // Ak DuplicateHighlighter nie je dostupný, použije sa fallback
+        if (mode === 'all' && window.DuplicateHighlighter) {
+            try {
+                const highlighter = new window.DuplicateHighlighter();
+                const duplicates = highlighter.findDuplicates(text);
+                if (duplicates.length > 0) {
+                    // Použije highlightInHTML ale s escape pre bezpečnosť
+                    return highlighter.highlightInHTML(text, duplicates);
+                }
+            } catch (error) {
+                console.warn('DuplicateHighlighter error, using fallback:', error);
+            }
+        }
+
+        // FALLBACK: Pôvodná pair detection (word word)
+        const lines = text.split('\n');
         const dupeRE = this._getDupePairRegex();
         const HEADING_WORDS = ['intro','verse','chorus','refrén','bridge','most','outro','pre-chorus','predrefrén','prechorus','tag','solo','interlude'];
+        
         const isHeadingLine = (raw) => {
             const t = raw.trim();
             if (!t) return false;
-            // [Verse], [Verse 1], etc.
             if (/^\[[^\]]+\]$/.test(t)) return true;
-            // Verse:, Chorus 2:, Refrén:
             const headingRe = this._hasUnicodeProps ? /^[\p{L}\p{N} .#\-]+:\s*$/u : /^[A-Za-z0-9À-ÖØ-öø-ÿĀ-ž .#\-]+:\s*$/;
             if (headingRe.test(t)) {
                 const base = t.replace(/:\s*$/, '').replace(/\s*\d+$/, '').toLowerCase();
                 if (HEADING_WORDS.includes(base)) return true;
             }
-            // Plain heading word with optional number ("Verse 1")
             const base = t.replace(/\s*\d+$/, '').toLowerCase();
             if (HEADING_WORDS.includes(base)) return true;
             return false;
@@ -889,7 +901,6 @@ const Controller = {
             const line = lines[i];
             const trimmed = line.trim();
             if (ignoreBracketLines && isHeadingLine(trimmed)) {
-                // Output as-is (transparent text on layer), no highlights
                 out += this._escapeHtml(line);
             } else {
                 let last = 0; let m;
@@ -900,17 +911,15 @@ const Controller = {
                     const gap = m[3];
                     const secondToken = m[4];
                     if (start > last) out += this._escapeHtml(line.slice(last, start));
-                    // Emit first token + gap as normal text (transparent on layer)
                     out += this._escapeHtml(firstToken + gap);
-                    // Highlight only the second token
                     out += `<span class="duppair">${this._escapeHtml(secondToken)}</span>`;
                     last = end;
-                    if (dupeRE.lastIndex <= start) dupeRE.lastIndex = start + 1; // safety
+                    if (dupeRE.lastIndex <= start) dupeRE.lastIndex = start + 1;
                 }
                 if (last < line.length) out += this._escapeHtml(line.slice(last));
             }
             if (i < lines.length - 1) out += '\n';
-            dupeRE.lastIndex = 0; // reset for next line
+            dupeRE.lastIndex = 0;
         }
         return out || '<span class="t"></span>';
     },
@@ -1218,14 +1227,12 @@ const Controller = {
     },
 
     // =================================================================================
-    // TEXT IMPORTER ENHANCEMENTS - Duplicate Highlighting & Project Comparison
+    // TEXT IMPORTER ENHANCEMENTS - Uses unified duplicate detection system
     // =================================================================================
 
     /**
      * Inicializuje rozšírené funkcie pre Text Importér
-     * - Detekcia a zvýrazňovanie duplikovaných slov
-     * - Možnosť nahradenia duplikátov
-     * - Štatistiky o duplikátoch
+     * Používa unified _renderWithDupePairs() systém
      */
     enhanceTextImporter() {
         const sourceInput = View.dom.sourceInput;
@@ -1239,10 +1246,6 @@ const Controller = {
             console.log('Importer toolbar already exists');
             return;
         }
-
-        // Vytvor inštanciu highlightera
-        const highlighter = new window.DuplicateHighlighter();
-        let currentDuplicates = [];
 
         // Vytvor toolbar s tlačidlami
         const toolbar = document.createElement('div');
@@ -1260,7 +1263,7 @@ const Controller = {
         // Vlož toolbar pod source input
         sourceInput.parentElement.appendChild(toolbar);
 
-        // Event handler: Zvýrazniť duplikáty
+        // Event handler: Zvýrazniť duplikáty - používa unified systém
         document.getElementById('highlight-duplicates-btn').addEventListener('click', () => {
             const text = sourceInput.value;
             if (!text.trim()) {
@@ -1268,21 +1271,21 @@ const Controller = {
                 return;
             }
 
-            currentDuplicates = highlighter.findDuplicates(text);
-            const stats = highlighter.getStatistics(text);
-
-            // Aktualizuj počítadlo
+            // Použije unified _renderWithDupePairs() v režime 'all'
+            const result = this._renderWithDupePairs(text, 'all');
             const counter = document.getElementById('duplicate-count');
-            if (currentDuplicates.length > 0) {
-                counter.textContent = `⚠️ ${currentDuplicates.length} duplikátov`;
+            
+            if (result.count > 0) {
+                counter.textContent = `⚠️ ${result.count} duplikátov`;
                 counter.className = 'duplicate-counter warning';
+                
+                // Zobraz preview
+                this._showImporterPreview(result.html, result.duplicates || []);
             } else {
                 counter.textContent = '✅ Bez duplikátov';
                 counter.className = 'duplicate-counter success';
+                showNotification('Text neobsahuje duplikované slová', 'success');
             }
-
-            // Zobraz preview s highlighted textom
-            this._showHighlightPreview(text, currentDuplicates, highlighter, stats);
         });
 
         // Event handler: Zobraz report
@@ -1293,81 +1296,40 @@ const Controller = {
                 return;
             }
 
-            if (currentDuplicates.length === 0) {
-                currentDuplicates = highlighter.findDuplicates(text);
+            // Získaj duplicates cez unified systém
+            const result = this._renderWithDupePairs(text, 'all');
+            
+            if (result.count > 0) {
+                this._showImporterReport(result.duplicates || [], text, sourceInput);
+            } else {
+                showNotification('Text neobsahuje duplikované slová', 'info');
             }
-
-            const report = highlighter.generateReport(currentDuplicates);
-            const stats = highlighter.getStatistics(text);
-            this._showDuplicateReport(report, currentDuplicates, stats, sourceInput, highlighter);
         });
 
-        console.log('✅ Text Importer enhanced with duplicate detection');
+        console.log('✅ Text Importer enhanced (unified system)');
     },
 
     /**
-     * Zobrazí modal s preview zvýraznených duplikátov
+     * Zobrazí preview zvýraznených duplikátov v importéri
      */
-    _showHighlightPreview(text, duplicates, highlighter, stats) {
+    _showImporterPreview(html, duplicates) {
         const modal = document.createElement('div');
         modal.className = 'highlight-preview-modal';
         modal.innerHTML = `
             <div class="modal-content">
                 <button class="modal-close">×</button>
                 <h3>🔍 Duplikované slová - Preview</h3>
-                <div class="preview-stats" style="background: #e8f5e9; padding: 15px; border-radius: 8px; margin-bottom: 20px;">
-                    <p><strong>📊 Štatistiky:</strong></p>
-                    <p>Celkový počet slov: <strong>${stats.totalWords}</strong></p>
-                    <p>Unikátne slová: <strong>${stats.uniqueWords}</strong></p>
-                    <p>Typy duplikátov: <strong>${stats.duplicateTypes}</strong></p>
-                    <p>Opakovaní celkom: <strong>${stats.duplicateInstances}</strong></p>
-                    <p>Miera opakovania: <strong>${stats.repetitionRate}%</strong></p>
-                    <p>Bohatosť slovníka: <strong>${stats.vocabularyRichness}%</strong></p>
-                </div>
-                <div class="preview-text">${highlighter.highlightInHTML(text, duplicates)}</div>
-                <div class="preview-legend">
-                    <span class="legend-item">
-                        <mark class="duplicate-word">označené</mark> = duplikované slovo (hover pre počet)
-                    </span>
-                </div>
-            </div>
-        `;
-        
-        document.body.appendChild(modal);
-
-        // Close handler
-        modal.querySelector('.modal-close').addEventListener('click', () => {
-            modal.remove();
-        });
-
-        // Close on backdrop click
-        modal.addEventListener('click', (e) => {
-            if (e.target === modal) {
-                modal.remove();
-            }
-        });
-    },
-
-    /**
-     * Zobrazí modal s detailným reportom o duplikátoch
-     */
-    _showDuplicateReport(report, duplicates, stats, sourceInput, highlighter) {
-        const modal = document.createElement('div');
-        modal.className = 'duplicate-report-modal';
-        modal.innerHTML = `
-            <div class="modal-content">
-                <button class="modal-close">×</button>
-                <h3>📊 Report Duplikátov</h3>
-                <pre class="report-text">${report}</pre>
+                <div class="preview-text">${html}</div>
                 ${duplicates.length > 0 ? `
                     <div class="duplicate-list">
-                        ${duplicates.map(([word, count]) => `
-                            <div class="duplicate-item">
+                        ${duplicates.slice(0, 10).map(([word, count], idx) => `
+                            <div class="dup-item">
+                                <span class="rank">${idx + 1}</span>
                                 <span class="word">${word}</span>
                                 <span class="count">${count}×</span>
-                                <button class="replace-btn" data-word="${word}">🔄 Nahradiť</button>
                             </div>
                         `).join('')}
+                        ${duplicates.length > 10 ? `<p style="text-align: center; color: #718096; margin-top: 16px;">... a ďalších ${duplicates.length - 10} duplikátov</p>` : ''}
                     </div>
                 ` : ''}
             </div>
@@ -1375,27 +1337,64 @@ const Controller = {
         
         document.body.appendChild(modal);
 
-        // Close handler
-        modal.querySelector('.modal-close').addEventListener('click', () => {
-            modal.remove();
-        });
-
-        // Close on backdrop click
+        modal.querySelector('.modal-close').addEventListener('click', () => modal.remove());
         modal.addEventListener('click', (e) => {
-            if (e.target === modal) {
-                modal.remove();
-            }
+            if (e.target === modal) modal.remove();
+        });
+    },
+
+    /**
+     * Zobrazí detailný report o duplikátoch v importéri
+     */
+    _showImporterReport(duplicates, text, sourceInput) {
+        const modal = document.createElement('div');
+        modal.className = 'duplicate-report-modal';
+        
+        const totalWords = text.split(/\s+/).filter(w => w.length > 0).length;
+        const uniqueWords = new Set(text.toLowerCase().match(/\b[\p{L}\p{N}'-]+\b/gu) || []).size;
+        
+        modal.innerHTML = `
+            <div class="modal-content">
+                <div class="duplicate-report">
+                    <div class="report-header">
+                        <h3>📊 Report Duplikátov</h3>
+                        <span class="total-badge">${duplicates.length} typov duplikátov</span>
+                    </div>
+                    <div style="padding: 20px; background: #f7fafc; border-bottom: 1px solid #e2e8f0;">
+                        <p style="margin: 8px 0; color: #4a5568;"><strong>Celkový počet slov:</strong> ${totalWords}</p>
+                        <p style="margin: 8px 0; color: #4a5568;"><strong>Unikátne slová:</strong> ${uniqueWords}</p>
+                        <p style="margin: 8px 0; color: #4a5568;"><strong>Bohatosť slovníka:</strong> ${((uniqueWords / totalWords) * 100).toFixed(1)}%</p>
+                    </div>
+                    <div class="duplicate-list">
+                        ${duplicates.map(([word, count], idx) => `
+                            <div class="dup-item">
+                                <span class="rank">${idx + 1}</span>
+                                <span class="word">${word}</span>
+                                <span class="count">${count}×</span>
+                                <button class="action-btn replace" data-word="${word}">Nahradiť</button>
+                            </div>
+                        `).join('')}
+                    </div>
+                </div>
+                <button class="modal-close">×</button>
+            </div>
+        `;
+        
+        document.body.appendChild(modal);
+
+        modal.querySelector('.modal-close').addEventListener('click', () => modal.remove());
+        modal.addEventListener('click', (e) => {
+            if (e.target === modal) modal.remove();
         });
 
         // Replace word handlers
-        modal.querySelectorAll('.replace-btn').forEach(btn => {
+        modal.querySelectorAll('.action-btn.replace').forEach(btn => {
             btn.addEventListener('click', () => {
                 const word = btn.dataset.word;
                 const replacement = prompt(`Nahradiť "${word}" za:`);
                 if (replacement && replacement.trim()) {
-                    const text = sourceInput.value;
                     const regex = new RegExp(`\\b${word}\\b`, 'gi');
-                    sourceInput.value = text.replace(regex, replacement.trim());
+                    sourceInput.value = sourceInput.value.replace(regex, replacement.trim());
                     showNotification(`✅ Nahradené: "${word}" → "${replacement}"`);
                     modal.remove();
                     this.markDirty();
