@@ -5,7 +5,6 @@ import { MAX_BAR_LENGTH } from './constants.js';
 import * as Storage from './storage.js';
 import { showNotification, debounce, showLoading, hideLoading } from './utils.js';
 import { RhymeAnalyzer } from './rhymeAnalyzer.js';
-import { initUnifiedAnalyzer } from './unifiedAnalysis.js';
 
 // =================================================================================
 // CONTROLLER ("The Conductor" / "Dirigent")
@@ -42,7 +41,6 @@ const Controller = {
         this._loadResearchForActive();
         this._initHighlightToggle();
         this._initResearchHighlightToggle();
-    this._initUnifiedAnalysis();
     },
 
     _readProjectFromURL() {
@@ -63,82 +61,6 @@ const Controller = {
             }
         } catch (e) { /* ignore */ }
         return null;
-    },
-
-    // ========= Unified Analysis (global overlay) =========
-    _initUnifiedAnalysis() {
-        const overlay = View.dom.analysisOverlay;
-        const layer = View.dom.analysisLayer;
-        if (!overlay || !layer) return;
-
-        const getCanvasText = () => {
-            const lines = [];
-            const bars = View.dom.assemblerContent?.querySelectorAll('.bar-item textarea.bar-input');
-            if (bars) bars.forEach(ta => lines.push(ta.value || ''));
-            return lines.join('\n');
-        };
-        const getResearchText = () => View.dom.researchInput?.value || '';
-        const getText = () => this.analysisSource === 'canvas' ? getCanvasText() : getResearchText();
-
-        this._uaOverlay = initUnifiedAnalyzer({
-            getText,
-            layerEl: layer,
-            mode: 'duplicates',
-            debounceMs: 220
-        });
-
-        // Open/close controls
-        View.dom.openAnalysisBtn?.addEventListener('click', () => {
-            overlay.classList.remove('hidden');
-            // Default active states on open
-            this._setActive(View.dom.analysisSourceCanvasBtn, [View.dom.analysisSourceResearchBtn]);
-            this._setActive(View.dom.analysisModeDupBtn, [View.dom.analysisModeRhymeBtn]);
-            this.analysisSource = 'canvas';
-            this._uaOverlay?.setMode('duplicates');
-            this._uaOverlay?.update();
-        });
-        View.dom.closeAnalysisBtn?.addEventListener('click', () => overlay.classList.add('hidden'));
-
-        // Source switches
-        View.dom.analysisSourceCanvasBtn?.addEventListener('click', () => {
-            this.analysisSource = 'canvas';
-            this._setActive(View.dom.analysisSourceCanvasBtn, [View.dom.analysisSourceResearchBtn]);
-            this._uaOverlay?.update();
-        });
-        View.dom.analysisSourceResearchBtn?.addEventListener('click', () => {
-            this.analysisSource = 'research';
-            this._setActive(View.dom.analysisSourceResearchBtn, [View.dom.analysisSourceCanvasBtn]);
-            this._uaOverlay?.update();
-        });
-
-        // Mode switches
-        View.dom.analysisModeRhymeBtn?.addEventListener('click', () => {
-            this._uaOverlay?.setMode('rhyme');
-            this._setActive(View.dom.analysisModeRhymeBtn, [View.dom.analysisModeDupBtn]);
-            this._uaOverlay?.update();
-        });
-        View.dom.analysisModeDupBtn?.addEventListener('click', () => {
-            this._uaOverlay?.setMode('duplicates');
-            this._setActive(View.dom.analysisModeDupBtn, [View.dom.analysisModeRhymeBtn]);
-            this._uaOverlay?.update();
-        });
-
-        // Auto-refresh analyzer when source texts change (only if overlay visible)
-        const maybeRefresh = () => {
-            if (!overlay.classList.contains('hidden')) this._uaOverlay?.update();
-        };
-        View.dom.assemblerContent?.addEventListener('input', (e) => {
-            if (e.target && e.target.classList && e.target.classList.contains('bar-input')) {
-                maybeRefresh();
-            }
-        });
-        View.dom.researchInput?.addEventListener('input', () => maybeRefresh());
-    },
-
-    _setActive(activeBtn, others = []) {
-        if (!activeBtn) return;
-        activeBtn.classList.add('active');
-        others.forEach(b => b && b.classList.remove('active'));
     },
 
     _attachEventListeners() {
