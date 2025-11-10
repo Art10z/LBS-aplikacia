@@ -119,14 +119,26 @@ body {
 .panel-content { padding: 12px; overflow-y: auto; }
 
 /* PANEL VSTUPU A VÝSTUPU */
-.source-content { display: flex; flex-direction: column; flex-grow: 1; }
+.source-content { 
+    display: flex; 
+    flex-direction: column; 
+    flex-grow: 1; 
+    position: relative;
+    background-color: var(--bg-input);
+    border-radius: 5px;
+}
 #source-input {
     width: 100%;
-    background-color: var(--bg-input);
+    background: transparent;
     border: 1px solid var(--border-color);
-    border-radius: 5px; color: var(--text-primary);
-    padding: 8px; font-family: var(--font-mono); font-size: 0.85rem;
+    border-radius: 5px; 
+    color: var(--text-primary);
+    padding: 8px; 
+    font-family: var(--font-mono); 
+    font-size: 0.85rem;
     resize: none;
+    position: relative;
+    z-index: 1;
 }
 #source-input:focus { outline: none; border-color: var(--accent-primary); box-shadow: 0 0 0 3px var(--accent-glow); }
 
@@ -427,6 +439,10 @@ html, .panel-content, #maketaOutput, #project-list, #research-input {
     word-break: break-word;
     overflow: hidden;
     z-index: 0;
+}
+/* Adjust for source-input which has different padding */
+.source-content > .hl-layer {
+    inset: 9px 9px; /* match #source-input padding (8px + 1px border) */
 }
 .hl-layer .t { color: transparent; }
 .hl-layer .dup2 {

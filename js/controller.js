@@ -41,6 +41,7 @@ const Controller = {
         this._loadResearchForActive();
         this._initHighlightToggle();
         this._initResearchHighlightToggle();
+        this._initSourceImporterHighlight();
     },
 
     _readProjectFromURL() {
@@ -88,6 +89,15 @@ const Controller = {
         }
         if (View.dom.addTemplateTagBtn) {
             View.dom.addTemplateTagBtn.addEventListener('click', () => this._insertTextAtCursor(View.dom.sourceInput, '[ Značka ]'));
+        }
+        
+        // Source input (Importér) - add highlighting for duplicates
+        if (View.dom.sourceInput) {
+            View.dom.sourceInput.addEventListener('input', () => {
+                try {
+                    this._scheduleTAHighlight(View.dom.sourceInput);
+                } catch (e) { /* ignore */ }
+            });
         }
         
         document.addEventListener('keydown', e => this._handleGlobalKeyDown(e));
@@ -1080,6 +1090,14 @@ const Controller = {
         try { localStorage.setItem('lbs_highlight_research_enabled', this.highlightResearchEnabled ? '1' : '0'); } catch {}
         this._applyResearchHighlightUIState();
         if (this.highlightResearchEnabled) this._scheduleHighlights();
+    },
+
+    // Source Importer (Importér Textu) highlight initialization
+    _initSourceImporterHighlight() {
+        if (View.dom.sourceInput) {
+            // Initial highlight render
+            this._scheduleTAHighlight(View.dom.sourceInput);
+        }
     },
 
     // NEW PROJECT TABS LOGIC
