@@ -1,0 +1,407 @@
+/**
+ * ANALYSIS PANEL STYLES
+ * Dark theme prispôsobené pre tmavé rozhranie aplikácie
+ * @version 1.0
+ */
+
+/* ================================
+   ANALYSIS BUTTON
+   ================================ */
+.analysis-trigger-btn {
+    margin-left: 8px;
+    font-size: 13px;
+}
+
+/* ================================
+   ANALYSIS MODAL
+   ================================ */
+.analysis-modal,
+.highlight-preview-modal {
+    position: fixed;
+    inset: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: rgba(0, 0, 0, 0.85);
+    backdrop-filter: blur(4px);
+    z-index: 10000;
+    padding: 20px;
+    animation: fadeIn 0.2s ease;
+}
+
+.analysis-modal .modal-content,
+.highlight-preview-modal .modal-content {
+    width: 100%;
+    max-width: 1000px;
+    background: #1e293b;
+    color: #e2e8f0;
+    border-radius: 12px;
+    border: 1px solid #334155;
+    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.7);
+    overflow: hidden;
+    animation: slideUp 0.3s ease;
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; }
+    to { opacity: 1; }
+}
+
+@keyframes slideUp {
+    from {
+        transform: translateY(20px);
+        opacity: 0;
+    }
+    to {
+        transform: translateY(0);
+        opacity: 1;
+    }
+}
+
+/* Modal header */
+.analysis-modal h3,
+.highlight-preview-modal h3 {
+    margin: 0;
+    padding: 18px 60px 18px 20px;
+    background: #0f172a;
+    font-size: 17px;
+    font-weight: 600;
+    color: #f1f5f9;
+    border-bottom: 1px solid #334155;
+}
+
+/* Modal close button */
+.analysis-modal .modal-close,
+.highlight-preview-modal .modal-close {
+    position: absolute;
+    right: 14px;
+    top: 14px;
+    width: 32px;
+    height: 32px;
+    background: #ef4444;
+    color: white;
+    border-radius: 50%;
+    border: none;
+    font-size: 20px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.2s ease;
+    z-index: 1;
+}
+
+.analysis-modal .modal-close:hover,
+.highlight-preview-modal .modal-close:hover {
+    background: #dc2626;
+    transform: scale(1.1);
+}
+
+/* ================================
+   ANALYSIS BODY LAYOUT
+   ================================ */
+.analysis-body {
+    display: flex;
+    gap: 20px;
+    padding: 20px;
+    max-height: 70vh;
+}
+
+.analysis-left {
+    width: 400px;
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+}
+
+.analysis-right {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    min-width: 0;
+}
+
+.analysis-right h4 {
+    margin: 0;
+    padding: 0;
+    font-size: 14px;
+    font-weight: 600;
+    color: #cbd5e0;
+}
+
+/* ================================
+   ANALYSIS ACTIONS
+   ================================ */
+.analysis-actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+}
+
+.analysis-actions .tool-btn {
+    flex: 1;
+    min-width: 120px;
+    justify-content: center;
+    font-size: 12px;
+    padding: 9px 12px;
+}
+
+/* ================================
+   METRICS DISPLAY
+   ================================ */
+.analysis-metrics {
+    flex: 1;
+    overflow-y: auto;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.metrics-placeholder {
+    padding: 40px 20px;
+    text-align: center;
+    color: #64748b;
+    font-size: 13px;
+    background: #0f172a;
+    border-radius: 8px;
+    border: 1px dashed #334155;
+}
+
+.metrics-card {
+    padding: 16px;
+    background: #0f172a;
+    border-radius: 8px;
+    border: 1px solid #334155;
+    color: #cbd5e0;
+}
+
+.metrics-card h4 {
+    margin: 0 0 12px 0;
+    padding: 0;
+    font-size: 14px;
+    font-weight: 600;
+    color: #f1f5f9;
+}
+
+.metrics-table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+.metrics-table tr {
+    border-bottom: 1px solid #334155;
+}
+
+.metrics-table tr:last-child {
+    border-bottom: none;
+}
+
+.metrics-table td {
+    padding: 8px 0;
+    font-size: 13px;
+}
+
+.metrics-table td:first-child {
+    color: #94a3b8;
+}
+
+.metrics-table td:last-child {
+    text-align: right;
+    color: #f1f5f9;
+}
+
+/* Duplicates card */
+.duplicates-card {
+    background: rgba(251, 191, 36, 0.1);
+    border-color: rgba(251, 191, 36, 0.3);
+}
+
+.duplicate-summary {
+    margin: 8px 0;
+}
+
+.duplicate-mini-list {
+    margin-top: 12px;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+
+.dup-mini-item {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 8px 10px;
+    background: rgba(0, 0, 0, 0.3);
+    border-radius: 6px;
+    border-left: 2px solid transparent;
+    transition: all 0.15s ease;
+}
+
+.dup-mini-item:hover {
+    border-left-color: #fbbf24;
+    background: rgba(0, 0, 0, 0.5);
+}
+
+.dup-mini-item .rank {
+    width: 22px;
+    height: 22px;
+    border-radius: 50%;
+    background: #6366f1;
+    color: white;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 700;
+    font-size: 11px;
+    flex-shrink: 0;
+}
+
+.dup-mini-item .word {
+    flex: 1;
+    font-family: 'Consolas', 'Monaco', monospace;
+    font-size: 13px;
+    font-weight: 500;
+    color: #f1f5f9;
+}
+
+.dup-mini-item .count {
+    padding: 3px 8px;
+    border-radius: 12px;
+    background: rgba(251, 191, 36, 0.25);
+    color: #fbbf24;
+    font-weight: 600;
+    font-size: 11px;
+    border: 1px solid rgba(251, 191, 36, 0.4);
+}
+
+.more-info {
+    margin: 8px 0 0 0;
+    padding: 0;
+    text-align: center;
+    color: #64748b;
+    font-size: 12px;
+}
+
+/* Success card */
+.success-card {
+    background: rgba(74, 222, 128, 0.1);
+    border-color: rgba(74, 222, 128, 0.3);
+}
+
+.success-card p {
+    margin: 8px 0 0 0;
+    color: #4ade80;
+    font-size: 13px;
+}
+
+/* ================================
+   ANALYSIS PREVIEW
+   ================================ */
+.analysis-preview {
+    flex: 1;
+    background: #0f172a;
+    padding: 16px;
+    border-radius: 8px;
+    border: 1px solid #334155;
+    overflow-y: auto;
+    max-height: calc(70vh - 80px);
+    color: #cbd5e0;
+    font-size: 14px;
+    line-height: 1.7;
+    white-space: pre-wrap;
+    word-wrap: break-word;
+}
+
+/* Highlighted duplicates in preview */
+.analysis-preview .duplicate-word,
+.analysis-preview .dup-word {
+    background: rgba(251, 191, 36, 0.25);
+    padding: 2px 4px;
+    border-radius: 4px;
+    border-bottom: 2px solid #fbbf24;
+    color: inherit;
+    cursor: help;
+    transition: all 0.15s ease;
+}
+
+.analysis-preview .duplicate-word:hover,
+.analysis-preview .dup-word:hover {
+    background: rgba(251, 191, 36, 0.4);
+    border-bottom-color: #f59e0b;
+}
+
+/* ================================
+   LOADING & ERROR STATES
+   ================================ */
+.loading {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 40px 20px;
+    color: #94a3b8;
+    font-size: 14px;
+    background: #0f172a;
+    border-radius: 8px;
+    border: 1px solid #334155;
+}
+
+.error {
+    padding: 16px;
+    background: rgba(239, 68, 68, 0.1);
+    color: #fca5a5;
+    border-radius: 8px;
+    border: 1px solid rgba(239, 68, 68, 0.3);
+    font-weight: 500;
+    font-size: 13px;
+}
+
+/* ================================
+   RESPONSIVE
+   ================================ */
+@media (max-width: 900px) {
+    .analysis-body {
+        flex-direction: column;
+    }
+    
+    .analysis-left {
+        width: 100%;
+    }
+    
+    .analysis-right {
+        max-height: 300px;
+    }
+}
+
+@media (max-width: 600px) {
+    .analysis-modal .modal-content,
+    .highlight-preview-modal .modal-content {
+        max-width: 100%;
+        border-radius: 0;
+        height: 100%;
+        max-height: 100%;
+    }
+    
+    .analysis-actions {
+        flex-direction: column;
+    }
+    
+    .analysis-actions .tool-btn {
+        width: 100%;
+    }
+}
+
+/* ================================
+   ACCESSIBILITY
+   ================================ */
+@media (prefers-reduced-motion: reduce) {
+    .analysis-modal,
+    .highlight-preview-modal,
+    .modal-content,
+    .dup-mini-item,
+    .modal-close {
+        animation: none !important;
+        transition: none !important;
+    }
+}
