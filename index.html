@@ -26,12 +26,9 @@
       </div>
       <div class="header-right-controls">
         <span id="save-status" class="save-status"></span>
-      <button id="openAnalysisBtn" class="btn btn-secondary icon-btn" title="Analýza" aria-label="Analýza">
-        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path stroke-linecap="round" stroke-linejoin="round" d="M3 3v18h18M7 13l3 3 7-7"/></svg>
+      <button id="openUnifiedBtn" class="btn btn-secondary icon-btn" title="Výskum & Analýza" aria-label="Výskum & Analýza">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
       </button>
-        <button id="openResearchBtn" class="btn btn-secondary icon-btn" title="Výskum" aria-label="Výskum">
-           <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M12 6.042A8.967 8.967 0 006 3.75c-1.052 0-2.062.18-3 .512v14.25A8.987 8.987 0 006 18c2.305 0 4.408.867 6 2.292m0-14.25a8.966 8.966 0 016-2.292c1.052 0 2.062.18 3 .512v14.25A8.987 8.987 0 0018 18a8.967 8.967 0 00-6 2.292m0-14.25v14.25"/></svg>
-        </button>
       </div>
     </header>
 
@@ -132,63 +129,84 @@
     </div>
   </div>
 
-  <!-- Overlay pre výskum -->
-  <div id="research-overlay" class="research-overlay hidden">
-    <div class="research-panel">
+  <!-- Unified Research & Analysis Overlay with Tabs -->
+  <div id="unified-overlay" class="unified-overlay hidden">
+    <div class="unified-panel">
       <div class="panel-header">
-        <h2>Výskum & Zdrojový Materiál</h2>
-        <div>
-          <button id="toggleResearchHighlightBtn" class="btn btn-secondary icon-btn" title="Zapnúť/vypnúť zvýraznenie vo výskume" aria-label="Prepínač zvýraznenia výskumu">
-            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" fill="none"><path stroke-linecap="round" stroke-linejoin="round" d="M2.25 12c0 1.593.555 3.217 1.545 4.545a11.966 11.966 0 001.778 1.86c.637.57 1.586.538 2.18-.07l2.1-2.164a1.88 1.88 0 012.714 0l2.1 2.164c.594.608 1.543.64 2.18.07a11.966 11.966 0 001.778-1.86A9.708 9.708 0 0021.75 12c0-1.593-.555-3.217-1.545-4.545a11.966 11.966 0 00-1.778-1.86c-.637-.57-1.586-.538-2.18.07l-2.1 2.164a1.88 1.88 0 01-2.714 0l-2.1-2.164c-.594-.608-1.543-.64-2.18-.07a11.966 11.966 0 00-1.778 1.86A9.708 9.708 0 002.25 12z"/></svg>
-            <span class="toggle-label">Highlight</span>
-          </button>
-          <button id="analyzeRhymesBtn" class="btn btn-secondary icon-btn" title="Analyzovať rýmy" aria-label="Analyzovať rýmy">
-            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path stroke-linecap="round" stroke-linejoin="round" d="M4 16l4-4 4 4 4-4 4 4"/></svg>
-          </button>
-          <button id="resetRhymesBtn" class="btn btn-secondary icon-btn" title="Vymazať všetky analyzované rýmy" aria-label="Vymazať rýmy">
-            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path stroke-linecap="round" stroke-linejoin="round" d="M3 6h18M8 6V4h8v2m-1 0v14a2 2 0 01-2 2H9a2 2 0 01-2-2V6h10z"/></svg>
-          </button>
-          <button id="addToPaletteBtn" class="btn icon-btn" title="Pridať označený text do Palety" aria-label="Pridať do Palety">
-            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16M4 12h16"/></svg>
-          </button>
-          <button id="closeResearchBtn" class="btn btn-danger icon-btn" title="Zatvoriť" aria-label="Zatvoriť">
+        <h2>Výskum & Analýza</h2>
+        <div class="header-controls">
+          <button id="closeUnifiedBtn" class="btn btn-danger icon-btn" title="Zatvoriť" aria-label="Zatvoriť">
             <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path stroke-linecap="round" stroke-linejoin="round" d="M6 6l12 12M18 6l-12 12"/></svg>
           </button>
         </div>
       </div>
-      <div class="panel-content">
-        <textarea id="research-input" placeholder="Sem si vkladaj všetky poznámky, linky, úryvky a dáta z výskumu... Tento text sa automaticky ukladá."></textarea>
+      
+      <!-- Tab Navigation -->
+      <div class="tab-navigation">
+        <button id="researchTabBtn" class="tab-btn active" data-tab="research">
+          <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M12 6.042A8.967 8.967 0 006 3.75c-1.052 0-2.062.18-3 .512v14.25A8.987 8.987 0 006 18c2.305 0 4.408.867 6 2.292m0-14.25a8.966 8.966 0 016-2.292c1.052 0 2.062.18 3 .512v14.25A8.987 8.987 0 0018 18a8.967 8.967 0 00-6 2.292m0-14.25v14.25"/></svg>
+          <span>Výskum</span>
+        </button>
+        <button id="analysisTabBtn" class="tab-btn" data-tab="analysis">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path stroke-linecap="round" stroke-linejoin="round" d="M3 3v18h18M7 13l3 3 7-7"/></svg>
+          <span>Analýza</span>
+        </button>
       </div>
-    </div>
-  </div>
 
-  <!-- Overlay pre analýzu -->
-  <div id="analysis-overlay" class="analysis-overlay hidden">
-    <div class="analysis-panel">
-      <div class="panel-header">
-        <h2>Analytické okno</h2>
-        <div>
-          <!-- Prepínač zdroja: Plátno vs Výskum -->
-          <button id="analysisSourceCanvasBtn" class="btn btn-secondary icon-btn" title="Zdroj: Plátno" aria-label="Zdroj Plátno">
-            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path stroke-linecap="round" stroke-linejoin="round" d="M4 6h16v12H4zM8 10h8"/></svg>
-          </button>
-          <button id="analysisSourceResearchBtn" class="btn btn-secondary icon-btn" title="Zdroj: Výskum" aria-label="Zdroj Výskum">
-            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M12 6.042A8.967 8.967 0 006 3.75c-1.052 0-2.062.18-3 .512v14.25A8.987 8.987 0 006 18c2.305 0 4.408.867 6 2.292m0-14.25a8.966 8.966 0 016-2.292c1.052 0 2.062.18 3 .512v14.25A8.987 8.987 0 0018 18a8.967 8.967 0 00-6 2.292m0-14.25v14.25"/></svg>
-          </button>
-          <!-- Režim: Rým vs Duplikácie -->
-          <button id="analysisModeRhymeBtn" class="btn btn-secondary icon-btn" title="Režim: Rýmy" aria-label="Režim Rýmy">
-            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path stroke-linecap="round" stroke-linejoin="round" d="M4 16l4-4 4 4 4-4 4 4"/></svg>
-          </button>
-          <button id="analysisModeDupBtn" class="btn btn-secondary icon-btn" title="Režim: Duplikácie" aria-label="Režim Duplikácie">
-            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" fill="none"><path stroke-linecap="round" stroke-linejoin="round" d="M2.25 12c0 1.593.555 3.217 1.545 4.545a11.966 11.966 0 001.778 1.86c.637.57 1.586.538 2.18-.07l2.1-2.164a1.88 1.88 0 012.714 0l2.1 2.164c.594.608 1.543.64 2.18.07a11.966 11.966 0 001.778-1.86A9.708 9.708 0 002.25 12z"/></svg>
-          </button>
-          <button id="closeAnalysisBtn" class="btn btn-danger icon-btn" title="Zatvoriť" aria-label="Zatvoriť">
-            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path stroke-linecap="round" stroke-linejoin="round" d="M6 6l12 12M18 6l-12 12"/></svg>
-          </button>
+      <!-- Tab Content -->
+      <div class="tab-content">
+        <!-- Research Tab -->
+        <div id="researchTab" class="tab-pane active">
+          <div class="tab-toolbar">
+            <button id="toggleResearchHighlightBtn" class="btn btn-secondary icon-btn" title="Zapnúť/vypnúť zvýraznenie vo výskume" aria-label="Prepínač zvýraznenia výskumu">
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" fill="none"><path stroke-linecap="round" stroke-linejoin="round" d="M2.25 12c0 1.593.555 3.217 1.545 4.545a11.966 11.966 0 001.778 1.86c.637.57 1.586.538 2.18-.07l2.1-2.164a1.88 1.88 0 012.714 0l2.1 2.164c.594.608 1.543.64 2.18.07a11.966 11.966 0 001.778-1.86A9.708 9.708 0 0021.75 12c0-1.593-.555-3.217-1.545-4.545a11.966 11.966 0 00-1.778-1.86c-.637-.57-1.586-.538-2.18.07l-2.1-2.164a1.88 1.88 0 01-2.714 0l-2.1-2.164c-.594-.608-1.543-.64-2.18-.07a11.966 11.966 0 00-1.778 1.86A9.708 9.708 0 002.25 12z"/></svg>
+            </button>
+            <button id="analyzeRhymesBtn" class="btn btn-secondary icon-btn" title="Analyzovať rýmy" aria-label="Analyzovať rýmy">
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path stroke-linecap="round" stroke-linejoin="round" d="M4 16l4-4 4 4 4-4 4 4"/></svg>
+            </button>
+            <button id="resetRhymesBtn" class="btn btn-secondary icon-btn" title="Vymazať všetky analyzované rýmy" aria-label="Vymazať rýmy">
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path stroke-linecap="round" stroke-linejoin="round" d="M3 6h18M8 6V4h8v2m-1 0v14a2 2 0 01-2 2H9a2 2 0 01-2-2V6h10z"/></svg>
+            </button>
+            <button id="addToPaletteBtn" class="btn icon-btn" title="Pridať označený text do Palety" aria-label="Pridať do Palety">
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16M4 12h16"/></svg>
+            </button>
+          </div>
+          <div class="tab-pane-content">
+            <textarea id="research-input" placeholder="Sem si vkladaj všetky poznámky, linky, úryvky a dáta z výskumu... Tento text sa automaticky ukladá."></textarea>
+          </div>
         </div>
-      </div>
-      <div class="panel-content">
-        <div id="analysis-layer" class="ua-layer"></div>
+
+        <!-- Analysis Tab -->
+        <div id="analysisTab" class="tab-pane">
+          <div class="tab-toolbar">
+            <!-- Prepínač zdroja: Plátno vs Výskum -->
+            <div class="btn-group">
+              <button id="analysisSourceCanvasBtn" class="btn btn-secondary icon-btn active" title="Zdroj: Plátno" aria-label="Zdroj Plátno">
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path stroke-linecap="round" stroke-linejoin="round" d="M4 6h16v12H4zM8 10h8"/></svg>
+                <span class="btn-label">Plátno</span>
+              </button>
+              <button id="analysisSourceResearchBtn" class="btn btn-secondary icon-btn" title="Zdroj: Výskum" aria-label="Zdroj Výskum">
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M12 6.042A8.967 8.967 0 006 3.75c-1.052 0-2.062.18-3 .512v14.25A8.987 8.987 0 006 18c2.305 0 4.408.867 6 2.292m0-14.25a8.966 8.966 0 016-2.292c1.052 0 2.062.18 3 .512v14.25A8.987 8.987 0 0018 18a8.967 8.967 0 00-6 2.292m0-14.25v14.25"/></svg>
+                <span class="btn-label">Výskum</span>
+              </button>
+            </div>
+            <div class="toolbar-divider"></div>
+            <!-- Režim: Rým vs Duplikácie -->
+            <div class="btn-group">
+              <button id="analysisModeRhymeBtn" class="btn btn-secondary icon-btn" title="Režim: Rýmy" aria-label="Režim Rýmy">
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path stroke-linecap="round" stroke-linejoin="round" d="M4 16l4-4 4 4 4-4 4 4"/></svg>
+                <span class="btn-label">Rýmy</span>
+              </button>
+              <button id="analysisModeDupBtn" class="btn btn-secondary icon-btn active" title="Režim: Duplikácie" aria-label="Režim Duplikácie">
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" fill="none"><path stroke-linecap="round" stroke-linejoin="round" d="M2.25 12c0 1.593.555 3.217 1.545 4.545a11.966 11.966 0 001.778 1.86c.637.57 1.586.538 2.18-.07l2.1-2.164a1.88 1.88 0 012.714 0l2.1 2.164c.594.608 1.543.64 2.18.07a11.966 11.966 0 001.778-1.86A9.708 9.708 0 002.25 12z"/></svg>
+                <span class="btn-label">Duplikáty</span>
+              </button>
+            </div>
+          </div>
+          <div class="tab-pane-content">
+            <div id="analysis-layer" class="ua-layer"></div>
+          </div>
+        </div>
       </div>
     </div>
   </div>

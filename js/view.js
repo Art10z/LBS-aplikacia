@@ -39,10 +39,14 @@ const View = {
             exportAllBtn: document.getElementById('exportAllBtn'),
             toggleHighlightBtn: document.getElementById('toggleHighlightBtn'),
             toggleResearchHighlightBtn: document.getElementById('toggleResearchHighlightBtn'),
-            // Legacy per-panel unified analysis removed; new global analysis overlay
-            openAnalysisBtn: document.getElementById('openAnalysisBtn'),
-            analysisOverlay: document.getElementById('analysis-overlay'),
-            closeAnalysisBtn: document.getElementById('closeAnalysisBtn'),
+            // NEW: Unified overlay v4.0
+            openUnifiedBtn: document.getElementById('openUnifiedBtn'),
+            unifiedOverlay: document.getElementById('unified-overlay'),
+            closeUnifiedBtn: document.getElementById('closeUnifiedBtn'),
+            researchTabBtn: document.getElementById('researchTabBtn'),
+            analysisTabBtn: document.getElementById('analysisTabBtn'),
+            researchTab: document.getElementById('researchTab'),
+            analysisTab: document.getElementById('analysisTab'),
             analysisSourceCanvasBtn: document.getElementById('analysisSourceCanvasBtn'),
             analysisSourceResearchBtn: document.getElementById('analysisSourceResearchBtn'),
             analysisModeRhymeBtn: document.getElementById('analysisModeRhymeBtn'),

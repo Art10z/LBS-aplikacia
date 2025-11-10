@@ -104,11 +104,23 @@ const Controller = {
             View.dom.assemblerContent.addEventListener('dragend', () => this._handleDragEnd());
         }
 
-        if (View.dom.openResearchBtn) {
-            View.dom.openResearchBtn.addEventListener('click', () => View.dom.researchOverlay.classList.remove('hidden'));
+        if (View.dom.openUnifiedBtn) {
+            View.dom.openUnifiedBtn.addEventListener('click', () => {
+                View.dom.unifiedOverlay.classList.remove('hidden');
+                // Default to Research tab
+                this._switchTab('research');
+            });
         }
-        if (View.dom.closeResearchBtn) {
-            View.dom.closeResearchBtn.addEventListener('click', () => View.dom.researchOverlay.classList.add('hidden'));
+        if (View.dom.closeUnifiedBtn) {
+            View.dom.closeUnifiedBtn.addEventListener('click', () => View.dom.unifiedOverlay.classList.add('hidden'));
+        }
+        
+        // Tab switching
+        if (View.dom.researchTabBtn) {
+            View.dom.researchTabBtn.addEventListener('click', () => this._switchTab('research'));
+        }
+        if (View.dom.analysisTabBtn) {
+            View.dom.analysisTabBtn.addEventListener('click', () => this._switchTab('analysis'));
         }
         if (View.dom.researchInput) {
             View.dom.researchInput.addEventListener('input', () => {
@@ -159,13 +171,25 @@ const Controller = {
             this._performManualSave();
         }
         if (e.key === 'Escape') {
-            // Close whichever overlay is open (analysis takes priority)
-            if (View.dom.analysisOverlay && !View.dom.analysisOverlay.classList.contains('hidden')) {
-                View.dom.analysisOverlay.classList.add('hidden');
-            } else if (View.dom.researchOverlay && !View.dom.researchOverlay.classList.contains('hidden')) {
-                View.dom.researchOverlay.classList.add('hidden');
+            // Close unified overlay
+            if (View.dom.unifiedOverlay && !View.dom.unifiedOverlay.classList.contains('hidden')) {
+                View.dom.unifiedOverlay.classList.add('hidden');
             }
         }
+    },
+    
+    _switchTab(tabName) {
+        // Switch between 'research' and 'analysis' tabs
+        const tabs = { research: View.dom.researchTab, analysis: View.dom.analysisTab };
+        const buttons = { research: View.dom.researchTabBtn, analysis: View.dom.analysisTabBtn };
+        
+        // Hide all tabs and deactivate buttons
+        Object.values(tabs).forEach(tab => tab && tab.classList.remove('active'));
+        Object.values(buttons).forEach(btn => btn && btn.classList.remove('active'));
+        
+        // Show selected tab and activate button
+        if (tabs[tabName]) tabs[tabName].classList.add('active');
+        if (buttons[tabName]) buttons[tabName].classList.add('active');
     },
     
     _markAsDirty() {
