@@ -42,6 +42,12 @@ const Controller = {
         this._initHighlightToggle();
         this._initResearchHighlightToggle();
         this._initSourceImporterHighlight();
+        
+        // Inicializuj nové funkcie po načítaní DOM
+        setTimeout(() => {
+            this.enhanceTextImporter();
+            this.initProjectComparator();
+        }, 500);
     },
 
     _readProjectFromURL() {
@@ -1209,6 +1215,318 @@ const Controller = {
             this._updateAllViews();
             showNotification(`Projekt premenovaný na "${newName}".`);
         }
+    },
+
+    // =================================================================================
+    // TEXT IMPORTER ENHANCEMENTS - Duplicate Highlighting & Project Comparison
+    // =================================================================================
+
+    /**
+     * Inicializuje rozšírené funkcie pre Text Importér
+     * - Detekcia a zvýrazňovanie duplikovaných slov
+     * - Možnosť nahradenia duplikátov
+     * - Štatistiky o duplikátoch
+     */
+    enhanceTextImporter() {
+        const sourceInput = View.dom.sourceInput;
+        if (!sourceInput) {
+            console.warn('Source input not found - skipping enhanceTextImporter');
+            return;
+        }
+
+        // Skontroluj či už toolbar neexistuje
+        if (document.querySelector('.importer-toolbar')) {
+            console.log('Importer toolbar already exists');
+            return;
+        }
+
+        // Vytvor inštanciu highlightera
+        const highlighter = new window.DuplicateHighlighter();
+        let currentDuplicates = [];
+
+        // Vytvor toolbar s tlačidlami
+        const toolbar = document.createElement('div');
+        toolbar.className = 'importer-toolbar';
+        toolbar.innerHTML = `
+            <button id="highlight-duplicates-btn" class="tool-btn" title="Analyzuje text a zvýrazní všetky duplikované slová">
+                🔍 Zvýrazniť Duplikáty
+            </button>
+            <button id="show-duplicate-report-btn" class="tool-btn" title="Zobrazí detailný report o duplikátoch">
+                📊 Report Duplikátov
+            </button>
+            <span id="duplicate-count" class="duplicate-counter"></span>
+        `;
+
+        // Vlož toolbar pod source input
+        sourceInput.parentElement.appendChild(toolbar);
+
+        // Event handler: Zvýrazniť duplikáty
+        document.getElementById('highlight-duplicates-btn').addEventListener('click', () => {
+            const text = sourceInput.value;
+            if (!text.trim()) {
+                showNotification('Text importér je prázdny', 'warning');
+                return;
+            }
+
+            currentDuplicates = highlighter.findDuplicates(text);
+            const stats = highlighter.getStatistics(text);
+
+            // Aktualizuj počítadlo
+            const counter = document.getElementById('duplicate-count');
+            if (currentDuplicates.length > 0) {
+                counter.textContent = `⚠️ ${currentDuplicates.length} duplikátov`;
+                counter.className = 'duplicate-counter warning';
+            } else {
+                counter.textContent = '✅ Bez duplikátov';
+                counter.className = 'duplicate-counter success';
+            }
+
+            // Zobraz preview s highlighted textom
+            this._showHighlightPreview(text, currentDuplicates, highlighter, stats);
+        });
+
+        // Event handler: Zobraz report
+        document.getElementById('show-duplicate-report-btn').addEventListener('click', () => {
+            const text = sourceInput.value;
+            if (!text.trim()) {
+                showNotification('Text importér je prázdny', 'warning');
+                return;
+            }
+
+            if (currentDuplicates.length === 0) {
+                currentDuplicates = highlighter.findDuplicates(text);
+            }
+
+            const report = highlighter.generateReport(currentDuplicates);
+            const stats = highlighter.getStatistics(text);
+            this._showDuplicateReport(report, currentDuplicates, stats, sourceInput, highlighter);
+        });
+
+        console.log('✅ Text Importer enhanced with duplicate detection');
+    },
+
+    /**
+     * Zobrazí modal s preview zvýraznených duplikátov
+     */
+    _showHighlightPreview(text, duplicates, highlighter, stats) {
+        const modal = document.createElement('div');
+        modal.className = 'highlight-preview-modal';
+        modal.innerHTML = `
+            <div class="modal-content">
+                <button class="modal-close">×</button>
+                <h3>🔍 Duplikované slová - Preview</h3>
+                <div class="preview-stats" style="background: #e8f5e9; padding: 15px; border-radius: 8px; margin-bottom: 20px;">
+                    <p><strong>📊 Štatistiky:</strong></p>
+                    <p>Celkový počet slov: <strong>${stats.totalWords}</strong></p>
+                    <p>Unikátne slová: <strong>${stats.uniqueWords}</strong></p>
+                    <p>Typy duplikátov: <strong>${stats.duplicateTypes}</strong></p>
+                    <p>Opakovaní celkom: <strong>${stats.duplicateInstances}</strong></p>
+                    <p>Miera opakovania: <strong>${stats.repetitionRate}%</strong></p>
+                    <p>Bohatosť slovníka: <strong>${stats.vocabularyRichness}%</strong></p>
+                </div>
+                <div class="preview-text">${highlighter.highlightInHTML(text, duplicates)}</div>
+                <div class="preview-legend">
+                    <span class="legend-item">
+                        <mark class="duplicate-word">označené</mark> = duplikované slovo (hover pre počet)
+                    </span>
+                </div>
+            </div>
+        `;
+        
+        document.body.appendChild(modal);
+
+        // Close handler
+        modal.querySelector('.modal-close').addEventListener('click', () => {
+            modal.remove();
+        });
+
+        // Close on backdrop click
+        modal.addEventListener('click', (e) => {
+            if (e.target === modal) {
+                modal.remove();
+            }
+        });
+    },
+
+    /**
+     * Zobrazí modal s detailným reportom o duplikátoch
+     */
+    _showDuplicateReport(report, duplicates, stats, sourceInput, highlighter) {
+        const modal = document.createElement('div');
+        modal.className = 'duplicate-report-modal';
+        modal.innerHTML = `
+            <div class="modal-content">
+                <button class="modal-close">×</button>
+                <h3>📊 Report Duplikátov</h3>
+                <pre class="report-text">${report}</pre>
+                ${duplicates.length > 0 ? `
+                    <div class="duplicate-list">
+                        ${duplicates.map(([word, count]) => `
+                            <div class="duplicate-item">
+                                <span class="word">${word}</span>
+                                <span class="count">${count}×</span>
+                                <button class="replace-btn" data-word="${word}">🔄 Nahradiť</button>
+                            </div>
+                        `).join('')}
+                    </div>
+                ` : ''}
+            </div>
+        `;
+        
+        document.body.appendChild(modal);
+
+        // Close handler
+        modal.querySelector('.modal-close').addEventListener('click', () => {
+            modal.remove();
+        });
+
+        // Close on backdrop click
+        modal.addEventListener('click', (e) => {
+            if (e.target === modal) {
+                modal.remove();
+            }
+        });
+
+        // Replace word handlers
+        modal.querySelectorAll('.replace-btn').forEach(btn => {
+            btn.addEventListener('click', () => {
+                const word = btn.dataset.word;
+                const replacement = prompt(`Nahradiť "${word}" za:`);
+                if (replacement && replacement.trim()) {
+                    const text = sourceInput.value;
+                    const regex = new RegExp(`\\b${word}\\b`, 'gi');
+                    sourceInput.value = text.replace(regex, replacement.trim());
+                    showNotification(`✅ Nahradené: "${word}" → "${replacement}"`);
+                    modal.remove();
+                    this.markDirty();
+                }
+            });
+        });
+    },
+
+    /**
+     * Inicializuje komparátor projektov
+     */
+    initProjectComparator() {
+        // Nájdi vhodné miesto pre tlačidlo (header toolbar)
+        const headerControls = document.querySelector('.header-right-controls');
+        if (!headerControls) {
+            console.warn('Header controls not found - skipping project comparator');
+            return;
+        }
+
+        // Skontroluj či tlačidlo už existuje
+        if (document.querySelector('.compare-btn')) {
+            console.log('Compare button already exists');
+            return;
+        }
+
+        // Vytvor tlačidlo
+        const compareBtn = document.createElement('button');
+        compareBtn.className = 'compare-btn btn btn-secondary icon-btn';
+        compareBtn.innerHTML = `
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M9 17.25v1.007a3 3 0 01-.879 2.122L7.5 21h9l-.621-.621A3 3 0 0115 18.257V17.25m6-12V15a2.25 2.25 0 01-2.25 2.25H5.25A2.25 2.25 0 013 15V5.25m18 0A2.25 2.25 0 0018.75 3H5.25A2.25 2.25 0 003 5.25m18 0V12a2.25 2.25 0 01-2.25 2.25H5.25A2.25 2.25 0 013 12V5.25"/>
+            </svg>
+        `;
+        compareBtn.title = 'Porovnať Projekty';
+
+        // Vložo tlačidlo
+        headerControls.insertBefore(compareBtn, headerControls.firstChild);
+
+        // Event handler
+        compareBtn.addEventListener('click', () => {
+            this._showComparatorModal();
+        });
+
+        console.log('✅ Project comparator initialized');
+    },
+
+    /**
+     * Zobrazí modal pre výber a porovnanie projektov
+     */
+    _showComparatorModal() {
+        const modal = document.createElement('div');
+        modal.className = 'comparator-modal';
+        modal.innerHTML = `
+            <div class="comparator-modal-content">
+                <button class="modal-close">×</button>
+                <h2>🔄 Porovnať Projekty</h2>
+                
+                <div class="project-selector">
+                    <label>
+                        Project 1:
+                        <select id="select-project-1">
+                            <option value="1">Project 1</option>
+                            <option value="2">Project 2</option>
+                            <option value="3">Project 3</option>
+                            <option value="4">Project 4</option>
+                            <option value="5">Project 5</option>
+                        </select>
+                    </label>
+
+                    <label>
+                        Project 2:
+                        <select id="select-project-2">
+                            <option value="1">Project 1</option>
+                            <option value="2" selected>Project 2</option>
+                            <option value="3">Project 3</option>
+                            <option value="4">Project 4</option>
+                            <option value="5">Project 5</option>
+                        </select>
+                    </label>
+
+                    <button class="compare-run-btn">
+                        ▶️ Porovnať
+                    </button>
+                </div>
+
+                <div id="comparison-result" class="comparison-result"></div>
+            </div>
+        `;
+        
+        document.body.appendChild(modal);
+
+        // Close handlers
+        modal.querySelector('.modal-close').addEventListener('click', () => {
+            modal.remove();
+        });
+
+        modal.addEventListener('click', (e) => {
+            if (e.target === modal) {
+                modal.remove();
+            }
+        });
+
+        // Compare handler
+        modal.querySelector('.compare-run-btn').addEventListener('click', async () => {
+            const p1 = parseInt(document.getElementById('select-project-1').value);
+            const p2 = parseInt(document.getElementById('select-project-2').value);
+
+            if (p1 === p2) {
+                showNotification('Vyber 2 rôzne projekty!', 'warning');
+                return;
+            }
+
+            const resultDiv = document.getElementById('comparison-result');
+            resultDiv.innerHTML = '<div class="loading">Načítavam a analyzujem projekty...</div>';
+
+            try {
+                const comparator = new window.SimpleTextComparator();
+                const data = await comparator.compare(p1, p2);
+                const html = comparator.generateHTMLReport(data);
+                resultDiv.innerHTML = html;
+
+                // Aj textová verzia do konzole
+                const textReport = comparator.generateTextReport(data);
+                console.log('\n' + textReport);
+                
+                showNotification('✅ Porovnanie dokončené');
+            } catch (error) {
+                resultDiv.innerHTML = `<div class="error">❌ Chyba: ${error.message}</div>`;
+                console.error('Comparison error:', error);
+            }
+        });
     }
 };
 

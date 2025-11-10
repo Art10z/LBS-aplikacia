@@ -6,6 +6,9 @@
   <title>Lyrical Blueprint Studio 2.0</title>
   <!-- Hlavný CSS súbor pre štýly -->
   <link rel="stylesheet" href="./style.css">
+  <!-- Nové CSS moduly -->
+  <link rel="stylesheet" href="./css/duplicate-highlighter.css">
+  <link rel="stylesheet" href="./css/text-comparator.css">
   <!-- Pripojenie fontov z Google Fonts -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -210,6 +213,10 @@
       </div>
     </div>
   </div>
+
+  <!-- Nové JS moduly (musia byť načítané pred main.js) -->
+  <script src="./js/duplicate-highlighter.js"></script>
+  <script src="./js/text-comparator.js"></script>
 
   <!-- Hlavný skript aplikácie. Atribút "type=module" je kľúčový, aby fungovali importy v JS súboroch. -->
   <script type="module" src="./js/main.js"></script>
