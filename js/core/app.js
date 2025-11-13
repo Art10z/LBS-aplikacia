@@ -60,7 +60,7 @@ export const bus = new EventBus();
 // ================================
 
 export const App = {
-    version: '4.0',
+    version: '5.0',
     initialized: false,
     components: new Map(),
 

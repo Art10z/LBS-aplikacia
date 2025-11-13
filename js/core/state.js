@@ -1,5 +1,5 @@
 /**
- * LBS v4.0 - STATE MANAGEMENT
+ * LBS v5.0 - STATE MANAGEMENT
  * Centralized reactive state with change notifications
  * @module core/state
  */
