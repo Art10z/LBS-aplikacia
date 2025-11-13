@@ -87,11 +87,6 @@
 
     const stylesheets = Array.from(document.styleSheets).map(s => s.href);
 
-    addCheck(
-        'duplicate-highlighter.css',
-        stylesheets.some(href => href && href.includes('duplicate-highlighter.css')),
-        'Štýly pre duplicate highlighting'
-    );
 
     addCheck(
         'text-comparator.css',

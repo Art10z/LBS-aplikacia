@@ -155,10 +155,7 @@ const Controller = {
         if (View.dom.exportAllBtn) {
             View.dom.exportAllBtn.addEventListener('click', () => this._exportAll());
         }
-        // if (View.dom.toggleHighlightBtn) {
-        //     View.dom.toggleHighlightBtn.addEventListener('click', () => this._toggleHighlight());
-        // }
-        // toggleResearchHighlightBtn removed - duplicitná funkcia
+        // ...removed legacy highlight event listeners
         
         if (View.dom.inspirationPalette) {
             View.dom.inspirationPalette.addEventListener('click', e => this._handlePaletteClick(e));
@@ -332,7 +329,7 @@ const Controller = {
         showNotification('Importér bol aktualizovaný z plátna.');
     },
     
-    // removed legacy _performTextProcessing (now using _forceRefreshFromImporter + _parseImporterText)
+    // ...removed legacy _performTextProcessing
 
     // Jednotná logika parsovania importéra -> trackData (odstránená duplicita)
     _parseImporterText(raw) {

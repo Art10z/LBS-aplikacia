@@ -548,6 +548,7 @@ button[disabled], .btn[disabled] { opacity:.55; cursor:not-allowed; }
     font-size: 0.85rem; 
     padding: 12px 20px; 
     max-width: 500px;
+    z-index: 11000;
     text-align: center;
 }
 .notification.show { 

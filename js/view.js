@@ -35,15 +35,15 @@ const View = {
             researchInput: byId('research-input'),
             addToPaletteBtn: byId('addToPaletteBtn'),
             analyzeRhymesBtn: byId('analyzeRhymesBtn'),
-            // resetRhymesBtn: byId('resetRhymesBtn'), // Removed - duplicitné tlačidlo
+            // ...removed legacy resetRhymesBtn
             resetRhymesMainBtn: byId('resetRhymesMainBtn'),
             inspirationPalette: byId('inspiration-palette'),
             templateInserter: byId('template-inserter'),
             projectTabsContainer: byId('project-tabs-container'),
             saveStatus: byId('save-status'),
             exportAllBtn: byId('exportAllBtn'),
-            // toggleHighlightBtn: byId('toggleHighlightBtn'), // Removed - duplicitná funkcia
-            // toggleResearchHighlightBtn: byId('toggleResearchHighlightBtn'), // Removed - duplicitná funkcia
+            // ...removed legacy toggleHighlightBtn
+            // ...removed legacy toggleResearchHighlightBtn
             // Unified overlay (v3.8 id 'unified-overlay', v4 preview id 'unified-panel-overlay')
             openUnifiedBtn: byId('openUnifiedBtn'),
             unifiedOverlay: byId('unified-overlay', 'unified-panel-overlay'),
@@ -218,7 +218,7 @@ const View = {
         const sectionContainer = document.createElement('div');
         sectionContainer.className = 'section-container';
         sectionContainer.dataset.sectionId = section.id;
-        // sectionContainer.draggable = true; // --- ZMENA: Odstránené ---
+        // ...removed legacy drag & drop
 
         const header = document.createElement('div');
         header.className = 'section-header';
@@ -268,7 +268,7 @@ const View = {
         barItem.className = 'bar-item';
         barItem.dataset.barId = bar.id;
         barItem.dataset.sectionId = sectionId;
-        // barItem.draggable = true; // --- ZMENA: Odstránené ---
+        // ...removed legacy drag & drop
 
         const dragHandle = document.createElement('span');
         dragHandle.className = 'bar-drag-handle';
