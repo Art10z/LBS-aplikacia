@@ -42,7 +42,7 @@
     animation: slideUp 0.3s ease;
 }
 
-/* Fullscreen overlay for unified panel - panel fills entire screen */
+/* Fullscreen overlay with minimal black borders (1cm = ~38px) */
 .unified-overlay {
     position: fixed !important;
     top: 0 !important;
@@ -52,23 +52,20 @@
     width: 100vw !important;
     height: 100vh !important;
     margin: 0 !important;
-    padding: 0 !important;
+    padding: 38px !important;
     border: none !important;
     box-sizing: border-box !important;
-    background: var(--bg-main) !important;
+    background: rgba(0, 0, 0, 0.95) !important;
     z-index: 10000;
-    display: block !important;
+    display: flex !important;
+    align-items: center;
+    justify-content: center;
     overflow: hidden;
 }
 
 .unified-overlay .unified-panel {
-    position: absolute !important;
-    top: 0 !important;
-    left: 0 !important;
-    right: 0 !important;
-    bottom: 0 !important;
-    width: 100vw !important;
-    height: 100vh !important;
+    width: 100% !important;
+    height: 100% !important;
     max-width: none !important;
     max-height: none !important;
     margin: 0 !important;
@@ -79,6 +76,7 @@
     flex-direction: column;
     overflow: hidden;
     box-sizing: border-box !important;
+    border-radius: 8px;
 }
 
 @keyframes fadeIn {
