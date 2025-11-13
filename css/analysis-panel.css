@@ -57,10 +57,14 @@
     box-sizing: border-box !important;
     background: rgba(0, 0, 0, 0.95) !important;
     z-index: 10000;
-    display: flex !important;
+    display: none;
     align-items: center;
     justify-content: center;
     overflow: hidden;
+}
+
+.unified-overlay:not(.hidden) {
+    display: flex !important;
 }
 
 .unified-overlay .unified-panel {
