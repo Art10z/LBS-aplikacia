@@ -121,18 +121,21 @@
             metricsEl.innerHTML = '<div class="loading">⏳ Analyzujem...</div>';
 
             try {
-                // Použije DuplicateHighlighter ak existuje
+                // Prefer unified duplicateHandler, fallback na DuplicateHighlighter shim
                 let duplicates = [];
                 let duplicateCount = 0;
 
-                if (window.DuplicateHighlighter) {
-                    const highlighter = new window.DuplicateHighlighter();
-                    duplicates = highlighter.findDuplicates(source);
+                if (window.duplicateHandler) {
+                    const analysis = window.duplicateHandler.analyze(source);
+                    duplicates = analysis.duplicates || [];
                     duplicateCount = duplicates.length;
-                    
-                    // Aktualizuj preview so zvýraznením
-                    const highlightedHtml = highlighter.highlightInHTML(source, duplicates);
-                    previewEl.innerHTML = highlightedHtml;
+                    previewEl.innerHTML = window.duplicateHandler.renderHighlighted(source, duplicates);
+                } else if (window.DuplicateHighlighter) {
+                    const highlighter = new window.DuplicateHighlighter();
+                    const pairs = highlighter.findDuplicates(source);
+                    duplicates = pairs.map(([word, count]) => ({ word, count }));
+                    duplicateCount = duplicates.length;
+                    previewEl.innerHTML = highlighter.highlightInHTML(source, pairs);
                 } else {
                     previewEl.innerHTML = escapeHtml(source);
                 }
