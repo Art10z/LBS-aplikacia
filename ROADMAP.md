@@ -1,6 +1,6 @@
-# Lyrical Blueprint Studio - Plán Vývoja (Roadmap)
+# LBS 5.0 - Plán Vývoja (Roadmap)
 
-Tento dokument slúži ako strategický plán pre vývoj aplikácie Lyrical Blueprint Studio. Definuje kľúčové funkcie, architektúru a budúce ciele projektu.
+Tento dokument slúži ako strategický plán pre vývoj aplikácie Lyrical Blueprint Studio 5.0. Definuje kľúčové funkcie, architektúru a budúce ciele projektu.
 
 ---
 

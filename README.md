@@ -1,6 +1,6 @@
-# LBS-aplikacia – Jediný zdroj pravdy, projekty a export
+# LBS 5.0 – Jediný zdroj pravdy, projekty a export
 
-Toto je hlavný repozitár aplikácie „Lyrical Blueprint Studio“. Po vyčistení duplikátov je **jediný zdroj pravdy celý obsah v koreňových súboroch a priečinku `js/`**. Všetky funkcie (import → plátno → maketa → export → výskum → paleta rýmov) bežia z `index.html`.
+Toto je hlavný repozitár aplikácie „Lyrical Blueprint Studio 5.0“. Po vyčistení duplikátov je **jediný zdroj pravdy celý obsah v koreňových súboroch a priečinku `js/`**. Všetky funkcie (import → plátno → maketa → export → výskum → paleta rýmov) bežia z `index.html`.
 
 ## Stručný prehľad UI
 - Importér textu (vľavo hore) – vkladáš surový text so sekciami v hranatých zátvorkách (`[Verse]`).
