@@ -1,230 +1,76 @@
-# 🚀 PREDFINÁLNA FÁZA - IMPLEMENTATION COMPLETE
+# 🚀 LBS v4.0 - Súhrn a Plán (v4-rebuild vetva)
 
-## ✅ ČO BOLO IMPLEMENTOVANÉ
-
-### 1. **Duplicate Word Highlighter** 
-📍 Súbory: `js/duplicate-highlighter.js`, `css/duplicate-highlighter.css`
-
-**Funkcie:**
-- ✅ Detekcia duplikovaných slov v texte (ignoruje stopwords)
-- ✅ Zvýraznenie duplikátov s farebným kódovaním podľa počtu opakovaní
-- ✅ Interaktívny preview s highlighted textom
-- ✅ Detailný report so štatistikami
-- ✅ Možnosť nahradiť duplikované slová priamo v texte
-- ✅ Počítadlo duplikátov s vizuálnou indikáciou
-
-**Umiestnenie:** Text Importér panel (pod textarea)
+**Stav k:** 13. November 2025
 
 ---
 
-### 2. **Text Comparator** 
-📍 Súbory: `js/text-comparator.js`, `css/text-comparator.css`
+## 🎯 HLAVNÝ ZÁMER
 
-**Funkcie:**
-- ✅ Porovnanie 2 projektov (project1.html - project5.html)
-- ✅ Textová analýza: počet slov, riadkov, slovná zásoba, atď.
-- ✅ Vizuálne zvýraznenie víťaza
-- ✅ Detailné rozdiely medzi projektmi
-- ✅ ASCII art report v konzole
-- ✅ HTML report v modale
-
-**Umiestnenie:** Header toolbar (nové tlačidlo s ikonou)
+Cieľom tejto vetvy (`v4-rebuild`) je vytvoriť novú verziu aplikácie (v4) s moderným vzhľadom a vylepšenou architektúrou. Kľúčovou stratégiou je **znovupoužitie funkčných a osvedčených častí** z pôvodnej aplikácie (najmä dynamického plátna) a ich postupné napojenie na nový vizuálny skelet. Týmto sa vyhneme zbytočnému prepisovaniu komplexnej logiky.
 
 ---
 
-### 3. **Integrácia do Controller.js**
-📍 Súbor: `js/controller.js`
+## ✅ AKTUÁLNY STAV
 
-**Pridané metódy:**
-- `enhanceTextImporter()` - aktivuje duplicate highlighting
-- `initProjectComparator()` - aktivuje project comparison
-- `_showHighlightPreview()` - zobrazí preview modal
-- `_showDuplicateReport()` - zobrazí report modal
-- `_showComparatorModal()` - zobrazí comparator modal
+### 1. **Vizuálny Rebuild (UI Shell)**
+📍 Súbory: `index-v4-preview.html`, `css-v4/app.css`
 
-**Inicializácia:** Automaticky sa spúšťa v `init()` metóde po 500ms delay
+- **Hotovo:**
+  - Vytvorený nový hlavný súbor `index-v4-preview.html` ako základ pre v4.
+  - Implementovaný moderný 3-stĺpcový layout (IO-column, Canvas, Research) inšpirovaný pôvodným dizajnom.
+  - Vytvorený nový CSS súbor `css-v4/app.css` s GitHub dark témou a responzívnymi prvkami.
+  - Vizuálne pripravený modálny panel "Výskum & Analýza" s prepínaním tabov.
 
----
+### 2. **Prepojenie Funkčnej Logiky**
+📍 Súbory: `js/main.js`, `js/controller.js`, `js/view.js`
 
-### 4. **HTML Integrácia**
-📍 Súbor: `index.html`
+- **Hotovo:**
+  - `index-v4-preview.html` teraz úspešne **načítava a spúšťa pôvodný Controller** (`js/main.js`).
+  - **Dynamické plátno je plne funkčné** v novom v4 vzhľade. Všetky operácie (pridanie/mazanie sekcií a barov, drag & drop) fungujú.
+  - `js/view.js` bol upravený tak, aby flexibilne pracoval s ID prvkami zo starého (`index.html`) aj nového (`index-v4-preview.html`) súboru. Tým je zabezpečená kompatibilita.
 
-**Pridané:**
-- Link na `css/duplicate-highlighter.css`
-- Link na `css/text-comparator.css`
-- Script tag pre `js/duplicate-highlighter.js`
-- Script tag pre `js/text-comparator.js`
+### 3. **Unifikácia a Čistenie Kódu**
+📍 Súbory: `js/features/duplicate-handler.js`, `js/duplicate-highlighter.js`
 
----
-
-### 5. **System Check**
-📍 Súbor: `js/system-check.js`
-
-**Validuje:**
-- ✅ Prítomnosť všetkých modulov
-- ✅ DOM elementy
-- ✅ CSS štýly
-- ✅ Funkcionalitu metód
-- ✅ Integráciu s Controller
+- **Hotovo:**
+  - Logika pre detekciu duplikátov bola **zjednotená** do jedného modulu (`duplicate-handler.js`).
+  - Pôvodný `duplicate-highlighter.js` bol nahradený "shimom" (prechodkou), aby staré volania nespôsobili chybu.
+  - Z `index.html` boli odstránené referencie na staré, duplicitné skripty.
 
 ---
 
-## 🎯 AKO POUŽIŤ
+## 🛠️ AKO POUŽIŤ AKTUÁLNU VERZIU
 
-### Duplicate Word Highlighter:
-
-1. Otvor aplikáciu a naviguj do **"Importér Textu"**
-2. Vlož alebo napíš text
-3. Pod textarea uvidíš nové tlačidlá:
-   - **🔍 Zvýrazniť Duplikáty** - zobrazí preview s highlighted duplikátmi
-   - **📊 Report Duplikátov** - zobrazí detailný report
-4. V reporte môžeš kliknúť na **🔄 Nahradiť** pri každom duplikáte
-
-### Text Comparator:
-
-1. V headeri aplikácie nájdi nové tlačidlo **🔄** (vedľa ostatných ikoniek)
-2. Klikni na tlačidlo
-3. Otvorí sa modal s výberom projektov:
-   - Vyber **Project 1** (z dropdown menu)
-   - Vyber **Project 2** (z dropdown menu)
-   - Klikni **▶️ Porovnať**
-4. Zobrazí sa detailné porovnanie s vizualizáciou víťaza
-
----
-
-## 🧪 TESTOVANIE
-
-### 1. **Manuálne testovanie:**
-
-```
-1. Otvor aplikáciu v prehliadači
-2. Otvor Developer Console (F12)
-3. Vlož text do Importéra
-4. Klikni "Zvýrazniť Duplikáty"
-5. Skontroluj či sa zobrazil modal s highlighted textom
-6. Klikni "Report Duplikátov"
-7. Skontroluj či sa zobrazil report
-8. Klikni tlačidlo "Porovnať Projekty" v headeri
-9. Vyber 2 projekty a porovnaj
-10. Skontroluj či sa zobrazil comparison report
-```
-
-### 2. **Automatické testovanie:**
-
-V Developer Console spusti:
-```javascript
-// Načítaj system check
-const script = document.createElement('script');
-script.src = './js/system-check.js';
-document.body.appendChild(script);
-
-// Výsledky sa zobrazia v konzole automaticky
-// Alebo manuálne:
-console.log(window.SYSTEM_CHECK_RESULTS);
-```
-
----
-
-## 📊 VÝSLEDKY
-
-### Vytvorené súbory:
-```
-✅ js/duplicate-highlighter.js      (148 riadkov)
-✅ js/text-comparator.js            (412 riadkov)
-✅ css/duplicate-highlighter.css    (268 riadkov)
-✅ css/text-comparator.css          (351 riadkov)
-✅ js/system-check.js               (183 riadkov)
-```
-
-### Upravené súbory:
-```
-✅ js/controller.js                 (+312 riadkov)
-✅ index.html                       (+5 riadkov)
-```
-
-### Celkovo:
-- **1,679 riadkov nového kódu**
-- **5 nových súborov**
-- **2 upravené súbory**
+1.  Otvor súbor `index-v4-preview.html` v prehliadači.
+2.  Aplikácia sa načíta s novým v4 vzhľadom, ale s plne funkčným dynamickým plátnom.
+3.  Všetky funkcie viazané na plátno (import, pridávanie sekcií, úprava textu) by mali fungovať podľa očakávaní.
 
 ---
 
 ## 🔄 ĎALŠIE KROKY
 
-### Finálna optimalizácia (posledná fáza):
+1.  **Zjednotenie Vzhľadu Tlačidiel:**
+    - Dokončiť zjednotenie všetkých tlačidiel v aplikácii, aby mali konzistentný štýl podľa `css-v4/app.css`.
 
-1. **Performance tuning:**
-   - Debouncing pre live highlighting
-   - Lazy loading pre veľké projekty
-   - Cache pre už analyzované texty
+2.  **Unifikácia Analýzy Rýmov:**
+    - Aplikovať rovnaký princíp ako pri duplikátoch: vytvoriť jeden centrálny modul pre analýzu rýmov a odstrániť starú logiku.
 
-2. **UX vylepšenia:**
-   - Keyboard shortcuts (Ctrl+D pre duplikáty, Ctrl+Shift+C pre compare)
-   - Drag & drop pre import textov
-   - Export reportov do PDF/TXT
+3.  **Zapojenie Zvyšných UI Prvkov:**
+    - Postupne "oživiť" ďalšie časti v `index-v4-preview.html` (napr. projektové taby, exportné funkcie) ich napojením na existujúci Controller.
 
-3. **Bug fixing:**
-   - Test na rôznych prehliadačoch
-   - Test s veľkými textami (10,000+ slov)
-   - Edge cases (prázdne projekty, špeciálne znaky)
-
-4. **Dokumentácia:**
-   - User guide
-   - API dokumentácia
-   - Video tutorial
-
----
-
-## 🐛 ZNÁME PROBLÉMY
-
-- ❌ Žiadne kritické chyby
-- ⚠️ Potrebuje test s reálnymi projektami (project1-5.html)
-- ⚠️ Modal design môže potrebovať fine-tuning na mobiloch
-
----
-
-## 💡 BUDÚCE ROZŠÍRENIA
-
-1. **Advanced duplicate detection:**
-   - Synonymá a podobné slová
-   - Phrase detection (duplicitné frázy)
-   - Context-aware highlighting
-
-2. **Multi-project comparison:**
-   - Porovnanie 3-5 projektov naraz
-   - Ranking system
-   - Best lines extraction
-
-3. **AI Integration:**
-   - Suggest better word alternatives
-   - Auto-fix duplikátov
-   - Lyrical quality score
+4.  **Revízia a Čistenie:**
+    - Po dokončení migrácie odstrániť staré, už nepoužívané súbory (`index.html`, `style.css`, atď.).
 
 ---
 
 ## 📝 POZNÁMKY
 
-- Všetky nové funkcie sú **non-invasive** - neprerušujú existujúcu funkcionalitu
-- Kód je **modular** - ľahko sa dá rozšíriť alebo upraviť
-- UI je **konzistentné** s existujúcim dizajnom aplikácie
-- **Zero dependencies** - používa len vanilla JavaScript
+- **Zdroj Pravdy:** Tento dokument slúži ako hlavný prehľad o stave prác na `v4-rebuild` vetve.
+- **Git:** Všetky zmeny sú commitované a pushnuté do `v4-rebuild` vetvy a sú súčasťou otvoreného Pull Requestu.
+- **Priorita:** Znovupoužitie kódu pred jeho prepisovaním.
 
 ---
 
-## ✅ CHECKLIST PRE DEPLOYMENT
+**Status:** ✅ **VÝVOJ (DEVELOPMENT IN PROGRESS)**
 
-- [x] Vytvorené všetky potrebné súbory
-- [x] Integrované do existujúceho kódu
-- [x] Pridané do index.html
-- [x] Vytvorený system check
-- [ ] Manuálne otestované v prehliadači
-- [ ] Otestované na mobilnom zariadení
-- [ ] Commitované do Git
-- [ ] Pushnuté na GitHub
-- [ ] Vytvorené release notes
-
----
-
-**Status:** ✅ **READY FOR TESTING**
-
-**Next Action:** Otvor aplikáciu v prehliadači a spusti testy!
+**Next Action:** Pokračovať v zjednocovaní UI a unifikácii ďalších funkcií.
