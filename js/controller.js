@@ -852,24 +852,24 @@ const Controller = {
         return out || '<span class=\"t\"></span>';
     },
     /**
-     * UNIFIED DUPLICATE HIGHLIGHTING
-     * Používa DuplicateHighlighter modul pre konzistentnú detekciu
-     * Podporuje oba režimy: pair detection (word word) a all duplicates
+     * UNIFIED DUPLICATE HIGHLIGHTING (v4)
+     * Používa jediný modul duplicateHandler (js/features/duplicate-handler.js)
+     * Režimy:
+     *  - pairs: pôvodné zvýraznenie postupných párov (word word)
+     *  - all:   zvýraznenie všetkých duplikovaných slov cez duplicateHandler
      */
     _renderWithDupePairs(text, { ignoreBracketLines = false, mode = 'pairs' } = {}) {
         if (!text) return '<span class="t"></span>';
 
-        // Ak DuplicateHighlighter nie je dostupný, použije sa fallback
-        if (mode === 'all' && window.DuplicateHighlighter) {
+        // Unified duplicate handling
+        if (mode === 'all' && window.duplicateHandler) {
             try {
-                const highlighter = new window.DuplicateHighlighter();
-                const duplicates = highlighter.findDuplicates(text);
-                if (duplicates.length > 0) {
-                    // Použije highlightInHTML ale s escape pre bezpečnosť
-                    return highlighter.highlightInHTML(text, duplicates);
+                const analysis = window.duplicateHandler.analyze(text);
+                if (analysis.duplicates && analysis.duplicates.length > 0) {
+                    return window.duplicateHandler.renderHighlighted(text, analysis.duplicates);
                 }
             } catch (error) {
-                console.warn('DuplicateHighlighter error, using fallback:', error);
+                console.warn('duplicateHandler error, using fallback pair logic:', error);
             }
         }
 

@@ -1,0 +1,443 @@
+<!DOCTYPE html>
+<html lang="sk">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Lyrical Blueprint Studio v4.0</title>
+    <link rel="stylesheet" href="css-v4/app.css">
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Roboto+Mono:wght@400;500&display=swap" rel="stylesheet">
+</head>
+<body>
+    <div id="app-container">
+        <!-- HEADER -->
+        <header id="app-header">
+            <div class="logo">
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M9.53 16.122a3 3 0 00-5.78 1.128 2.25 2.25 0 01-2.47 2.118v-.09A12.75 12.75 0 0112 3c2.618 0 5.191.931 7.172 2.592a12.75 12.75 0 01-8.66 14.582A2.25 2.25 0 009.53 16.122z" />
+                </svg>
+                <span id="app-version">v4.0</span>
+                <div id="project-tabs-container"></div>
+            </div>
+            <div class="header-right-controls">
+                <span id="save-status" class="save-status" data-status="saved">Uložené</span>
+                <button id="openUnifiedBtn" class="btn btn-secondary icon-btn" title="Výskum & Analýza">
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
+                    </svg>
+                </button>
+            </div>
+        </header>
+
+        <!-- MAIN CONTENT -->
+        <main id="main-content">
+            <!-- LEFT COLUMN: IO-COLUMN (Source + Output) -->
+            <div class="io-column">
+                <!-- SOURCE PANEL -->
+                <div id="source-panel" class="panel">
+                    <div class="panel-header">
+                        <h2>Importér Textu</h2>
+                    </div>
+                    <div class="panel-content source-content">
+                        <div class="panel-tools">
+                            <button id="refreshProjectBtn" class="btn btn-secondary icon-btn" title="Prepísať plátno z importu">
+                                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" d="M4.5 4.5v6h6m9 9v-6h-6M4.5 15a7.5 7.5 0 0012.546-5.303L21 13.5M19.5 9a7.5 7.5 0 01-12.546 5.303L3 10.5" />
+                                </svg>
+                            </button>
+                            <button id="syncImporterBtn" class="btn btn-secondary icon-btn" title="Sync z plátna">
+                                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" d="M12 3v4.5m0 9V21m6.364-13.364l-3.182 3.182M8.818 14.182l-3.182 3.182M21 12h-4.5M7.5 12H3m13.364 6.364l-3.182-3.182M8.818 9.818l-3.182-3.182" />
+                                </svg>
+                            </button>
+                            <button id="addTemplateTagBtn" class="btn btn-secondary icon-btn" title="Vložiť značku [ Značka ]">
+                                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                                    <path stroke-linecap="round" stroke-linejoin="round" d="M7 7h6a2 2 0 012 2v6l-5 5-6-6 5-5z"/>
+                                    <path stroke-linecap="round" stroke-linejoin="round" d="M12 9v4m-2-2h4"/>
+                                </svg>
+                            </button>
+                        </div>
+                        <textarea id="source-input" class="source-input" placeholder="Vlož sem svoj text alebo použi šablóny. Názvy sekcií uveď v hranatých zátvorkách, napr. [Verse]. Každý riadok bude samostatný bar." spellcheck="false"></textarea>
+                    </div>
+                </div>
+
+                <!-- OUTPUT PANEL (Finálna Maketa) -->
+                <div id="output-panel" class="panel">
+                    <div class="panel-header">
+                        <h2>Finálna Maketa</h2>
+                    </div>
+                    <div class="panel-content output-content">
+                        <div class="panel-tools">
+                            <button id="updateOutputBtn" class="btn btn-secondary icon-btn" title="Obnoviť">
+                                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" d="M4.5 4.5v6h6m9 9v-6h-6M4.5 15a7.5 7.5 0 0012.546-5.303L21 13.5M19.5 9a7.5 7.5 0 01-12.546 5.303L3 10.5" />
+                                </svg>
+                            </button>
+                            <button id="downloadTxtBtn" class="btn btn-secondary icon-btn" title="Stiahnuť ako TXT">
+                                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" d="M12 16V4m0 12l-4-4m4 4l4-4m-10 8h12"/>
+                                </svg>
+                            </button>
+                            <button id="copyOutputBtn" class="btn btn-secondary icon-btn" title="Kopírovať">
+                                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"/>
+                            </svg>
+                            </button>
+                            <button id="exportJsonBtn" class="btn btn-secondary icon-btn" title="Exportovať JSON">
+                                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" d="M3 8h4l3 8 4-16 3 8h4"/>
+                                </svg>
+                            </button>
+                        </div>
+                        <pre id="maketaOutput" class="maketa-output"></pre>
+                    </div>
+                </div>
+            </div>
+
+            <!-- CENTER: DYNAMIC CANVAS -->
+            <div id="canvas-panel" class="panel panel-center">
+                <div class="panel-header">
+                    <h2>Dynamické Plátno</h2>
+                    <div class="panel-actions">
+                        <button class="btn btn-secondary icon-btn" id="add-section-btn" title="Pridať novú sekciu">
+                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" d="M12 4.5v15m7.5-7.5h-15" />
+                            </svg>
+                        </button>
+                    </div>
+                </div>
+                <div class="panel-content">
+                    <div id="dynamic-canvas" class="dynamic-canvas"></div>
+                </div>
+            </div>
+
+            <!-- RIGHT: RESEARCH PANEL -->
+            <div id="research-panel" class="panel">
+                <div class="panel-header">
+                    <h2>Paleta Inšpirácie</h2>
+                </div>
+                <div class="panel-content">
+                    <textarea id="research-input" class="research-input" placeholder="Poznámky, nápady, výskum..." spellcheck="false"></textarea>
+                </div>
+            </div>
+        </main>
+
+    <!-- NOTIFICATION TOAST -->
+    <div id="notification-container" class="notification-container"></div>
+
+    <!-- ANALYSIS PANEL (Modal Overlay) -->
+    <div id="unified-panel-overlay" class="modal-overlay hidden">
+        <div id="unified-panel" class="unified-panel">
+            <div class="unified-panel-header">
+                <h2>Výskum & Analýza</h2>
+                <div class="header-controls">
+                    <button id="closeUnifiedBtn" class="btn btn-danger icon-btn" title="Zatvoriť">
+                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M6 6l12 12M18 6l-12 12"/>
+                        </svg>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Tab Navigation -->
+            <div class="tab-navigation">
+                <button id="researchTabBtn" class="tab-btn active" data-tab="research">
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M12 6.042A8.967 8.967 0 006 3.75c-1.052 0-2.062.18-3 .512v14.25A8.987 8.987 0 006 18c2.305 0 4.408.867 6 2.292m0-14.25a8.966 8.966 0 016-2.292c1.052 0 2.062.18 3 .512v14.25A8.987 8.987 0 0018 18a8.967 8.967 0 00-6 2.292m0-14.25v14.25"/>
+                    </svg>
+                    <span>Výskum</span>
+                </button>
+                <button id="analysisTabBtn" class="tab-btn" data-tab="analysis">
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M3 3v18h18M7 13l3 3 7-7"/>
+                    </svg>
+                    <span>Analýza</span>
+                </button>
+            </div>
+
+            <!-- Tab Content -->
+            <div class="tab-content">
+                <!-- Research Tab -->
+                <div id="researchTab" class="tab-pane active">
+                    <div class="tab-toolbar">
+                        <button id="toggleResearchHighlightBtn" class="btn btn-secondary icon-btn" title="Zapnúť/vypnúť zvýraznenie">
+                            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" fill="none">
+                                <path stroke-linecap="round" stroke-linejoin="round" d="M2.25 12c0 1.593.555 3.217 1.545 4.545a11.966 11.966 0 001.778 1.86c.637.57 1.586.538 2.18-.07l2.1-2.164a1.88 1.88 0 012.714 0l2.1 2.164c.594.608 1.543.64 2.18.07a11.966 11.966 0 001.778-1.86A9.708 9.708 0 0021.75 12c0-1.593-.555-3.217-1.545-4.545a11.966 11.966 0 00-1.778-1.86c-.637-.57-1.586-.538-2.18.07l-2.1-2.164a1.88 1.88 0 01-2.714 0l-2.1-2.164c-.594-.608-1.543-.64-2.18-.07a11.966 11.966 0 00-1.778 1.86A9.708 9.708 0 002.25 12z"/>
+                            </svg>
+                        </button>
+                        <button id="analyzeRhymesBtn" class="btn btn-secondary icon-btn" title="Analyzovať rýmy">
+                            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                                <path stroke-linecap="round" stroke-linejoin="round" d="M4 16l4-4 4 4 4-4 4 4"/>
+                            </svg>
+                        </button>
+                        <button id="resetRhymesBtn" class="btn btn-secondary icon-btn" title="Vymazať analyzované rýmy">
+                            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                                <path stroke-linecap="round" stroke-linejoin="round" d="M3 6h18M8 6V4h8v2m-1 0v14a2 2 0 01-2 2H9a2 2 0 01-2-2V6h10z"/>
+                            </svg>
+                        </button>
+                        <button id="addToPaletteBtn" class="btn icon-btn" title="Pridať do Palety">
+                            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                                <path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16M4 12h16"/>
+                            </svg>
+                        </button>
+                    </div>
+                    <div class="tab-pane-content">
+                        <textarea id="research-textarea" placeholder="Sem si vkladaj všetky poznámky, linky, úryvky a dáta z výskumu..."></textarea>
+                    </div>
+                </div>
+
+                <!-- Analysis Tab -->
+                <div id="analysisTab" class="tab-pane">
+                    <div class="tab-toolbar">
+                        <!-- Source toggle -->
+                        <div class="btn-group">
+                            <button id="analysisSourceCanvasBtn" class="btn btn-secondary icon-btn active" title="Zdroj: Plátno">
+                                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                                    <path stroke-linecap="round" stroke-linejoin="round" d="M4 6h16v12H4zM8 10h8"/>
+                                </svg>
+                                <span class="btn-label">Plátno</span>
+                            </button>
+                            <button id="analysisSourceResearchBtn" class="btn btn-secondary icon-btn" title="Zdroj: Výskum">
+                                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" d="M12 6.042A8.967 8.967 0 006 3.75c-1.052 0-2.062.18-3 .512v14.25A8.987 8.987 0 006 18c2.305 0 4.408.867 6 2.292m0-14.25a8.966 8.966 0 016-2.292c1.052 0 2.062.18 3 .512v14.25A8.987 8.987 0 0018 18a8.967 8.967 0 00-6 2.292m0-14.25v14.25"/>
+                                </svg>
+                                <span class="btn-label">Výskum</span>
+                            </button>
+                        </div>
+                        <div class="toolbar-divider"></div>
+                        <!-- Mode toggle -->
+                        <div class="btn-group">
+                            <button id="analysisModeRhymeBtn" class="btn btn-secondary icon-btn" title="Režim: Rýmy">
+                                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                                    <path stroke-linecap="round" stroke-linejoin="round" d="M4 16l4-4 4 4 4-4 4 4"/>
+                                </svg>
+                                <span class="btn-label">Rýmy</span>
+                            </button>
+                            <button id="analysisModeDupBtn" class="btn btn-secondary icon-btn active" title="Režim: Duplikáty">
+                                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" fill="none">
+                                    <path stroke-linecap="round" stroke-linejoin="round" d="M2.25 12c0 1.593.555 3.217 1.545 4.545a11.966 11.966 0 001.778 1.86c.637.57 1.586.538 2.18-.07l2.1-2.164a1.88 1.88 0 012.714 0l2.1 2.164c.594.608 1.543.64 2.18.07a11.966 11.966 0 001.778-1.86A9.708 9.708 0 002.25 12z"/>
+                                </svg>
+                                <span class="btn-label">Duplikáty</span>
+                            </button>
+                        </div>
+                    </div>
+                    <div class="tab-pane-content">
+                        <div id="analysis-layer" class="ua-layer"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- SCRIPTS -->
+    <script type="module">
+        import { App, bus } from './js/core/app.js';
+        import { State } from './js/core/state.js';
+
+        // Initialize app
+        async function init() {
+            try {
+                await App.init();
+                showNotification('✨ LBS v4.0 načítaná', 'success');
+                
+                // Demo: populate with test data
+                setTimeout(() => {
+                    populateDemo();
+                }, 500);
+                
+            } catch (error) {
+                console.error('Init failed:', error);
+                showNotification('❌ Chyba inicializácie', 'error');
+            }
+        }
+
+        // Populate demo data
+        function populateDemo() {
+            const sourceInput = document.getElementById('source-input');
+            const researchInput = document.getElementById('research-input');
+            const maketaOutput = document.getElementById('maketaOutput');
+            
+            if (sourceInput) {
+                sourceInput.value = `[Intro]
+Vitajte v novej ére
+LBS v4.0 je tu
+
+[Verse 1]
+Čistý kód, moderná architektúra
+Event bus, žiadna konfúzia
+State management, reaktívny flow
+Každý komponent má vlastný show
+
+[Chorus]
+Unified interface, všetko na mieste
+Export, analýza, toolbar vo feste
+Dark theme, responsive, krásny dizajn
+LBS v4 - to je náš sign
+
+[Verse 2]
+GitHub dark theme preserved
+Original layout well deserved
+Panel tools just like before
+V4 architecture at the core`;
+            }
+            
+            if (researchInput) {
+                researchInput.value = `📝 POZNÁMKY K PROJEKTU
+
+✅ Implementované:
+- Event-driven architektúra
+- Centrálny State management  
+- GitHub dark theme (z v3.8)
+- Pôvodný layout & dizajn
+- Panel tools & ikony
+
+🚀 TODO:
+- Canvas component
+- Lyrics analyzer
+- Export features
+- Testing
+
+💡 DIZAJN:
+- Presný vzhľad z v3.8
+- Farby: #0D1117, #161B22, #58A6FF
+- Inter & Roboto Mono fonty
+- SVG ikony z pôvodnej verzie`;
+            }
+
+            if (maketaOutput) {
+                maketaOutput.textContent = `[Intro]
+Vitajte v novej ére
+LBS v4.0 je tu
+
+[Verse 1]
+Čistý kód, moderná architektúra
+Event bus, žiadna konfúzia
+State management, reaktívny flow
+Každý komponent má vlastný show
+
+[Chorus]
+Unified interface, všetko na mieste
+Export, analýza, toolbar vo feste
+Dark theme, responsive, krásny dizajn
+LBS v4 - to je náš sign
+
+[Verse 2]
+GitHub dark theme preserved
+Original layout well deserved
+Panel tools just like before
+V4 architecture at the core`;
+            }
+            
+            // Show canvas demo
+            showCanvasDemo();
+        }
+
+        // Show canvas demo
+        function showCanvasDemo() {
+            const canvas = document.getElementById('dynamic-canvas');
+            if (!canvas) return;
+            
+            canvas.innerHTML = `
+                <div class="section-container" data-type="intro">
+                    <div class="section-header">
+                        <span class="section-drag-handle">
+                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" d="M3.75 6.75h16.5M3.75 12h16.5m-16.5 5.25h16.5" />
+                            </svg>
+                        </span>
+                        <span class="section-label">Intro</span>
+                        <div class="section-controls">
+                            <button class="btn-icon" title="Edit">✏️</button>
+                            <button class="btn-icon" title="Delete">🗑️</button>
+                        </div>
+                    </div>
+                    <div class="bars-container">
+                        <div class="section-content">
+                            <p>Vitajte v novej ére</p>
+                            <p>LBS v4.0 je tu</p>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="section-container" data-type="verse">
+                    <div class="section-header">
+                        <span class="section-drag-handle">
+                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" d="M3.75 6.75h16.5M3.75 12h16.5m-16.5 5.25h16.5" />
+                            </svg>
+                        </span>
+                        <span class="section-label">Verse 1</span>
+                        <div class="section-controls">
+                            <button class="btn-icon" title="Edit">✏️</button>
+                            <button class="btn-icon" title="Delete">🗑️</button>
+                        </div>
+                    </div>
+                    <div class="bars-container">
+                        <div class="section-content">
+                            <p>Čistý kód, moderná architektúra</p>
+                            <p>Event bus, žiadna konfúzia</p>
+                            <p>State management, reaktívny flow</p>
+                            <p>Každý komponent má vlastný show</p>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="section-container" data-type="chorus">
+                    <div class="section-header">
+                        <span class="section-drag-handle">
+                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" d="M3.75 6.75h16.5M3.75 12h16.5m-16.5 5.25h16.5" />
+                            </svg>
+                        </span>
+                        <span class="section-label">Chorus</span>
+                        <div class="section-controls">
+                            <button class="btn-icon" title="Edit">✏️</button>
+                            <button class="btn-icon" title="Delete">🗑️</button>
+                        </div>
+                    </div>
+                    <div class="bars-container">
+                        <div class="section-content">
+                            <p>Unified interface, všetko na mieste</p>
+                            <p>Export, analýza, toolbar vo feste</p>
+                            <p>Dark theme, responsive, krásny dizajn</p>
+                            <p>LBS v4 - to je náš sign</p>
+                        </div>
+                    </div>
+                </div>
+            `;
+        }
+
+        // Show notification
+        function showNotification(message, type = 'info') {
+            const container = document.getElementById('notification-container');
+            if (!container) return;
+            
+            const notification = document.createElement('div');
+            notification.className = `notification notification-${type}`;
+            notification.textContent = message;
+            
+            container.appendChild(notification);
+            
+            setTimeout(() => {
+                notification.classList.add('show');
+            }, 10);
+            
+            setTimeout(() => {
+                notification.classList.remove('show');
+                setTimeout(() => notification.remove(), 300);
+            }, 3000);
+        }
+
+        // Expose for debugging
+        window.App = App;
+        window.State = State;
+        window.bus = bus;
+        window.showNotification = showNotification;
+
+        // Initialize
+        init();
+    </script>
+</body>
+</html>

@@ -1,0 +1,5 @@
+1. Identify target feature.
+2. Keep only the active unified implementation.
+3. Remove legacy/duplicate handlers, exports, bindings.
+4. Ensure imports and CSS reference only unified module.
+5. Retest feature; commit with message “cleanup: unify <feature>”.
