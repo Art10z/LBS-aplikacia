@@ -1018,3 +1018,114 @@ body {
     white-space: pre-wrap;
     word-wrap: break-word;
 }
+
+/* === CANVAS (legacy working classes) === */
+/* These styles ensure the existing dynamic canvas renders correctly in the v4 preview */
+.bars-container { padding: 4px; }
+.bar-item {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    padding: 2px 8px;
+    border-radius: 4px;
+    margin-bottom: 2px;
+    background-color: var(--bg-input);
+    border: 1px solid var(--border-color);
+    transition: background-color var(--transition-base);
+}
+.bar-item:hover { background-color: #0d1a29; }
+.bar-item:last-child { margin-bottom: 0; }
+.bar-item.dragging { opacity: 0.5; background-color: var(--accent-glow); }
+.bar-item:nth-child(4n):not(:last-child) { margin-bottom: 8px; }
+.bar-drag-handle { cursor: grab; color: var(--text-secondary); }
+.bar-drag-handle:active { cursor: grabbing; }
+.bar-drag-placeholder {
+    height: 30px; /* approx height of .bar-item */
+    background: rgba(88, 166, 255, 0.2);
+    border: 1px dashed var(--accent-primary);
+    border-radius: 4px;
+    margin: 0 4px 2px 4px;
+}
+.section-drag-placeholder {
+    height: 10px;
+    background: rgba(88, 166, 255, 0.2);
+    border: 1px dashed var(--accent-primary);
+    border-radius: 6px;
+    margin-bottom: 10px;
+}
+body.is-dragging, body.is-dragging * { cursor: grabbing !important; }
+.bar-item { position: relative; }
+.bar-input {
+    flex: 1 1 auto;
+    background-color: transparent;
+    border: none;
+    color: var(--text-primary);
+    padding: 2px 0;
+    font-size: 0.85rem;
+    outline: none;
+    font-family: var(--font-mono);
+    resize: none;
+    min-height: 28px;
+    line-height: 1.35;
+    overflow-y: hidden;
+}
+.char-counter {
+    font-family: var(--font-mono);
+    font-size: 0.75rem;
+    color: var(--text-secondary);
+    min-width: 50px;
+    text-align: right;
+    user-select: none;
+}
+.remove-bar-btn {
+    background: none;
+    border: none;
+    color: var(--text-secondary);
+    cursor: pointer;
+    visibility: hidden;
+    opacity: 0;
+    transition: all var(--transition-base);
+    font-size: 1.2rem;
+}
+.bar-item:hover .remove-bar-btn { visibility: visible; opacity: 1; }
+.remove-bar-btn:hover { color: var(--accent-danger); }
+
+/* Input for section type used by working canvas */
+.section-type-input {
+    background-color: var(--bg-input);
+    border: 1px solid var(--border-color);
+    color: var(--accent-primary);
+    border-radius: 4px;
+    padding: 2px 6px;
+    font-size: 0.8rem;
+    font-weight: 500;
+    font-family: var(--font-mono);
+    width: 110px;
+    text-align: left;
+    transition: all var(--transition-base);
+}
+.section-type-input:focus {
+    outline: none;
+    border-color: var(--accent-primary);
+    box-shadow: 0 0 0 3px var(--accent-glow);
+}
+
+/* === NOTIFICATIONS (compat with utils.js) === */
+.notification {
+    position: fixed;
+    bottom: 20px;
+    left: 50%;
+    transform: translateX(-50%) translateY(100px);
+    padding: 10px 20px;
+    border-radius: 6px;
+    color: #fff;
+    font-weight: 500;
+    z-index: 2000;
+    transition: transform 0.4s ease-in-out, opacity 0.4s ease-in-out;
+    opacity: 0;
+}
+.notification.show { transform: translateX(-50%) translateY(0); opacity: 1; }
+.notification.success { background-color: var(--accent-success); }
+.notification.danger { background-color: var(--accent-danger); }
+.notification.info { background-color: var(--accent-primary); }
+.notification.warning { background-color: var(--accent-warning); color: #1b1b1b; }
