@@ -55,7 +55,7 @@
     padding: 0 !important;
     border: none !important;
     box-sizing: border-box !important;
-    background: transparent !important;
+    background: var(--bg-main) !important;
     z-index: 10000;
     display: block !important;
     overflow: hidden;
