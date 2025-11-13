@@ -372,11 +372,11 @@
     window.initAnalysisPanel = initAnalysisPanel;
 
     // Auto-init on DOM ready
-    if (document.readyState === 'loading') {
-        document.addEventListener('DOMContentLoaded', initAnalysisPanel);
-    } else {
-        // DOM already loaded
-        setTimeout(initAnalysisPanel, 100);
-    }
+    // if (document.readyState === 'loading') {
+    //     document.addEventListener('DOMContentLoaded', initAnalysisPanel);
+    // } else {
+    //     // DOM already loaded
+    //     setTimeout(initAnalysisPanel, 100);
+    // }
 
 })();

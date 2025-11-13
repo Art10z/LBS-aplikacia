@@ -81,16 +81,20 @@ function deriveRhymeKey(raw) {
   return norm.slice(-3);
 }
 
-function analyze(rawText) {
+export function analyze(rawText) {
   const lines = rawText.split(/\r?\n/);
   const analyzed = [];
   const globalWordCounts = new Map();
+  const allWordsForMetrics = [];
 
   lines.forEach((text, lineIdx) => {
     const heading = isHeadingLine(text);
     const tokens = tokenize(text).map(w => {
       const norm = normalizeFullWord(w);
       globalWordCounts.set(norm, (globalWordCounts.get(norm) || 0) + 1);
+      if (!heading) {
+        allWordsForMetrics.push(norm);
+      }
       return { raw: w, norm, rhymeKey: heading ? null : deriveRhymeKey(w), dupPairSecond: false, dupFull: false };
     });
     for (let i = 0; i < tokens.length - 1; i++) {
@@ -137,10 +141,26 @@ function analyze(rawText) {
     });
   });
 
-  return { lines: analyzed };
+  // Vypocet metrik
+  const nonEmptyLines = lines.filter(l => l.trim().length > 0 && !isHeadingLine(l));
+  const uniqueWordsCount = new Set(allWordsForMetrics).size;
+  const vocabularyRichness = allWordsForMetrics.length > 0 ? ((uniqueWordsCount / allWordsForMetrics.length) * 100).toFixed(1) : 0;
+  const avgWordsPerLine = nonEmptyLines.length > 0 ? (allWordsForMetrics.length / nonEmptyLines.length).toFixed(1) : 0;
+  const duplicateCount = Array.from(globalWordCounts.values()).filter(c => c > 1).length;
+
+  const metrics = {
+      lines: nonEmptyLines.length,
+      words: allWordsForMetrics.length,
+      uniqueWords: uniqueWordsCount,
+      vocabularyRichness: `${vocabularyRichness}%`,
+      avgWordsPerLine: avgWordsPerLine,
+      duplicateCount: duplicateCount
+  };
+
+  return { lines: analyzed, metrics };
 }
 
-function render(result, layerEl, mode) {
+export function render(result, layerEl, mode) {
   layerEl.innerHTML = '';
   result.lines.forEach(line => {
     const div = document.createElement('div');

@@ -1,9 +1,9 @@
-
 import Model from './model.js';
 import View from './view.js';
 import { MAX_BAR_LENGTH } from './constants.js';
 import * as Storage from './storage.js';
 import { showNotification, debounce, showLoading, hideLoading } from './utils.js';
+import { analyze as analyzeUnified, render as renderUnified } from './unifiedAnalysis.js';
 import { RhymeAnalyzer } from './rhymeAnalyzer.js';
 
 // =================================================================================
@@ -157,9 +157,9 @@ const Controller = {
         if (View.dom.exportAllBtn) {
             View.dom.exportAllBtn.addEventListener('click', () => this._exportAll());
         }
-        if (View.dom.toggleHighlightBtn) {
-            View.dom.toggleHighlightBtn.addEventListener('click', () => this._toggleHighlight());
-        }
+        // if (View.dom.toggleHighlightBtn) {
+        //     View.dom.toggleHighlightBtn.addEventListener('click', () => this._toggleHighlight());
+        // }
         if (View.dom.toggleResearchHighlightBtn) {
             View.dom.toggleResearchHighlightBtn.addEventListener('click', () => this._toggleResearchHighlight());
         }
@@ -202,6 +202,62 @@ const Controller = {
         // Show selected tab and activate button
         if (tabs[tabName]) tabs[tabName].classList.add('active');
         if (buttons[tabName]) buttons[tabName].classList.add('active');
+
+        // If switching to analysis tab, run the analysis
+        if (tabName === 'analysis') {
+            this._runAndDisplayUnifiedAnalysis();
+        }
+    },
+
+    _getCanvasText() {
+        // Convert trackData to text format for analysis
+        const lines = [];
+        Model.state.trackData.forEach(section => {
+            lines.push(`[${section.type}]`);
+            section.bars.forEach(bar => {
+                lines.push(bar.text || '');
+            });
+        });
+        return lines.join('\n');
+    },
+
+    _runAndDisplayUnifiedAnalysis() {
+        // Get text from current project's canvas (trackData)
+        const canvasText = this._getCanvasText();
+        const metricsContainer = document.getElementById('analysis-metrics-container');
+        const layer = document.getElementById('analysis-layer');
+        // Default mode is 'duplicates', can be changed later with UI controls
+        const analysisMode = 'duplicates'; 
+
+        if (!canvasText.trim()) {
+            if (metricsContainer) metricsContainer.innerHTML = '<div class="metrics-card"><p>Vložte text do importéra pre spustenie analýzy.</p></div>';
+            if (layer) layer.innerHTML = '';
+            return;
+        }
+
+        const result = analyzeUnified(canvasText);
+
+        // Render metrics
+        if (metricsContainer && result.metrics) {
+            metricsContainer.innerHTML = `
+                <div class="metrics-card">
+                    <h4>📊 Štatistiky</h4>
+                    <table class="metrics-table">
+                        <tr><td>Riadky:</td><td><strong>${result.metrics.lines}</strong></td></tr>
+                        <tr><td>Slová celkom:</td><td><strong>${result.metrics.words}</strong></td></tr>
+                        <tr><td>Unikátne slová:</td><td><strong>${result.metrics.uniqueWords}</strong></td></tr>
+                        <tr><td>Bohatosť slovníka:</td><td><strong>${result.metrics.vocabularyRichness}</strong></td></tr>
+                        <tr><td>Priem. slov/riadok:</td><td><strong>${result.metrics.avgWordsPerLine}</strong></td></tr>
+                        <tr><td>Počet duplikátov:</td><td><strong>${result.metrics.duplicateCount}</strong></td></tr>
+                    </table>
+                </div>
+            `;
+        }
+
+        // Render highlighted text using the imported render function
+        if (layer) {
+            renderUnified(result, layer, analysisMode);
+        }
     },
     
     _markAsDirty() {
@@ -789,7 +845,7 @@ const Controller = {
             placeholder = document.createElement('div');
             placeholder.id = 'drag-placeholder';
         }
-        // Priradíme správnú triedu podľa toho, čo ťaháme
+        // Priradíme správnu triedu podľa toho, čo ťaháme
         placeholder.className = isBar ? 'bar-drag-placeholder' : 'section-drag-placeholder';
     
         if (afterElement) {
