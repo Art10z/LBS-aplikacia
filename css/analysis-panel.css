@@ -51,8 +51,12 @@
     bottom: 0 !important;
     width: 100vw !important;
     height: 100vh !important;
+    max-width: 100vw !important;
+    max-height: 100vh !important;
     margin: 0 !important;
     padding: 0 !important;
+    border: none !important;
+    box-sizing: border-box !important;
     background: var(--bg-main);
     z-index: 10000;
     display: flex;
