@@ -34,10 +34,9 @@ README.md             # Tento dokument
 - Debounce s možnosťou `cancel()` – používané pri autosave.
 - Export JSON pokrýva všetky projekty + ich výskum.
 - TXT export finálnej makety (`saveAsTxtBtn`).
-- Nový systém zvýraznenia duplicitných slov: frekvenčný režim nahradený za per‑riadkový detektor bezprostredných duplikátov ("slovo slovo"):
-  - V dynamickom plátne zvýrazňuje druhý výskyt v páre.
-  - Vo Výskume ignoruje názvy sekcií (napr. `Intro`, `Verse 1`, `[Chorus]`, `Bridge:`).
-  - Prepínače: hlavný (plátno) `#toggleHighlightBtn`, výskum `#toggleResearchHighlightBtn`.
+- Systém zvýraznenia duplicitných slov integrovaný do záložky "Analýza" v modálnom okne "Výskum & Analýza".
+  - Analyzuje text z dynamického plátna aktuálneho projektu.
+  - Zobrazuje metriky: počet riadkov, slov, jedinečných slov, slovná zásoba, priemerné slová/riadok, počet duplikátov.
   - Štýl triedy: `.hl-layer .duppair` (žlté podfarbenie).
 
 ## Storage API (zhrnutie)

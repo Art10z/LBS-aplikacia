@@ -35,15 +35,15 @@ const View = {
             researchInput: byId('research-input'),
             addToPaletteBtn: byId('addToPaletteBtn'),
             analyzeRhymesBtn: byId('analyzeRhymesBtn'),
-            resetRhymesBtn: byId('resetRhymesBtn'),
+            // resetRhymesBtn: byId('resetRhymesBtn'), // Removed - duplicitné tlačidlo
             resetRhymesMainBtn: byId('resetRhymesMainBtn'),
             inspirationPalette: byId('inspiration-palette'),
             templateInserter: byId('template-inserter'),
             projectTabsContainer: byId('project-tabs-container'),
             saveStatus: byId('save-status'),
             exportAllBtn: byId('exportAllBtn'),
-            toggleHighlightBtn: byId('toggleHighlightBtn'),
-            toggleResearchHighlightBtn: byId('toggleResearchHighlightBtn'),
+            // toggleHighlightBtn: byId('toggleHighlightBtn'), // Removed - duplicitná funkcia
+            // toggleResearchHighlightBtn: byId('toggleResearchHighlightBtn'), // Removed - duplicitná funkcia
             // Unified overlay (v3.8 id 'unified-overlay', v4 preview id 'unified-panel-overlay')
             openUnifiedBtn: byId('openUnifiedBtn'),
             unifiedOverlay: byId('unified-overlay', 'unified-panel-overlay'),

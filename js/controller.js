@@ -148,9 +148,7 @@ const Controller = {
         if (View.dom.analyzeRhymesBtn) {
             View.dom.analyzeRhymesBtn.addEventListener('click', () => this._analyzeRhymes());
         }
-        if (View.dom.resetRhymesBtn) {
-            View.dom.resetRhymesBtn.addEventListener('click', () => this._resetRhymes());
-        }
+        // resetRhymesBtn removed - duplicitné tlačidlo (funkcia sa používa v resetRhymesMainBtn)
         if (View.dom.resetRhymesMainBtn) {
             View.dom.resetRhymesMainBtn.addEventListener('click', () => this._resetRhymes());
         }
@@ -160,9 +158,7 @@ const Controller = {
         // if (View.dom.toggleHighlightBtn) {
         //     View.dom.toggleHighlightBtn.addEventListener('click', () => this._toggleHighlight());
         // }
-        if (View.dom.toggleResearchHighlightBtn) {
-            View.dom.toggleResearchHighlightBtn.addEventListener('click', () => this._toggleResearchHighlight());
-        }
+        // toggleResearchHighlightBtn removed - duplicitná funkcia
         
         if (View.dom.inspirationPalette) {
             View.dom.inspirationPalette.addEventListener('click', e => this._handlePaletteClick(e));
@@ -1093,6 +1089,7 @@ const Controller = {
         // Initial render update/hide
         if (this.highlightEnabled) this._scheduleHighlights();
     },
+    // Research highlight toggle methods removed - duplicitná funkcia (máme to v anályze)
     _applyHighlightUIState() {
         const btn = View.dom.toggleHighlightBtn;
         const body = document.body;
@@ -1120,44 +1117,7 @@ const Controller = {
         if (this.highlightEnabled) this._scheduleHighlights();
     },
 
-    // Research highlight toggle
-    _initResearchHighlightToggle() {
-        try {
-            const saved = localStorage.getItem('lbs_highlight_research_enabled');
-            if (saved === '0') this.highlightResearchEnabled = false;
-        } catch {}
-        this._applyResearchHighlightUIState();
-        // Only schedule if enabled; otherwise skip initial render for research textarea
-        if (this.highlightResearchEnabled) this._scheduleHighlights();
-    },
-    _applyResearchHighlightUIState() {
-        const btn = View.dom.toggleResearchHighlightBtn;
-        const body = document.body;
-        if (!body) return;
-        if (this.highlightResearchEnabled) {
-            body.classList.remove('research-highlight-off');
-            if (btn) {
-                btn.classList.add('active');
-                btn.setAttribute('aria-pressed', 'true');
-                const lbl = btn.querySelector('.toggle-label');
-                if (lbl) lbl.textContent = 'Highlight ON';
-            }
-        } else {
-            body.classList.add('research-highlight-off');
-            if (btn) {
-                btn.classList.remove('active');
-                btn.setAttribute('aria-pressed', 'false');
-                const lbl = btn.querySelector('.toggle-label');
-                if (lbl) lbl.textContent = 'Highlight OFF';
-            }
-        }
-    },
-    _toggleResearchHighlight() {
-        this.highlightResearchEnabled = !this.highlightResearchEnabled;
-        try { localStorage.setItem('lbs_highlight_research_enabled', this.highlightResearchEnabled ? '1' : '0'); } catch {}
-        this._applyResearchHighlightUIState();
-        if (this.highlightResearchEnabled) this._scheduleHighlights();
-    },
+    // Research highlight toggle methods removed - duplicitná funkcia
 
     // Source Importer (Importér Textu) highlight initialization
     _initSourceImporterHighlight() {

@@ -475,11 +475,7 @@ html, .panel-content, #maketaOutput, #project-list, #research-input {
 #toggleHighlightBtn.active { background: #3a4753; border-color: #4d5c69; }
 #toggleHighlightBtn.active .toggle-label { color: #fff; }
 
-/* Research-specific highlight off state */
-body.research-highlight-off #research-overlay .hl-layer { display: none !important; }
-
-#toggleResearchHighlightBtn.active { background: #3a4753; border-color: #4d5c69; }
-#toggleResearchHighlightBtn.active .toggle-label { color: #fff; }
+/* Research highlight toggle removed - duplicitná funkcia */
 
 /* === PRO LOOK REFINEMENT LAYER (append) ===================================== */
 :root {
