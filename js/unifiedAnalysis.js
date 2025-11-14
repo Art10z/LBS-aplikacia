@@ -177,20 +177,23 @@ export function render(result, layerEl, mode) {
       const idx = original.indexOf(tok.raw, cursor);
       const between = original.slice(cursor, idx);
       if (between) div.appendChild(document.createTextNode(between));
-      const span = document.createElement('span');
-      span.textContent = tok.raw;
-      span.className = 'ua-token';
-      if (mode === 'duplicates') {
-        if (tok.dupPairSecond) span.classList.add('dup-pair');
-        if (tok.dupFull) span.classList.add('dup-full');
-      } else if (mode === 'rhyme') {
-        if (tok.rhymeGroup) {
-          span.classList.add('rhyme-token');
-          span.dataset.rhyme = tok.rhymeGroup;
+      let isDupe = false;
+      if (tok.norm && result.metrics && tok.norm.length >= 3) {
+        const wordCount = result.lines
+          .flatMap(l => l.tokens)
+          .filter(t => t.norm === tok.norm).length;
+        if (wordCount > 1) {
+          isDupe = true;
         }
-        if (tok.dupFull) span.classList.add('dup-full-lite');
       }
-      div.appendChild(span);
+      if (isDupe) {
+        const span = document.createElement('span');
+        span.textContent = tok.raw;
+        span.className = 'dup-highlight';
+        div.appendChild(span);
+      } else {
+        div.appendChild(document.createTextNode(tok.raw));
+      }
       cursor = idx + tok.raw.length;
     });
     const tail = original.slice(cursor);

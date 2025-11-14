@@ -92,15 +92,7 @@ const Controller = {
         if (View.dom.addTemplateTagBtn) {
             View.dom.addTemplateTagBtn.addEventListener('click', () => this._insertTextAtCursor(View.dom.sourceInput, '[ Značka ]'));
         }
-        
-        // Source input (Importér) - add highlighting for duplicates
-        if (View.dom.sourceInput) {
-            View.dom.sourceInput.addEventListener('input', () => {
-                try {
-                    this._scheduleTAHighlight(View.dom.sourceInput);
-                } catch (e) { /* ignore */ }
-            });
-        }
+            // ...highlightovanie duplikátov v Importéri odstránené, ponechané len v analýze...
         
         document.addEventListener('keydown', e => this._handleGlobalKeyDown(e));
 
@@ -230,7 +222,7 @@ const Controller = {
 
         const result = analyzeUnified(canvasText);
 
-        // Render metrics
+        // Render metrics (pravý stĺpec)
         if (metricsContainer && result.metrics) {
             metricsContainer.innerHTML = `
                 <div class="metrics-card">
@@ -247,7 +239,7 @@ const Controller = {
             `;
         }
 
-        // Render highlighted text using the imported render function
+        // Render highlighted text (ľavý stĺpec, zvýraznenie duplikátov)
         if (layer) {
             renderUnified(result, layer, analysisMode);
         }

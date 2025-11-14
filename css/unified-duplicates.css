@@ -1,3 +1,102 @@
+/* Nový jednotný štýl pre zvýraznenie duplikátov */
+.dup-highlight {
+    background: #fdf6c3;
+    color: #7a5c00;
+    font-size: 1.18em;
+    font-weight: 600;
+    font-family: 'Segoe UI', Arial, sans-serif;
+    padding: 4px 10px;
+    border-radius: 8px;
+    letter-spacing: 0.04em;
+    box-shadow: 0 1px 4px 0 rgba(0,0,0,0.07);
+    border: 1px solid #f5e7a1;
+    transition: background 0.2s, color 0.2s;
+}
+.dup-yellow, .dup-red {
+    border-radius: 4px;
+    padding: 2px 4px;
+    font-weight: 600;
+    font-family: 'Segoe UI', Arial, sans-serif;
+    box-shadow: 0 1px 4px 0 rgba(0,0,0,0.07);
+}
+.analysis-columns {
+    display: flex;
+    flex-direction: row;
+    gap: 32px;
+    width: 100%;
+    min-height: 350px;
+}
+
+.analysis-text {
+    flex: 0 0 60%;
+    max-width: 60%;
+    word-break: break-word;
+    font-family: 'Segoe UI', Arial, sans-serif;
+    font-size: 1.08rem;
+    color: #fff;
+    background: transparent;
+    padding: 16px 0 16px 8px;
+    line-height: 1.6;
+    letter-spacing: 0.01em;
+    white-space: pre-wrap;
+}
+
+.analysis-stats {
+    flex: 0 0 40%;
+    max-width: 40%;
+    background: transparent;
+    padding: 16px 8px 16px 0;
+    font-family: 'Segoe UI', Arial, sans-serif;
+    font-size: 1rem;
+    color: #b3c6f7;
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-start;
+}
+.metrics-table td:first-child {
+    color: #b3c6f7;
+    font-size: 17px;
+    font-weight: 700;
+    font-family: 'Segoe UI', Arial, sans-serif;
+    background: none;
+    letter-spacing: 0.1px;
+}
+/* .metrics-table td:first-child { pôvodne bez zvýraznenia } */
+/* ================================
+    METRICS STYLES
+    ================================ */
+.metrics-card {
+    background: linear-gradient(135deg, #e3eafe 0%, #f7faff 100%);
+    border-radius: var(--radius-md);
+    box-shadow: var(--shadow-sm);
+    padding: 20px 28px;
+    margin-bottom: 20px;
+    border: 1px solid var(--primary);
+}
+.metrics-card h4 {
+    margin-top: 0;
+    margin-bottom: 14px;
+    font-size: 18px;
+    color: #3b5fc4;
+    font-weight: 700;
+    letter-spacing: 0.5px;
+}
+.metrics-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 16px;
+    color: #2d3e6e;
+    background: transparent;
+}
+.metrics-table td {
+    padding: 8px 12px;
+    border-bottom: 1px solid #c3dafe;
+}
+.metrics-table td strong {
+    color: #5568d3;
+    font-weight: 700;
+    font-size: 16px;
+}
 /**
  * UNIFIED DUPLICATE HIGHLIGHTING STYLES
  * Čistý, moderný dizajn pre všetky duplicate detection funkcie

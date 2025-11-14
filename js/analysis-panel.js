@@ -68,22 +68,22 @@
             <div class="modal-content">
                 <button class="modal-close" aria-label="Zavrieť">×</button>
                 <h3>🔬 Analýza textu</h3>
-                <div class="analysis-body">
-                    <div class="analysis-left">
+                <div class="analysis-columns">
+                    <div class="analysis-text">
                         <div class="analysis-actions">
                             <button class="run-analysis-btn tool-btn">▶️ Spustiť analýzu</button>
                             <button class="show-preview-btn tool-btn">👁️ Preview zvýraznenia</button>
                             <button class="export-report-btn tool-btn">💾 Exportovať report</button>
                         </div>
+                        <h4>Náhľad textu</h4>
+                        <div class="analysis-preview preview-text">${escapeHtml(text)}</div>
+                    </div>
+                    <div class="analysis-stats">
                         <div class="analysis-metrics" aria-live="polite">
                             <div class="metrics-placeholder">
                                 <p>Klikni na "Spustiť analýzu" pre zobrazenie metrík</p>
                             </div>
                         </div>
-                    </div>
-                    <div class="analysis-right">
-                        <h4>Náhľad textu</h4>
-                        <div class="analysis-preview preview-text">${escapeHtml(text)}</div>
                     </div>
                 </div>
             </div>
@@ -126,10 +126,15 @@
                 let duplicateCount = 0;
 
                 if (window.duplicateHandler) {
-                    const analysis = window.duplicateHandler.analyze(source);
-                    duplicates = analysis.duplicates || [];
-                    duplicateCount = duplicates.length;
-                    previewEl.innerHTML = window.duplicateHandler.renderHighlighted(source, duplicates);
+                    // Používame unifiedAnalysis na zvýraznenie duplikátov
+                    import('./unifiedAnalysis.js').then(mod => {
+                        const result = mod.analyze(source);
+                        duplicateCount = result.metrics.duplicateCount;
+                        // Vytvoríme dočasný element na vykreslenie
+                        const tempDiv = document.createElement('div');
+                        mod.render(result, tempDiv, 'duplicates');
+                        previewEl.innerHTML = tempDiv.innerHTML;
+                    });
                 } else if (window.DuplicateHighlighter) {
                     const highlighter = new window.DuplicateHighlighter();
                     const pairs = highlighter.findDuplicates(source);
