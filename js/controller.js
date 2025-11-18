@@ -3,8 +3,7 @@ import View from './view.js';
 import { MAX_BAR_LENGTH } from './constants.js';
 import * as Storage from './storage.js';
 import { showNotification, debounce, showLoading, hideLoading } from './utils.js';
-import { analyze as analyzeUnified, render as renderUnified } from './unifiedAnalysis.js';
-import { RhymeAnalyzer } from './rhymeAnalyzer.js';
+import { analyze, render, findRhymingWords } from './unifiedAnalysis.js';
 
 // =================================================================================
 // CONTROLLER ("The Conductor" / "Dirigent")
@@ -23,11 +22,6 @@ const Controller = {
     _hlScrollBound: new WeakSet(),
     _hlRAF: new WeakMap(),
     highlightEnabled: true,
-    highlightResearchEnabled: true,
-    _uaOverlay: null,
-    analysisSource: 'canvas',
-    // Unicode regex capability detection (for fallback patterns)
-    _hasUnicodeProps: (() => { try { new RegExp('\\p{L}', 'u'); return true; } catch { return false; } })(),
 
     init() {
         View.init();
@@ -39,11 +33,6 @@ const Controller = {
         if (preferred) this.singleProjectMode = true;
         this._initializeSession(preferred);
         this._loadResearchForActive();
-        this._initHighlightToggle();
-        this._initResearchHighlightToggle();
-        this._initSourceImporterHighlight();
-        
-        // Analysis panel sa inicializuje automaticky cez analysis-panel.js
     },
 
     _readProjectFromURL() {
@@ -92,7 +81,6 @@ const Controller = {
         if (View.dom.addTemplateTagBtn) {
             View.dom.addTemplateTagBtn.addEventListener('click', () => this._insertTextAtCursor(View.dom.sourceInput, '[ Značka ]'));
         }
-            // ...highlightovanie duplikátov v Importéri odstránené, ponechané len v analýze...
         
         document.addEventListener('keydown', e => this._handleGlobalKeyDown(e));
 
@@ -103,7 +91,7 @@ const Controller = {
             View.dom.assemblerContent.addEventListener('keydown', e => this._handleBarKeydown(e));
             View.dom.assemblerContent.addEventListener('paste', e => this._handleBarPaste(e));
             View.dom.assemblerContent.addEventListener('dragstart', e => this._handleDragStart(e));
-            View.dom.assemblerContent.addEventListener('dragover', e => this._handleDragOver(e)); // --- ZMENA ---
+            View.dom.assemblerContent.addEventListener('dragover', e => this._handleDragOver(e));
             View.dom.assemblerContent.addEventListener('drop', e => this._handleDrop(e));
             View.dom.assemblerContent.addEventListener('dragend', () => this._handleDragEnd());
         }
@@ -129,9 +117,6 @@ const Controller = {
         if (View.dom.researchInput) {
             View.dom.researchInput.addEventListener('input', () => {
                 this._saveResearch();
-                try {
-                    if (this.highlightResearchEnabled) this._scheduleTAHighlight(View.dom.researchInput);
-                } catch (e) { /* ignore */ }
             });
         }
         if (View.dom.addToPaletteBtn) {
@@ -140,19 +125,16 @@ const Controller = {
         if (View.dom.analyzeRhymesBtn) {
             View.dom.analyzeRhymesBtn.addEventListener('click', () => this._analyzeRhymes());
         }
-        // resetRhymesBtn removed - duplicitné tlačidlo (funkcia sa používa v resetRhymesMainBtn)
         if (View.dom.resetRhymesMainBtn) {
             View.dom.resetRhymesMainBtn.addEventListener('click', () => this._resetRhymes());
         }
         if (View.dom.exportAllBtn) {
             View.dom.exportAllBtn.addEventListener('click', () => this._exportAll());
         }
-        // ...removed legacy highlight event listeners
         
         if (View.dom.inspirationPalette) {
             View.dom.inspirationPalette.addEventListener('click', e => this._handlePaletteClick(e));
         }
-        // removed duplicate binding of resetRhymesMainBtn
 
         if (View.dom.projectTabsContainer) {
             View.dom.projectTabsContainer.addEventListener('click', e => this._handleTabsClick(e));
@@ -211,29 +193,28 @@ const Controller = {
         const canvasText = this._getCanvasText();
         const metricsContainer = document.getElementById('analysis-metrics-container');
         const layer = document.getElementById('analysis-layer');
-        // Default mode is 'duplicates', can be changed later with UI controls
-        const analysisMode = 'duplicates'; 
 
         if (!canvasText.trim()) {
-            if (metricsContainer) metricsContainer.innerHTML = '<div class="metrics-card"><p>Vložte text do importéra pre spustenie analýzy.</p></div>';
+            if (metricsContainer) metricsContainer.innerHTML = '<div class="metrics-card"><p>Plátno je prázdne. Vložte text do importéra pre spustenie analýzy.</p></div>';
             if (layer) layer.innerHTML = '';
             return;
         }
 
-        const result = analyzeUnified(canvasText);
+        const result = analyze(canvasText);
 
         // Render metrics (pravý stĺpec)
         if (metricsContainer && result.metrics) {
+            const m = result.metrics;
             metricsContainer.innerHTML = `
                 <div class="metrics-card">
                     <h4>📊 Štatistiky</h4>
                     <table class="metrics-table">
-                        <tr><td>Riadky:</td><td><strong>${result.metrics.lines}</strong></td></tr>
-                        <tr><td>Slová celkom:</td><td><strong>${result.metrics.words}</strong></td></tr>
-                        <tr><td>Unikátne slová:</td><td><strong>${result.metrics.uniqueWords}</strong></td></tr>
-                        <tr><td>Bohatosť slovníka:</td><td><strong>${result.metrics.vocabularyRichness}</strong></td></tr>
-                        <tr><td>Priem. slov/riadok:</td><td><strong>${result.metrics.avgWordsPerLine}</strong></td></tr>
-                        <tr><td>Počet duplikátov:</td><td><strong>${result.metrics.duplicateCount}</strong></td></tr>
+                        <tr><td>Riadky:</td><td><strong>${m.lines}</strong></td></tr>
+                        <tr><td>Slová celkom:</td><td><strong>${m.words}</strong></td></tr>
+                        <tr><td>Unikátne slová:</td><td><strong>${m.uniqueWords}</strong></td></tr>
+                        <tr><td>Bohatosť slovníka:</td><td><strong>${m.vocabularyRichness}</strong></td></tr>
+                        <tr><td>Priem. slov/riadok:</td><td><strong>${m.avgWordsPerLine}</strong></td></tr>
+                        <tr><td>Počet duplikátov:</td><td><strong>${m.duplicateCount}</strong></td></tr>
                     </table>
                 </div>
             `;
@@ -241,7 +222,7 @@ const Controller = {
 
         // Render highlighted text (ľavý stĺpec, zvýraznenie duplikátov)
         if (layer) {
-            renderUnified(result, layer, analysisMode);
+            render(result, layer, 'duplicates');
         }
     },
     
@@ -279,8 +260,6 @@ const Controller = {
              showNotification('Projekt uložený!');
         }, 150); // Short delay for user feedback
     },
-
-    // removed legacy _processSourceText (duplicate of refresh)
 
     // Prepíše plátno okamžite podľa aktuálneho textu v importéri (bez potvrdenia)
     _forceRefreshFromImporter() {
@@ -321,8 +300,6 @@ const Controller = {
         showNotification('Importér bol aktualizovaný z plátna.');
     },
     
-    // ...removed legacy _performTextProcessing
-
     // Jednotná logika parsovania importéra -> trackData (odstránená duplicita)
     _parseImporterText(raw) {
         const lines = raw.split('\n').map(line => line.trim()).filter(line => line !== '');
@@ -363,7 +340,6 @@ const Controller = {
             .catch(() => showNotification('Kopírovanie zlyhalo', 'danger'));
     },
 
-    // --- PRIDANÁ NOVÁ FUNKCIA ---
     _saveMaketaAsTxt() {
         const textToSave = View.dom.maketaOutput.textContent;
         if (!textToSave.trim()) {
@@ -371,30 +347,24 @@ const Controller = {
             return;
         }
     
-        // Vytvor 'blob' (dátový objekt)
         const blob = new Blob([textToSave], { type: 'text/plain;charset=utf-8' });
     
-        // Vytvor dočasný <a> odkaz
         const link = document.createElement('a');
         link.href = URL.createObjectURL(blob);
         
-        // Názov súboru bude podľa aktívneho projektu
         const fileName = this.activeProjectName 
             ? `${this.activeProjectName.replace(/ /g, '_')}.txt` 
             : 'moj_text.txt';
         link.download = fileName;
     
-        // Simuluj kliknutie na stiahnutie
         document.body.appendChild(link);
         link.click();
         
-        // Uprac po sebe
         document.body.removeChild(link);
         URL.revokeObjectURL(link.href);
         
         showNotification(`Súbor "${fileName}" sa sťahuje.`);
     },
-    // --- KONIEC PRIDANEJ FUNKCIE ---
 
     _handleTagButtonClick(e) {
         if (e.target.classList.contains('template-tag-btn')) {
@@ -426,7 +396,6 @@ const Controller = {
             if(counter?.classList.contains('char-counter')) {
                 counter.textContent = `${e.target.value.length}/${MAX_BAR_LENGTH}`;
             }
-            try { if (this.highlightEnabled) this._scheduleTAHighlight(e.target); } catch (e) { /* ignore */ }
         }
     },
     _handleBarKeydown(e) {
@@ -455,12 +424,6 @@ const Controller = {
         if(counter?.classList.contains('char-counter')) {
             counter.textContent = `${ta.value.length}/${MAX_BAR_LENGTH}`;
         }
-        try {
-            if (this.highlightEnabled) {
-                this._updateTextareaHighlight(ta);
-                this._syncLayerScroll(ta);
-            }
-        } catch {}
     },
 
     _handleCanvasBlur(e) {
@@ -547,18 +510,11 @@ const Controller = {
         showLoading('Analyzujem rýmy…', 200);
         View.dom.analyzeRhymesBtn.disabled = true;
         try {
-            const words = RhymeAnalyzer.extractWords(researchText);
-
-            if (words.length === 0) {
-                showNotification('Nenašli sa žiadne slová na analýzu.', 'danger');
-                return; // V bloku 'finally' sa tlačidlo aj tak povolí
-            }
-
-            const rhymingWords = RhymeAnalyzer.findRhymes(words);
+            const rhymingWords = findRhymingWords(researchText);
 
             if (rhymingWords.length === 0) {
                 showNotification('Nenašli sa žiadne rýmy.', 'warning');
-                return; // V bloku 'finally' sa tlačidlo aj tak povolí
+                return;
             }
 
             const addedItems = Model.addMultiplePaletteItems(rhymingWords);
@@ -666,68 +622,54 @@ const Controller = {
         View.renderProjectTabs(this.projects, this.activeProjectName, this.projects.length < this.MAX_PROJECTS, this.singleProjectMode);
         this._updateCanvasAndMaketa();
         View.renderFullPalette(Model.state.paletteItems);
-        try { this._scheduleHighlights(); } catch (e) { /* ignore */ }
     },
 
     _updateCanvasAndMaketa() {
         View.renderInitialCanvas(Model.state.trackData);
         View.renderMaketa(Model.state.trackData);
-        try { this._scheduleHighlights(); } catch (e) { /* ignore */ }
     },
     
     _saveResearch() { Storage.saveResearch(this.activeProjectName, View.dom.researchInput.value); },
     _loadResearchForActive() { 
         View.dom.researchInput.value = Storage.loadResearch(this.activeProjectName) || '';
-        try { if (this.highlightResearchEnabled) this._scheduleTAHighlight(View.dom.researchInput); } catch (e) { /* ignore */ }
     },
 
-    // DRAG & DROP LOGIC
-    // --- ZMENENÁ FUNKCIA ---
     _handleDragStart(e) {
-         // Ťahanie sa teraz začína len na elemente s "draggable=true", čo je náš úchyt
          const handle = e.target.closest('.bar-drag-handle, .section-drag-handle');
          
-         // Ak ťahanie nezačalo na úchyte, ignorujeme to
          if (!handle) { 
              e.preventDefault();
              return; 
          }
             
-        // Naďalej však pracujeme s rodičovským kontajnerom (bar alebo sekcia)
         this.draggedItem = handle.closest('.bar-item, .section-container');
         e.dataTransfer.effectAllowed = 'move';
         
-        // Pridáme triedu na telo, aby sme mohli globálne štýlovať (napr. zmeniť kurzor)
         document.body.classList.add('is-dragging');
         
         setTimeout(() => {
-            if (this.draggedItem) { // check if drag wasn't cancelled
+            if (this.draggedItem) {
                  this.draggedItem.classList.add('dragging');
             }
         }, 0);
     },
-    // --- ZMENENÁ FUNKCIA ---
     _handleDragEnd() {
-        this._removePlaceholder(); // Upraceme placeholder
-        document.body.classList.remove('is-dragging'); // Odstránime globálnu triedu
+        this._removePlaceholder();
+        document.body.classList.remove('is-dragging');
 
         if (this.draggedItem) {
             this.draggedItem.classList.remove('dragging');
             this.draggedItem = null;
             
-            // After a drop, the model is updated. We need to re-render the canvas
-            // to reflect the new state accurately, especially for inter-section drops.
-            // This prevents visual inconsistencies.
             View.renderInitialCanvas(Model.state.trackData); 
             View.updateAllSectionLabelsInDOM(Model.state.trackData);
 
             this._markAsDirty();
         }
     },
-    // --- ZMENENÁ FUNKCIA ---
     _handleDrop(e) {
         e.preventDefault();
-        this._removePlaceholder(); // Upraceme placeholder pred vložením
+        this._removePlaceholder();
 
         if (!this.draggedItem) return;
         const isBar = this.draggedItem.classList.contains('bar-item');
@@ -738,13 +680,12 @@ const Controller = {
         
         if (isBar) {
             const section = e.target.closest('.section-container');
-            if (!section) return; // Bar nemôže ísť mimo sekcie
+            if (!section) return;
             
             targetContainer = section.querySelector('.bars-container');
             afterElement = this._getDragAfterElement(targetContainer, e.clientY, '.bar-item');
             newIndex = afterElement ? Array.from(targetContainer.children).indexOf(afterElement) : targetContainer.children.length;
             
-            // Špeciálny prípad pre placeholder - ak je placeholder posledný, index musí byť upravený
             const placeholder = targetContainer.querySelector('.bar-drag-placeholder');
             if (placeholder && newIndex > 0) {
                  const placeholderIndex = Array.from(targetContainer.children).indexOf(placeholder);
@@ -760,7 +701,6 @@ const Controller = {
             afterElement = this._getDragAfterElement(targetContainer, e.clientY, '.section-container');
             newIndex = afterElement ? Array.from(targetContainer.children).indexOf(afterElement) : targetContainer.children.length;
 
-            // Špeciálny prípad pre placeholder
             const placeholder = targetContainer.querySelector('.section-drag-placeholder');
              if (placeholder && newIndex > 0) {
                  const placeholderIndex = Array.from(targetContainer.children).indexOf(placeholder);
@@ -781,8 +721,6 @@ const Controller = {
         }, { offset: Number.NEGATIVE_INFINITY }).element;
     },
 
-    // --- PRIDANÉ NOVÉ FUNKCIE PRE PLACEHOLDER ---
-    
     _handleDragOver(e) {
         e.preventDefault();
         if (!this.draggedItem) return;
@@ -794,18 +732,15 @@ const Controller = {
         let afterElement = null;
 
         if (isBar) {
-            // Ak ťaháme bar, cieľom môže byť len kontajner barov v rámci sekcie
             const section = e.target.closest('.section-container');
             if (section) { 
                 container = section.querySelector('.bars-container');
                 afterElement = this._getDragAfterElement(container, e.clientY, selector);
             } else {
-                // Sme mimo sekcie (napr. v medzere), bar nemôže ísť mimo sekcie
                 this._removePlaceholder();
                 return;
             }
         } else {
-            // Ak ťaháme sekciu, cieľom je hlavný kontajner plátna
             container = e.target.closest('#assembler-content');
             if (container) {
                 afterElement = this._getDragAfterElement(container, e.clientY, selector);
@@ -815,7 +750,6 @@ const Controller = {
             }
         }
         
-        // Vykreslíme/presunieme placeholder
         if (container) {
             this._updatePlaceholder(container, afterElement, isBar);
         } else {
@@ -823,26 +757,21 @@ const Controller = {
         }
     },
 
-    /** Vytvorí alebo presunie vizuálny placeholder. */
     _updatePlaceholder(container, afterElement, isBar) {
         let placeholder = document.getElementById('drag-placeholder');
         if (!placeholder) {
             placeholder = document.createElement('div');
             placeholder.id = 'drag-placeholder';
         }
-        // Priradíme správnu triedu podľa toho, čo ťaháme
         placeholder.className = isBar ? 'bar-drag-placeholder' : 'section-drag-placeholder';
     
         if (afterElement) {
-            // Vložíme placeholder pred element, nad ktorým sme
             container.insertBefore(placeholder, afterElement);
         } else {
-            // Sme na konci, vložíme placeholder na koniec kontajnera
             container.appendChild(placeholder);
         }
     },
     
-    /** Odstráni vizuálny placeholder z DOMu. */
     _removePlaceholder() {
         const placeholder = document.getElementById('drag-placeholder');
         if (placeholder) {
@@ -850,272 +779,6 @@ const Controller = {
         }
     },
     
-    // --- KONIEC PRIDANÝCH FUNKCIÍ ---
-
-    // ================= REPEATED WORDS HIGHLIGHT (PER TEXTAREA) =================
-    _escapeHtml(s) {
-        return s.replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;','\'':'&#39;'}[c]));
-    },
-    _normalizeWord(w) { return w.toLocaleLowerCase(); },
-    _getWordRegex() { return this._hasUnicodeProps ? /[\p{L}\p{N}]+/gu : /[A-Za-z0-9À-ÖØ-öø-ÿĀ-ž]+/g; },
-    _getDupePairRegex() {
-        return this._hasUnicodeProps
-            ? /(\b(\p{L}+(?:['’\-]\p{L}+)*)\b)(\s+)(\2\b)/giu
-            : /(\b([A-Za-zÀ-ÖØ-öø-ÿĀ-ž]+(?:['’\-][A-Za-zÀ-ÖØ-öø-ÿĀ-ž]+)*)\b)(\s+)(\2\b)/gi;
-    },
-    _buildWordFreqFor(text) {
-        const freq = new Map();
-        const re = this._getWordRegex();
-        let m;
-        while ((m = re.exec(text)) !== null) {
-            const raw = m[0];
-            if (raw.length < 2) continue;
-            const key = this._normalizeWord(raw);
-            freq.set(key, (freq.get(key) || 0) + 1);
-        }
-        return freq;
-    },
-    // Restored original frequency renderer for bar inputs (shows counts: dup2/dup3)
-    _renderWithFreq(text, freq) {
-        const re = this._getWordRegex();
-        let out = '', last = 0, m;
-        while ((m = re.exec(text)) !== null) {
-            const start = m.index, end = start + m[0].length;
-            if (start > last) out += `<span class=\"t\">${this._escapeHtml(text.slice(last, start))}</span>`;
-            const key = this._normalizeWord(m[0]);
-            const cnt = freq.get(key) || 0;
-            if (cnt >= 3) out += `<span class=\"t dup3\">${this._escapeHtml(m[0])}</span>`;
-            else if (cnt === 2) out += `<span class=\"t dup2\">${this._escapeHtml(m[0])}</span>`;
-            else out += `<span class=\"t\">${this._escapeHtml(m[0])}</span>`;
-            last = end;
-        }
-        if (last < text.length) out += `<span class=\"t\">${this._escapeHtml(text.slice(last))}</span>`;
-        return out || '<span class=\"t\"></span>';
-    },
-    /**
-     * UNIFIED DUPLICATE HIGHLIGHTING (v4)
-     * Používa jediný modul duplicateHandler (js/features/duplicate-handler.js)
-     * Režimy:
-     *  - pairs: pôvodné zvýraznenie postupných párov (word word)
-     *  - all:   zvýraznenie všetkých duplikovaných slov cez duplicateHandler
-     */
-    _renderWithDupePairs(text, { ignoreBracketLines = false, mode = 'pairs' } = {}) {
-        if (!text) return '<span class="t"></span>';
-
-        // Unified duplicate handling
-        if (mode === 'all' && window.duplicateHandler) {
-            try {
-                const analysis = window.duplicateHandler.analyze(text);
-                if (analysis.duplicates && analysis.duplicates.length > 0) {
-                    return window.duplicateHandler.renderHighlighted(text, analysis.duplicates);
-                }
-            } catch (error) {
-                console.warn('duplicateHandler error, using fallback pair logic:', error);
-            }
-        }
-
-        // FALLBACK: Pôvodná pair detection (word word)
-        const lines = text.split('\n');
-        const dupeRE = this._getDupePairRegex();
-        const HEADING_WORDS = ['intro','verse','chorus','refrén','bridge','most','outro','pre-chorus','predrefrén','prechorus','tag','solo','interlude'];
-        
-        const isHeadingLine = (raw) => {
-            const t = raw.trim();
-            if (!t) return false;
-            if (/^\[[^\]]+\]$/.test(t)) return true;
-            const headingRe = this._hasUnicodeProps ? /^[\p{L}\p{N} .#\-]+:\s*$/u : /^[A-Za-z0-9À-ÖØ-öø-ÿĀ-ž .#\-]+:\s*$/;
-            if (headingRe.test(t)) {
-                const base = t.replace(/:\s*$/, '').replace(/\s*\d+$/, '').toLowerCase();
-                if (HEADING_WORDS.includes(base)) return true;
-            }
-            const base = t.replace(/\s*\d+$/, '').toLowerCase();
-            if (HEADING_WORDS.includes(base)) return true;
-            return false;
-        };
-
-        let out = '';
-        for (let i = 0; i < lines.length; i++) {
-            const line = lines[i];
-            const trimmed = line.trim();
-            if (ignoreBracketLines && isHeadingLine(trimmed)) {
-                out += this._escapeHtml(line);
-            } else {
-                let last = 0; let m;
-                while ((m = dupeRE.exec(line)) !== null) {
-                    const start = m.index;
-                    const end = start + m[0].length;
-                    const firstToken = m[1];
-                    const gap = m[3];
-                    const secondToken = m[4];
-                    if (start > last) out += this._escapeHtml(line.slice(last, start));
-                    out += this._escapeHtml(firstToken + gap);
-                    out += `<span class="duppair">${this._escapeHtml(secondToken)}</span>`;
-                    last = end;
-                    if (dupeRE.lastIndex <= start) dupeRE.lastIndex = start + 1;
-                }
-                if (last < line.length) out += this._escapeHtml(line.slice(last));
-            }
-            if (i < lines.length - 1) out += '\n';
-            dupeRE.lastIndex = 0;
-        }
-        return out || '<span class="t"></span>';
-    },
-    _ensureLayerForTextarea(ta) {
-        const parent = ta.parentElement;
-        if (!parent) return null;
-        const cs = getComputedStyle(parent);
-        if (cs.position === 'static') parent.style.position = 'relative';
-        let layer = parent.querySelector(':scope > .hl-layer');
-        if (!layer) {
-            layer = document.createElement('div');
-            layer.className = 'hl-layer';
-            parent.insertBefore(layer, ta); // beneath textarea (z-index 0)
-        }
-        return layer;
-    },
-    _positionLayerUnderTextarea(layer, ta) {
-        const parent = ta.parentElement;
-        const csParent = getComputedStyle(parent);
-        if (csParent.position === 'static') parent.style.position = 'relative';
-        layer.style.position = 'absolute';
-        layer.style.top = ta.offsetTop + 'px';
-        layer.style.left = ta.offsetLeft + 'px';
-        layer.style.width = ta.clientWidth + 'px';
-        layer.style.height = ta.clientHeight + 'px';
-        const cs = getComputedStyle(ta);
-        layer.style.paddingTop = cs.paddingTop;
-        layer.style.paddingRight = cs.paddingRight;
-        layer.style.paddingBottom = cs.paddingBottom;
-        layer.style.paddingLeft = cs.paddingLeft;
-        // Mirror font metrics for precise wrapping
-        layer.style.fontFamily = cs.fontFamily;
-        layer.style.fontSize = cs.fontSize;
-        layer.style.lineHeight = cs.lineHeight;
-        layer.style.letterSpacing = cs.letterSpacing;
-        layer.style.whiteSpace = ta.classList.contains('bar-input') ? 'pre' : 'pre-wrap';
-    },
-    _updateTextareaHighlight(ta) {
-        if (!ta) return;
-        const layer = this._ensureLayerForTextarea(ta);
-        if (!layer) return;
-        const text = ta.value || '';
-        // Skip work if unchanged (cache last text on layer)
-        if (layer.__lastText === text) return;
-        layer.__lastText = text;
-        this._positionLayerUnderTextarea(layer, ta);
-        if (ta.id === 'research-input') {
-            const ignoreBracketLines = true;
-            layer.innerHTML = this._renderWithDupePairs(text, { ignoreBracketLines });
-        } else {
-            const freq = this._buildWordFreqFor(text);
-            layer.innerHTML = this._renderWithFreq(text, freq);
-        }
-    },
-    _syncLayerScroll(ta) {
-        const parent = ta.parentElement;
-        if (!parent) return;
-        const layer = parent.querySelector(':scope > .hl-layer');
-        if (!layer) return;
-        layer.scrollTop = ta.scrollTop;
-        layer.scrollLeft = ta.scrollLeft;
-    },
-    _scheduleTAHighlight(ta) {
-        const prev = this._hlRAF.get(ta);
-        if (prev) cancelAnimationFrame(prev);
-        const id = requestAnimationFrame(() => {
-            try {
-                this._updateTextareaHighlight(ta);
-                this._bindScrollOnce(ta);
-                this._syncLayerScroll(ta);
-            } finally {
-                this._hlRAF.delete(ta);
-            }
-        });
-        this._hlRAF.set(ta, id);
-    },
-    _updateAllHighlights() {
-        const bars = document.querySelectorAll('.bar-item textarea.bar-input');
-        if (this.highlightEnabled) {
-            bars.forEach(ta => {
-                this._updateTextareaHighlight(ta);
-                this._bindScrollOnce(ta);
-                this._syncLayerScroll(ta);
-            });
-        }
-        const researchTa = document.getElementById('research-input');
-        if (researchTa && this.highlightResearchEnabled) {
-            this._updateTextareaHighlight(researchTa);
-            this._bindScrollOnce(researchTa);
-            this._syncLayerScroll(researchTa);
-        }
-    },
-    _scheduleHighlights() {
-        clearTimeout(this._hlTimer);
-        this._hlTimer = setTimeout(() => this._updateAllHighlights(), 120);
-    },
-    _bindScrollOnce(ta) {
-        if (this._hlScrollBound.has(ta)) return;
-        this._hlScrollBound.add(ta);
-        ta.addEventListener('scroll', () => this._syncLayerScroll(ta));
-        // adjust on resize of textarea via input (rows change) or container resize
-        const ro = ('ResizeObserver' in window) ? new ResizeObserver(() => {
-            try {
-                const parent = ta.parentElement;
-                const layer = parent && parent.querySelector(':scope > .hl-layer');
-                if (layer) this._positionLayerUnderTextarea(layer, ta);
-            } catch {}
-        }) : null;
-        if (ro) ro.observe(ta);
-    },
-
-    // ================= Highlight toggle UI =================
-    _initHighlightToggle() {
-        try {
-            const saved = localStorage.getItem('lbs_highlight_enabled');
-            if (saved === '0') this.highlightEnabled = false;
-        } catch {}
-        this._applyHighlightUIState();
-        // Initial render update/hide
-        if (this.highlightEnabled) this._scheduleHighlights();
-    },
-    // Research highlight toggle methods removed - duplicitná funkcia (máme to v anályze)
-    _applyHighlightUIState() {
-        const btn = View.dom.toggleHighlightBtn;
-        const body = document.body;
-        if (!btn || !body) return;
-        if (this.highlightEnabled) {
-            body.classList.remove('highlight-off');
-            btn.classList.add('active');
-            btn.setAttribute('aria-pressed', 'true');
-            const lbl = btn.querySelector('.toggle-label');
-            if (lbl) lbl.textContent = 'Highlight ON';
-            // ensure layers exist after enabling
-            this._scheduleHighlights();
-        } else {
-            body.classList.add('highlight-off');
-            btn.classList.remove('active');
-            btn.setAttribute('aria-pressed', 'false');
-            const lbl = btn.querySelector('.toggle-label');
-            if (lbl) lbl.textContent = 'Highlight OFF';
-        }
-    },
-    _toggleHighlight() {
-        this.highlightEnabled = !this.highlightEnabled;
-        try { localStorage.setItem('lbs_highlight_enabled', this.highlightEnabled ? '1' : '0'); } catch {}
-        this._applyHighlightUIState();
-        if (this.highlightEnabled) this._scheduleHighlights();
-    },
-
-    // Research highlight toggle methods removed - duplicitná funkcia
-
-    // Source Importer (Importér Textu) highlight initialization
-    _initSourceImporterHighlight() {
-        if (View.dom.sourceInput) {
-            // Initial highlight render
-            this._scheduleTAHighlight(View.dom.sourceInput);
-        }
-    },
-
     // NEW PROJECT TABS LOGIC
     _handleTabsClick(e) {
         const tab = e.target.closest('.project-tab');

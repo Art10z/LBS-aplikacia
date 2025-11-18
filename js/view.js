@@ -1,4 +1,3 @@
-
 import { MAX_BAR_LENGTH } from './constants.js';
 
 // =================================================================================
@@ -16,15 +15,12 @@ const View = {
             refreshProjectBtn: byId('refreshProjectBtn'),
             syncImporterBtn: byId('syncImporterBtn'),
             addTemplateTagBtn: byId('addTemplateTagBtn'),
-            // Canvas container: prefer legacy 'assembler-content', fallback to v4 'dynamic-canvas'
             assemblerContent: byId('assembler-content', 'dynamic-canvas'),
-            // Add section button: legacy 'addSectionBtn', v4 'add-section-btn'
             addSectionBtn: byId('addSectionBtn', 'add-section-btn'),
             maketaOutput: byId('maketaOutput'),
-            // Output tool buttons: support both legacy and v4 IDs
             updateMaketaBtn: byId('updateMaketaBtn', 'updateOutputBtn'),
             copyBtn: byId('copyBtn', 'copyOutputBtn'),
-            saveAsTxtBtn: byId('saveAsTxtBtn', 'downloadTxtBtn'), // downloadTxtBtn in v4 preview
+            saveAsTxtBtn: byId('saveAsTxtBtn', 'downloadTxtBtn'),
             modalOverlay: byId('confirmation-modal-overlay'),
             modalText: byId('modal-text'),
             modalConfirmBtn: byId('modal-confirm-btn'),
@@ -35,16 +31,12 @@ const View = {
             researchInput: byId('research-input'),
             addToPaletteBtn: byId('addToPaletteBtn'),
             analyzeRhymesBtn: byId('analyzeRhymesBtn'),
-            // ...removed legacy resetRhymesBtn
             resetRhymesMainBtn: byId('resetRhymesMainBtn'),
             inspirationPalette: byId('inspiration-palette'),
             templateInserter: byId('template-inserter'),
             projectTabsContainer: byId('project-tabs-container'),
             saveStatus: byId('save-status'),
             exportAllBtn: byId('exportAllBtn'),
-            // ...removed legacy toggleHighlightBtn
-            // ...removed legacy toggleResearchHighlightBtn
-            // Unified overlay (v3.8 id 'unified-overlay', v4 preview id 'unified-panel-overlay')
             openUnifiedBtn: byId('openUnifiedBtn'),
             unifiedOverlay: byId('unified-overlay', 'unified-panel-overlay'),
             closeUnifiedBtn: byId('closeUnifiedBtn'),
@@ -52,10 +44,6 @@ const View = {
             analysisTabBtn: byId('analysisTabBtn'),
             researchTab: byId('researchTab'),
             analysisTab: byId('analysisTab'),
-            analysisSourceCanvasBtn: byId('analysisSourceCanvasBtn'),
-            analysisSourceResearchBtn: byId('analysisSourceResearchBtn'),
-            analysisModeRhymeBtn: byId('analysisModeRhymeBtn'),
-            analysisModeDupBtn: byId('analysisModeDupBtn'),
             analysisLayer: byId('analysis-layer'),
         };
     },
@@ -218,7 +206,6 @@ const View = {
         const sectionContainer = document.createElement('div');
         sectionContainer.className = 'section-container';
         sectionContainer.dataset.sectionId = section.id;
-        // ...removed legacy drag & drop
 
         const header = document.createElement('div');
         header.className = 'section-header';
@@ -227,7 +214,7 @@ const View = {
         dragHandle.className = 'section-drag-handle';
         dragHandle.title = 'Presunúť sekciu';
         dragHandle.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="5" r="1"></circle><circle cx="12" cy="12" r="1"></circle><circle cx="12" cy="19" r="1"></circle><circle cx="5" cy="5" r="1"></circle><circle cx="5" cy="12" r="1"></circle><circle cx="5" cy="19" r="1"></circle><circle cx="19" cy="5" r="1"></circle><circle cx="19" cy="12" r="1"></circle><circle cx="19" cy="19" r="1"></circle></svg>`;
-        dragHandle.draggable = true; // --- ZMENA: Pridané ---
+        dragHandle.draggable = true;
 
         const label = document.createElement('span');
         label.className = 'section-label';
@@ -268,13 +255,12 @@ const View = {
         barItem.className = 'bar-item';
         barItem.dataset.barId = bar.id;
         barItem.dataset.sectionId = sectionId;
-        // ...removed legacy drag & drop
 
         const dragHandle = document.createElement('span');
         dragHandle.className = 'bar-drag-handle';
         dragHandle.title = 'Presunúť bar';
         dragHandle.textContent = '⠿';
-        dragHandle.draggable = true; // --- ZMENA: Pridané ---
+        dragHandle.draggable = true;
 
     const input = document.createElement('textarea');
     input.className = 'bar-input';
