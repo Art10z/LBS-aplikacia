@@ -1,5 +1,21 @@
 # LBS 5.0 – Jediný zdroj pravdy, projekty a export
 
+## Stručný prehľad funkcií aplikácie
+
+1. **Import a spracovanie textu** – vkladanie surového textu, automatické rozdelenie na sekcie a bary
+2. **Dynamické plátno** – vizualizácia štruktúry, drag & drop presúvanie sekcií/barov
+3. **Synchronizácia** – dvojsmerná sync medzi importérom a plátnom
+4. **Paleta inšpirácie** – ukladanie slov, fráz, rýmov z výskumu
+5. **Výskum** – per-projektový poznámkový blok, analýza rýmov
+6. **Analýza** – detekcia duplikátov, štatistiky, očistený text, analýza rýmov
+7. **Export a kopírovanie** – export do TXT/JSON, kopírovanie finálneho textu
+8. **Správa projektov** – vytváranie, premenovanie, mazanie, prepínanie projektov
+9. **UI a notifikácie** – jednotné štýly, kontextové notifikácie, modálne okno
+
+---
+
+Tento zoznam slúži na rýchly prehľad všetkých možností aplikácie. Pre detailnejší popis pozri ďalšie sekcie README alebo dokumentáciu k jednotlivým modulom.
+
 Toto je hlavný repozitár aplikácie „Lyrical Blueprint Studio 5.0“. Po vyčistení duplikátov je **jediný zdroj pravdy celý obsah v koreňových súboroch a priečinku `js/`**. Všetky funkcie (import → plátno → maketa → export → výskum → paleta rýmov) bežia z `index.html`.
 
 ## Stručný prehľad UI
