@@ -16,3 +16,5 @@
 
 ---
 *Plán je zamerať sa na jednoduchosť, praktickosť a rozšíriteľnosť analýz pre texty v aplikácii.*
+
+*Rebuild aplikácie bol úspešne nasadený v novembri 2025. Všetky ďalšie vylepšenia budú vychádzať z tejto čistej štruktúry.*

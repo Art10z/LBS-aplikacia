@@ -28,17 +28,16 @@ README.md             # Tento dokument
 ```
 
 ## Kľúčové zmeny (nedávne)
-- Odstránené historické duplikáty (`/js` a `style.css` mimo hlavnej štruktúry). Už neexistujú.
-- Migrácia starého globálneho výskumu do per‑projektového kľúča.
-- Rozšírené notifikácie: `success`, `danger`, `info`, `warning`.
-- Debounce s možnosťou `cancel()` – používané pri autosave.
-- Export JSON pokrýva všetky projekty + ich výskum.
-- TXT export finálnej makety (`saveAsTxtBtn`).
-- Systém zvýraznenia duplicitných slov integrovaný do záložky "Analýza" v modálnom okne "Výskum & Analýza".
   - Analyzuje text z dynamického plátna aktuálneho projektu.
   - Zobrazuje metriky: počet riadkov, slov, jedinečných slov, slovná zásoba, priemerné slová/riadok, počet duplikátov.
   - Štýl triedy: `.hl-layer .duppair` (žlté podfarbenie).
 
+## Rebuild (Google AI Studio, november 2025)
+- Kompletný prepis aplikácie podľa čistejšej štruktúry z Google AI Studio.
+- Odstránené duplicity, zjednodušené moduly, prehľadnejší kód.
+- Všetky hlavné JS/CSS/HTML súbory boli prepísané novou verziou.
+- Funkčnosť aplikácie bola zachovaná, testované projekty aj dynamické okno.
+- Pripravené na ďalšie úpravy (drag & drop, analýza, export).
 ## Storage API (zhrnutie)
 Metódy v `storage.js`:
 ```js

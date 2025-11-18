@@ -71,8 +71,8 @@ Pokročilý nástroj s dvoma hlavnými záložkami.
 2.  **Refaktoring `rhymeAnalyzer.js`:** Zjednotenie logiky pre analýzu rýmov do jedného modulu, podobne ako pri `duplicate-handler.js`.
 3.  **Vylepšenie exportu:** Možnosť exportu vo viacerých formátoch (napr. PDF, DOCX).
 
-### Dlhodobá Vízia
 
--   **Cloudové úložisko:** Zváženie možnosti ukladania projektov do cloudu pre prístup z viacerých zariadení.
--   **Spolupráca v reálnom čase:** Možnosť pre viacerých používateľov pracovať na jednom projekte súčasne.
--   **Pokročilé jazykové nástroje:** Integrácia ďalších nástrojov na analýzu textu (napr. synonymá, metrum, aliterácia).
+## Rebuild a čistenie kódu (11/2025)
+- Prechod na čistejšiu štruktúru podľa Google AI Studio.
+- Zjednodušenie logiky, odstránenie historických duplicít.
+- Pripravené na ďalšie refaktoringy a rozšírenia.
