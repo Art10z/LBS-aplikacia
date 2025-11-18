@@ -1,0 +1,19 @@
+<!DOCTYPE html>
+<html lang="sk">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="refresh" content="0; url=index.html?project=Projekt%201">
+    <title>LBS – Projekt 1</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <script>
+        (function(){
+            var dest = 'index.html?project=' + encodeURIComponent('Projekt 1') + window.location.hash;
+            window.location.replace(dest);
+        })();
+    </script>
+    <link rel="stylesheet" href="./style.css">
+</head>
+<body>
+    <p>Presmerúvam na Projekt 1… ak sa nič nedeje, klikni <a href="index.html?project=Projekt%201">sem</a>.</p>
+</body>
+</html>
