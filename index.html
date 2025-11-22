@@ -96,13 +96,27 @@
         <div class="panel-header">
           <h2>Paleta Inšpirácie</h2>
         </div>
-        <div class="panel-content">
-          <div class="panel-tools">
-            <button id="resetRhymesMainBtn" class="btn btn-secondary icon-btn" title="Vymazať všetky analyzované rýmy" aria-label="Vymazať rýmy">
-              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path stroke-linecap="round" stroke-linejoin="round" d="M3 6h18M8 6V4h8v2m-1 0v14a2 2 0 01-2 2H9a2 2 0 01-2-2V6h10z"/></svg>
-            </button>
+        <div class="panel-content inspiration-parent-flex">
+          <div class="inspiration-flex-top">
+            <div class="panel-tools">
+              <button id="resetRhymesMainBtn" class="btn btn-secondary icon-btn" title="Vymazať všetky analyzované rýmy" aria-label="Vymazať rýmy">
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path stroke-linecap="round" stroke-linejoin="round" d="M3 6h18M8 6V4h8v2m-1 0v14a2 2 0 01-2 2H9a2 2 0 01-2-2V6h10z"/></svg>
+              </button>
+            </div>
+            <div id="inspiration-palette"></div>
           </div>
-          <div id="inspiration-palette"></div>
+          <div class="inspiration-flex-bottom" id="prompt-style-panel">
+            <div class="panel-header">
+              <h2>Prompt &amp; Štýl</h2>
+            </div>
+            <div class="prompt-style-content">
+              <textarea id="prompt-style-input" placeholder="Sem zadaj prompt alebo štýl pre tento projekt..." rows="3"></textarea>
+              <button id="copyPromptStyleBtn" class="btn btn-secondary" title="Kopírovať prompt &amp; štýl do schránky" aria-label="Kopírovať do schránky">
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path stroke-linecap="round" stroke-linejoin="round" d="M8 16h8M8 12h8m-7 8h6a2 2 0 002-2V7a2 2 0 00-2-2h-2.586a1 1 0 01-.707-.293l-2.414-2.414A1 1 0 0010.586 2H8a2 2 0 00-2 2v14a2 2 0 002 2z"/></svg>
+                Kopírovať
+              </button>
+            </div>
+          </div>
         </div>
       </div>
     </main>

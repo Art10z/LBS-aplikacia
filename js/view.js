@@ -34,6 +34,14 @@ const View = {
             resetRhymesMainBtn: byId('resetRhymesMainBtn'),
             inspirationPalette: byId('inspiration-palette'),
             templateInserter: byId('template-inserter'),
+            promptStyleInput: byId('prompt-style-input'),
+            copyPromptStyleBtn: byId('copyPromptStyleBtn'),
+                setPromptStyleValue(value) {
+                    if (this.dom.promptStyleInput) this.dom.promptStyleInput.value = value || '';
+                },
+                getPromptStyleValue() {
+                    return this.dom.promptStyleInput ? this.dom.promptStyleInput.value : '';
+                },
             projectTabsContainer: byId('project-tabs-container'),
             saveStatus: byId('save-status'),
             exportAllBtn: byId('exportAllBtn'),

@@ -56,6 +56,27 @@ const Controller = {
     },
 
     _attachEventListeners() {
+                // Prompt & Style logic
+                if (View.dom.promptStyleInput) {
+                    View.dom.promptStyleInput.addEventListener('input', () => {
+                        if (this.activeProjectName) {
+                            Storage.savePromptStyle(this.activeProjectName, View.getPromptStyleValue());
+                        }
+                    });
+                }
+                if (View.dom.copyPromptStyleBtn) {
+                    View.dom.copyPromptStyleBtn.addEventListener('click', () => {
+                        const value = View.getPromptStyleValue();
+                        if (value) {
+                            navigator.clipboard.writeText(value).then(() => {
+                                View.dom.copyPromptStyleBtn.textContent = 'Skopírované!';
+                                setTimeout(() => {
+                                    View.dom.copyPromptStyleBtn.textContent = 'Kopírovať';
+                                }, 1200);
+                            });
+                        }
+                    });
+                }
         if (View.dom.refreshProjectBtn) {
             View.dom.refreshProjectBtn.addEventListener('click', () => this._forceRefreshFromImporter());
         }
@@ -616,6 +637,12 @@ const Controller = {
         // Ensure research textarea reflects the active project's research
         this._loadResearchForActive();
         View.updateSaveStatus('saved');
+
+        // Load prompt/style for this project
+        if (View.dom.promptStyleInput) {
+            const value = Storage.loadPromptStyle(projectName);
+            View.setPromptStyleValue(value);
+        }
     },
 
     _updateAllViews() {

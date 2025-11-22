@@ -1,3 +1,15 @@
+// Prompt & Style per project
+const PROMPT_STYLE_KEY_PREFIX = 'lyricalBlueprint_promptstyle_';
+
+export function loadPromptStyle(projectName) {
+  if (!projectName) return '';
+  return _read(PROMPT_STYLE_KEY_PREFIX + projectName) || '';
+}
+
+export function savePromptStyle(projectName, value) {
+  if (!projectName) return;
+  _write(PROMPT_STYLE_KEY_PREFIX + projectName, value || '');
+}
 // Unified storage module for projects and per-project research
 import { PROJECT_KEY_PREFIX, RESEARCH_KEY_PREFIX, ACTIVE_PROJECT_KEY, META_KEY } from './constants.js';
 
