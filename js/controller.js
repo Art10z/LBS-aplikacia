@@ -1,5 +1,6 @@
 import Model from './model.js';
 import View from './view.js';
+import { initPromptStyle } from './promptStyle.js';
 import { MAX_BAR_LENGTH } from './constants.js';
 import * as Storage from './storage.js';
 import { showNotification, debounce, showLoading, hideLoading } from './utils.js';
@@ -22,11 +23,13 @@ const Controller = {
     _hlScrollBound: new WeakSet(),
     _hlRAF: new WeakMap(),
     highlightEnabled: true,
+    promptStyleModule: null,
 
     init() {
         View.init();
         this.debouncedSave = debounce(() => this._performAutoSave(), 1500);
         this._attachEventListeners();
+        this.promptStyleModule = initPromptStyle(this); // Inicializácia nového modulu
         Storage.init();
         // Detect preferred project from global variable or URL and enable single-project mode if present
         const preferred = this._readProjectFromURL();
@@ -34,6 +37,9 @@ const Controller = {
         this._initializeSession(preferred);
         this._loadResearchForActive();
     },
+
+    // Pridaná metóda, aby externé moduly mohli pristupovať k modelu
+    getModel() { return Model; },
 
     _readProjectFromURL() {
         try {
@@ -56,27 +62,6 @@ const Controller = {
     },
 
     _attachEventListeners() {
-                // Prompt & Style logic
-                if (View.dom.promptStyleInput) {
-                    View.dom.promptStyleInput.addEventListener('input', () => {
-                        if (this.activeProjectName) {
-                            Storage.savePromptStyle(this.activeProjectName, View.getPromptStyleValue());
-                        }
-                    });
-                }
-                if (View.dom.copyPromptStyleBtn) {
-                    View.dom.copyPromptStyleBtn.addEventListener('click', () => {
-                        const value = View.getPromptStyleValue();
-                        if (value) {
-                            navigator.clipboard.writeText(value).then(() => {
-                                View.dom.copyPromptStyleBtn.textContent = 'Skopírované!';
-                                setTimeout(() => {
-                                    View.dom.copyPromptStyleBtn.textContent = 'Kopírovať';
-                                }, 1200);
-                            });
-                        }
-                    });
-                }
         if (View.dom.refreshProjectBtn) {
             View.dom.refreshProjectBtn.addEventListener('click', () => this._forceRefreshFromImporter());
         }
@@ -637,12 +622,7 @@ const Controller = {
         // Ensure research textarea reflects the active project's research
         this._loadResearchForActive();
         View.updateSaveStatus('saved');
-
-        // Load prompt/style for this project
-        if (View.dom.promptStyleInput) {
-            const value = Storage.loadPromptStyle(projectName);
-            View.setPromptStyleValue(value);
-        }
+        this.promptStyleModule.loadPromptStyle(); // Načítanie promptu cez nový modul
     },
 
     _updateAllViews() {

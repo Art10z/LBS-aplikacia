@@ -11,18 +11,21 @@ const Model = {
     state: {
         trackData: [],
         paletteItems: [],
+        promptStyle: '',
         nextId: 0
     },
 
     init() {
         this.state.trackData = [];
         this.state.paletteItems = [];
+        this.state.promptStyle = '';
         this.state.nextId = 1;
     },
     
     setData(projectData) {
         this.state.trackData = (projectData && projectData.trackData) || [];
         this.state.paletteItems = (projectData && projectData.paletteItems) || [];
+        this.state.promptStyle = (projectData && projectData.promptStyle) || '';
         this._recalculateNextId(); // Recalculate only once on data load
         this._recalculateLabels();
     },
@@ -168,7 +171,11 @@ const Model = {
 
     saveProject(projectName) {
         if (!projectName) return false;
-        const projectData = { trackData: this.state.trackData, paletteItems: this.state.paletteItems };
+        const projectData = { 
+            trackData: this.state.trackData, 
+            paletteItems: this.state.paletteItems,
+            promptStyle: this.state.promptStyle
+        };
         Storage.saveProject(projectName, projectData);
         return true;
     },
