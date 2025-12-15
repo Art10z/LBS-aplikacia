@@ -1,0 +1,638 @@
+<!DOCTYPE html>
+<html lang="sk">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>LBS 7.3 - Mirroring Edition</title>
+    
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Roboto+Mono:wght@400;500&display=swap" rel="stylesheet">
+
+    <style>
+        :root {
+            --bg-main: #0D1117;
+            --bg-panel: #161B22;
+            --bg-input: #010409;
+            --border-color: #30363D;
+            --text-primary: #C9D1D9;
+            --text-secondary: #8B949E;
+            --accent-primary: #58A6FF;
+            --accent-success: #3FB950;
+            --accent-danger: #F87171;
+            --accent-warning: #E3B341;
+            --accent-mirror: #A371F7; /* New color for mirroring action */
+            --font-sans: 'Inter', sans-serif;
+            --font-mono: 'Roboto Mono', monospace;
+            --header-height: 54px;
+            --shadow-1: 0 2px 4px -1px rgba(0,0,0,0.5), 0 4px 14px -2px rgba(0,0,0,0.35);
+        }
+
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        html, body { width: 100%; height: 100%; overflow: hidden; background-color: var(--bg-main); color: var(--text-primary); font-family: var(--font-sans); font-size: 14px; }
+
+        #app-container { display: grid; grid-template-rows: var(--header-height) 1fr; height: 100vh; }
+
+        /* HEADER */
+        #app-header {
+            display: flex; justify-content: space-between; align-items: center; padding: 0 15px;
+            border-bottom: 1px solid var(--border-color); background-color: var(--bg-panel); user-select: none;
+        }
+        .logo { display: flex; align-items: center; gap: 10px; font-weight: 600; }
+        .logo svg { width: 24px; height: 24px; color: var(--accent-primary); }
+        #app-version {
+            font-size: 0.75rem; font-weight: 700; color: var(--text-secondary);
+            background-color: var(--bg-input); padding: 2px 6px; border-radius: 4px; border: 1px solid var(--border-color);
+        }
+        .file-info { display: flex; align-items: center; gap: 10px; margin-right: auto; margin-left: 20px; padding-left: 20px; border-left: 1px solid var(--border-color); }
+        .file-name { font-family: var(--font-mono); font-size: 0.85rem; color: var(--text-primary); }
+        .file-status { font-size: 0.75rem; color: var(--text-secondary); }
+        .file-status.unsaved { color: var(--accent-warning); }
+
+        /* HEADER CONTROLS */
+        .header-right-controls { display: flex; align-items: center; gap: 10px; }
+
+        /* MAIN GRID */
+        #main-content {
+            display: grid; grid-template-columns: minmax(350px, 25%) 1fr minmax(280px, 20%);
+            gap: 12px; padding: 12px; overflow: hidden; background-color: var(--bg-main);
+        }
+
+        /* PANELS */
+        .panel {
+            background-color: var(--bg-panel); border: 1px solid var(--border-color);
+            border-radius: 8px; display: flex; flex-direction: column; overflow: hidden; box-shadow: var(--shadow-1);
+        }
+        .panel-header {
+            padding: 8px 12px; border-bottom: 1px solid var(--border-color);
+            background: linear-gradient(180deg, #21262d 0%, var(--bg-panel) 100%);
+            display: flex; justify-content: space-between; align-items: center;
+        }
+        .panel-header h2 { font-size: 0.85rem; font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px; opacity: 0.8; }
+        .panel-content { flex: 1; padding: 10px; overflow-y: auto; display: flex; flex-direction: column; }
+        .panel-tools { display: flex; gap: 6px; align-items: center; }
+
+        /* INPUTS GENERIC */
+        textarea {
+            background-color: var(--bg-input); border: 1px solid var(--border-color);
+            color: var(--text-primary); border-radius: 6px; padding: 10px;
+            font-family: var(--font-mono); font-size: 0.85rem; line-height: 1.5; resize: none;
+        }
+        textarea:focus { outline: none; border-color: var(--accent-primary); }
+
+        /* BUTTONS */
+        .btn {
+            background-color: #21262D; border: 1px solid var(--border-color); color: var(--text-primary);
+            padding: 4px 12px; border-radius: 6px; cursor: pointer; font-size: 0.85rem;
+            display: inline-flex; align-items: center; justify-content: center; gap: 6px; transition: all 0.15s; height: 32px;
+        }
+        .btn:hover { background-color: #30363D; border-color: #8B949E; }
+        .btn-primary { background-color: #238636; border-color: #2EA043; color: white; }
+        .btn-primary:hover { background-color: #2EA043; }
+        .btn-danger { color: var(--accent-danger); border-color: rgba(248,113,113,0.3); }
+        .btn-danger:hover { background-color: rgba(248,113,113,0.1); border-color: var(--accent-danger); }
+        .btn-sync { background-color: rgba(63, 185, 80, 0.15); color: var(--accent-success); border-color: rgba(63, 185, 80, 0.4); }
+        .btn-sync:hover { background-color: rgba(63, 185, 80, 0.25); border-color: var(--accent-success); }
+        .btn-mirror { background-color: rgba(163, 113, 247, 0.15); color: var(--accent-mirror); border-color: rgba(163, 113, 247, 0.4); display: none; } /* Hidden by default */
+        .btn-mirror:hover { background-color: rgba(163, 113, 247, 0.25); border-color: var(--accent-mirror); }
+        .icon-btn { width: 32px; padding: 0; }
+        .icon-btn svg { width: 16px; height: 16px; pointer-events: none; }
+
+        /* SPECIFIC STYLES */
+        .io-column { display: flex; flex-direction: column; gap: 12px; min-height: 0; }
+        #source-panel, #output-panel { height: 50%; }
+        #source-input, #maketaOutput { flex: 1; width: 100%; height: 100%; }
+        #maketaOutput { white-space: pre-wrap; font-family: var(--font-mono); font-size: 0.8rem; color: #a5d6ff; }
+
+        /* CANVAS ITEMS */
+        #assembler-panel .panel-content { padding: 10px; background-color: #0d1117; }
+        .section-container { background-color: #161b22; border: 1px solid var(--border-color); border-radius: 6px; margin-bottom: 12px; transition: border-color 0.2s; }
+        .section-container.selected { border-color: var(--accent-mirror); background-color: rgba(163, 113, 247, 0.05); }
+        
+        .section-header { padding: 6px 10px; background: rgba(255,255,255,0.03); display: flex; align-items: center; gap: 8px; border-bottom: 1px solid var(--border-color); cursor: grab; }
+        .section-header:active { cursor: grabbing; }
+        
+        .section-checkbox {
+            appearance: none; width: 16px; height: 16px; border: 1px solid var(--text-secondary); border-radius: 3px; background: transparent; cursor: pointer; position: relative;
+        }
+        .section-checkbox:checked { background-color: var(--accent-mirror); border-color: var(--accent-mirror); }
+        .section-checkbox:checked::after { content: '✓'; position: absolute; color: white; font-size: 12px; left: 2px; top: -2px; }
+
+        .section-drag-handle { color: var(--text-secondary); pointer-events: none; }
+        .section-type-input { 
+            background: transparent; border: none; color: var(--accent-primary); 
+            font-weight: 700; font-family: var(--font-mono); width: 120px; padding: 4px;
+        }
+        .section-type-input:focus { outline: none; background: var(--bg-input); border-radius: 4px; }
+
+        .bars-container { padding: 8px; }
+        .bar-item { 
+            display: flex; align-items: center; gap: 8px; margin-bottom: 4px; 
+            padding: 4px 8px; border-radius: 4px; transition: background 0.1s; position: relative; 
+            background-color: var(--bg-input); border: 1px solid transparent;
+        }
+        .bar-item:hover { border-color: var(--border-color); }
+        
+        .bar-input { 
+            flex: 1; background: transparent; border: none; padding: 4px 0; 
+            height: 28px; color: var(--text-primary); font-family: var(--font-mono); font-size: 0.9rem; width: 100%;
+        }
+        .bar-input:focus { outline: none; border-bottom: 1px solid var(--accent-primary); background-color: rgba(255,255,255,0.02); }
+
+        .char-counter { font-size: 0.7rem; color: var(--text-secondary); width: 40px; text-align: right; user-select: none; }
+        
+        .bar-controls { display: flex; flex-direction: column; gap: 2px; opacity: 0.3; transition: opacity 0.2s; }
+        .bar-item:hover .bar-controls { opacity: 1; }
+        .move-bar-btn { 
+            border: none; background: none; color: var(--text-secondary); cursor: pointer; padding: 0; 
+            line-height: 0.8; font-size: 10px; width: 16px; height: 12px; display: flex; align-items: center; justify-content: center;
+        }
+        .move-bar-btn:hover { color: var(--text-primary); background-color: rgba(255,255,255,0.1); border-radius: 2px; }
+
+        .remove-bar-btn { cursor: pointer; border:none; background:none; color:var(--text-secondary); font-size:1.2rem; opacity: 0; line-height: 1; margin-left: 4px; }
+        .bar-item:hover .remove-bar-btn { opacity: 1; }
+        .remove-bar-btn:hover { color: var(--accent-danger); }
+
+        /* PALETTE */
+        #inspiration-palette { flex: 1; overflow-y: auto; display: flex; flex-direction: column; gap: 6px; }
+        .palette-item { background: #21262d; padding: 6px 10px; border-radius: 20px; font-size: 0.85rem; display: flex; justify-content: space-between; align-items: center; border: 1px solid var(--border-color); }
+        .remove-palette-item-btn { color: var(--text-secondary); cursor: pointer; font-size: 1.1rem; border: none; background: none; }
+        .remove-palette-item-btn:hover { color: var(--accent-danger); }
+        #prompt-style-container { border-top: 1px solid var(--border-color); margin-top: 10px; padding-top: 10px; flex-basis: 150px; flex-shrink: 0; display: flex; flex-direction: column; }
+        #prompt-style-input { flex: 1; }
+
+        /* MODAL & UTILS */
+        .unified-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.85); z-index: 2000; display: flex; justify-content: center; align-items: center; }
+        .hidden { display: none !important; }
+        .unified-panel { width: 90%; max-width: 1200px; height: 85%; background: var(--bg-panel); border: 1px solid var(--border-color); border-radius: 12px; display: flex; flex-direction: column; }
+        .tab-navigation { display: flex; gap: 10px; padding: 0 20px; background: #0d1117; border-bottom: 1px solid var(--border-color); }
+        .tab-btn { background: transparent; border: none; color: var(--text-secondary); padding: 15px 10px; font-weight: 600; cursor: pointer; border-bottom: 2px solid transparent; }
+        .tab-btn.active { color: var(--accent-primary); border-bottom-color: var(--accent-primary); }
+        .tab-content { flex: 1; overflow: hidden; }
+        .tab-pane { display: none; height: 100%; flex-direction: column; }
+        .tab-pane.active { display: flex; }
+        .tab-toolbar { padding: 10px; background: var(--bg-panel); border-bottom: 1px solid var(--border-color); display: flex; gap: 10px; flex-wrap: wrap; align-items: center; }
+        #research-input { flex: 1; margin: 10px; }
+        
+        /* Analysis */
+        .analysis-columns { display: flex; height: 100%; }
+        .analysis-text { flex: 3; padding: 20px; overflow-y: auto; font-family: var(--font-mono); line-height: 1.8; white-space: pre-wrap; }
+        .analysis-stats { flex: 1; padding: 20px; border-left: 1px solid var(--border-color); background: #0d1117; overflow-y: auto; }
+        .metrics-table { width: 100%; border-collapse: collapse; }
+        .metrics-table td { padding: 8px 0; border-bottom: 1px solid var(--border-color); color: var(--text-secondary); }
+        .metrics-table td:last-child { text-align: right; color: var(--text-primary); font-weight: bold; }
+        .duplicate-word { background: rgba(227, 179, 65, 0.2); border-bottom: 2px solid var(--accent-warning); color: #ffd663; }
+        .ua-heading { color: var(--accent-primary); font-weight: bold; margin-top: 1em; display: block; }
+
+        .notification { position: fixed; bottom: 30px; left: 50%; transform: translateX(-50%); background: var(--accent-success); color: white; padding: 10px 20px; border-radius: 30px; font-weight: 500; opacity: 0; transition: opacity 0.3s; pointer-events: none; z-index: 9999; }
+        .notification.show { opacity: 1; }
+        .notification.danger { background: var(--accent-danger); }
+
+        /* DRAG PLACEHOLDERS */
+        .section-drag-placeholder { height: 10px; background: rgba(88,166,255,0.1); border: 1px dashed var(--accent-primary); margin: 10px 0; border-radius: 6px; }
+    </style>
+</head>
+<body>
+
+    <div id="app-container">
+        <header id="app-header">
+            <div class="logo">
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M9.53 16.122a3 3 0 00-5.78 1.128 2.25 2.25 0 01-2.47 2.118v-.09A12.75 12.75 0 0112 3c2.618 0 5.191.931 7.172 2.592a12.75 12.75 0 01-8.66 14.582A2.25 2.25 0 009.53 16.122z" /></svg>
+                <span>LBS v7.3</span>
+            </div>
+            <div class="file-info">
+                <span id="current-filename" class="file-name">Bez názvu</span>
+                <span id="file-status" class="file-status">(Neuložené)</span>
+            </div>
+            <div class="header-right-controls">
+                <button id="openFileBtn" class="btn btn-secondary icon-btn" title="Otvoriť súbor (Ctrl+O)">
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M5 19a2 2 0 01-2-2V7a2 2 0 012-2h4l2 2h4a2 2 0 012 2v1M5 19h14a2 2 0 002-2v-5a2 2 0 00-2-2H9a2 2 0 00-2 2v5a2 2 0 01-2 2z" /></svg>
+                </button>
+                <button id="saveFileBtn" class="btn btn-secondary icon-btn" title="Uložiť (Ctrl+S)">
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M8 7H5a2 2 0 00-2 2v9a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-3m-1 4l-3 3m0 0l-3-3m3 3V4" /></svg>
+                </button>
+                <button id="openUnifiedBtn" class="btn btn-secondary">Nástroje</button>
+            </div>
+        </header>
+
+        <main id="main-content">
+            <div class="io-column">
+                <div id="source-panel" class="panel">
+                    <div class="panel-header">
+                        <h2>Importér</h2>
+                        <div class="panel-tools">
+                            <button id="refreshProjectBtn" class="btn icon-btn" title="Prepísať plátno"><svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" /></svg></button>
+                            <button id="syncImporterBtn" class="btn icon-btn" title="Sync z plátna"><svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M7 16V4m0 0L3 8m4-4l4 4m6 0v12m0 0l4-4m-4 4l-4-4" /></svg></button>
+                        </div>
+                    </div>
+                    <div class="panel-content">
+                        <textarea id="source-input" placeholder="Vložte sem text alebo otvorte súbor..."></textarea>
+                    </div>
+                </div>
+                <div id="output-panel" class="panel">
+                    <div class="panel-header">
+                        <h2>Maketa</h2>
+                        <div class="panel-tools">
+                            <button id="copyBtn" class="btn icon-btn" title="Kopírovať"><svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M8 5H6a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2v-1M8 5a2 2 0 002 2h2a2 2 0 002-2M8 5a2 2 0 012-2h2a2 2 0 012 2m0 0h2a2 2 0 012 2v3m2 4H10m0 0l3-3m-3 3l3 3" /></svg></button>
+                        </div>
+                    </div>
+                    <div class="panel-content">
+                        <div id="maketaOutput"></div>
+                    </div>
+                </div>
+            </div>
+
+            <div id="assembler-panel" class="panel">
+                <div class="panel-header">
+                    <h2>Dynamické Plátno</h2>
+                    <div class="panel-tools">
+                        <button id="mirrorBtn" class="btn btn-mirror" title="Zrkadliť obsah prvej označenej sekcie do druhej">
+                            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M8 7v8a2 2 0 002 2h6M8 7V5a2 2 0 012-2h4.586a1 1 0 01.707.293l4.414 4.414a1 1 0 01.293.707V15a2 2 0 01-2 2h-2M8 7H6a2 2 0 00-2 2v10a2 2 0 002 2h8a2 2 0 002-2v-2" /></svg>
+                            Zrkadliť
+                        </button>
+                        <button id="manualSyncBtn" class="btn btn-sync" title="Synchronizovať s Výstupmi a Analýzou">
+                            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" /></svg>
+                            Sync
+                        </button>
+                        <button id="addSectionBtn" class="btn btn-primary icon-btn" title="Pridať sekciu">+</button>
+                    </div>
+                </div>
+                <div class="panel-content" id="assembler-content"></div>
+            </div>
+
+            <div id="inspiration-panel" class="panel">
+                <div class="panel-header">
+                    <h2>Inšpirácia</h2>
+                    <div class="panel-tools">
+                        <button id="resetRhymesMainBtn" class="btn btn-danger icon-btn">&times;</button>
+                    </div>
+                </div>
+                <div class="panel-content">
+                    <div id="inspiration-palette"></div>
+                    <div id="prompt-style-container">
+                        <div class="panel-header" style="background:none;border:none;padding-left:0;"><h2>Prompt</h2></div>
+                        <textarea id="prompt-style-input" placeholder="Poznámky k štýlu..."></textarea>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <div id="unified-overlay" class="unified-overlay hidden">
+        <div class="unified-panel">
+            <div class="panel-header">
+                <h2>Nástroje</h2>
+                <button id="closeUnifiedBtn" class="btn btn-danger icon-btn">&times;</button>
+            </div>
+            <div class="tab-navigation">
+                <button id="researchTabBtn" class="tab-btn active" data-tab="research">Výskum</button>
+                <button id="analysisTabBtn" class="tab-btn" data-tab="analysis">Analýza</button>
+            </div>
+            <div class="tab-content">
+                <div id="researchTab" class="tab-pane active">
+                    <div class="tab-toolbar">
+                        <button id="analyzeRhymesBtn" class="btn btn-primary">Analyzovať Rýmy</button>
+                        <button id="addToPaletteBtn" class="btn">Pridať označené</button>
+                    </div>
+                    <textarea id="research-input" placeholder="Sem zadajte text pre výskum a analýzu rýmov. Tento obsah nie je súčasťou exportu projektu."></textarea>
+                </div>
+                <div id="analysisTab" class="tab-pane">
+                    <div class="analysis-columns">
+                        <div class="analysis-text"><div id="analysis-layer"></div></div>
+                        <div class="analysis-stats"><div id="analysis-metrics-container"></div></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+    const CONST = { APP_VERSION: '7.3', MAX_BAR_LENGTH: 65, PALETTE_MAX_ITEMS: 300 };
+
+    const Utils = {
+        debounce(func, delay) {
+            let timeout;
+            return (...args) => { clearTimeout(timeout); timeout = setTimeout(() => func.apply(this, args), delay); };
+        },
+        notify(msg, type = 'success') {
+            const el = document.createElement('div');
+            el.className = `notification ${type}`;
+            el.textContent = msg;
+            document.body.appendChild(el);
+            setTimeout(() => el.classList.add('show'), 10);
+            setTimeout(() => { el.classList.remove('show'); setTimeout(() => el.remove(), 300); }, 3000);
+        },
+        confirm(text, onConfirm) { if(window.confirm(text)) onConfirm(); }
+    };
+
+    const FileSys = {
+        handle: null,
+        async openFile() {
+            try {
+                if(!window.showOpenFilePicker) { alert('Prehliadač nepodporuje priame otváranie. Použite Chrome/Edge/Opera.'); return null; }
+                const [fh] = await window.showOpenFilePicker({ types: [{ description: 'Text/JSON', accept: { 'text/plain': ['.txt', '.json', '.md'] } }], multiple: false });
+                this.handle = fh; const f = await fh.getFile(); return { name: f.name, content: await f.text() };
+            } catch(e) { return null; }
+        },
+        async saveFile(content) {
+            try {
+                if (this.handle) { const w = await this.handle.createWritable(); await w.write(content); await w.close(); return { success: true, name: this.handle.name }; }
+                return { success: false };
+            } catch(e) { return { success: false, error: e }; }
+        }
+    };
+
+    const Analysis = {
+        HEADING_WORDS: ['intro','verse','chorus','refrén','bridge','most','outro','solo'],
+        SKIP_WORDS: new Set(['a','aj','ako','ale','sa','si','som','sme','v','vo','na','do','to','je','že']),
+        isHeading(line) { const t = line.trim(); if(!t) return false; if(/^\[.*\]$/.test(t)) return true; if(/^[A-Za-z0-9\s]+:$/.test(t)) return true; return this.HEADING_WORDS.includes(t.toLowerCase().replace(/[^a-z]/g,'')); },
+        normalize(word) { try { return word.normalize('NFD').replace(/[\u0300-\u036f]/g,'').toLowerCase().replace(/[^a-z0-9]/g,''); } catch(e) { return word.toLowerCase().replace(/[^a-z0-9]/g,''); } },
+        analyzeText(text) {
+            const lines = text.split('\n'); const globalCounts = new Map();
+            lines.forEach(line => { if(this.isHeading(line)) return; line.split(/\s+/).forEach(w => { const n = this.normalize(w); if(n.length>2 && !this.SKIP_WORDS.has(n)) globalCounts.set(n, (globalCounts.get(n)||0)+1); }); });
+            const structured = lines.map(line => {
+                const isH = this.isHeading(line); const lineTokens = [];
+                if(!isH) line.split(/([^\w\u00C0-\u024F]+)/).forEach(part => { const n = this.normalize(part); const isDup = (n.length>2 && !this.SKIP_WORDS.has(n) && globalCounts.get(n)>1); lineTokens.push({ text: part, isDup, count: globalCounts.get(n) }); });
+                return { text: line, isHeading: isH, tokens: lineTokens };
+            });
+            return { structured, metrics: { lines: lines.length, words: Array.from(globalCounts.values()).reduce((a,b)=>a+b,0), unique: globalCounts.size, duplicates: Array.from(globalCounts.values()).filter(v=>v>1).length } };
+        },
+        findRhymes(text) {
+            const words = text.split(/\s+/).map(w => w.trim()).filter(w => w.length > 3); const suffixes = new Map(); const results = new Set();
+            words.forEach(w => { const n = this.normalize(w); if(this.SKIP_WORDS.has(n)) return; const suffix = n.slice(-3); if(!suffixes.has(suffix)) suffixes.set(suffix, []); suffixes.get(suffix).push(w); });
+            suffixes.forEach(group => { if(group.length > 1) group.forEach(w => results.add(w)); }); return Array.from(results);
+        }
+    };
+
+    const App = {
+        trackData: [], palette: [], nextId: 1, dragSrc: null, isDirty: false, selectedSections: new Set(),
+
+        init() {
+            this.trackData = [{ id: this.uid(), type: 'Verse', bars: [{id:this.uid(), text:''}] }];
+            this.render();
+            this.bindEvents();
+            document.addEventListener('keydown', async (e) => {
+                if (e.ctrlKey && e.key === 's') { e.preventDefault(); await this.saveAction(); }
+                if (e.ctrlKey && e.key === 'o') { e.preventDefault(); await this.openAction(); }
+            });
+        },
+
+        parseImporter() {
+            const txt = document.getElementById('source-input').value; const lines = txt.split('\n');
+            this.trackData = []; let curSec = null;
+            lines.forEach(line => {
+                const l = line.trim(); if(!l) return;
+                if(l.startsWith('[') && l.endsWith(']')) { const type = l.slice(1,-1); curSec = { id: this.uid(), type, bars: [] }; this.trackData.push(curSec); }
+                else if(curSec) { curSec.bars.push({ id: this.uid(), text: l }); }
+            });
+            if(this.trackData.length === 0) {
+                 this.trackData.push({ id: this.uid(), type: 'Verse', bars: [{id:this.uid(), text:''}] });
+            }
+        },
+
+        uid() { return 'id-' + (this.nextId++); },
+
+        render() {
+            const canvas = document.getElementById('assembler-content');
+            canvas.innerHTML = this.trackData.map(sec => `
+                <div class="section-container ${this.selectedSections.has(sec.id) ? 'selected' : ''}" data-id="${sec.id}" draggable="true">
+                    <div class="section-header">
+                        <span class="section-drag-handle">☰</span>
+                        <input type="checkbox" class="section-checkbox" ${this.selectedSections.has(sec.id) ? 'checked' : ''}>
+                        <input type="text" class="section-type-input" value="${sec.type}">
+                        <div style="flex:1"></div>
+                        <button class="btn btn-secondary add-bar-btn">+</button>
+                        <button class="btn btn-danger remove-section-btn">&times;</button>
+                    </div>
+                    <div class="bars-container">${sec.bars.map(bar => `
+                        <div class="bar-item" data-id="${bar.id}">
+                            <div class="bar-controls">
+                                <button class="move-bar-btn up" title="Hore">▲</button>
+                                <button class="move-bar-btn down" title="Dole">▼</button>
+                            </div>
+                            <input type="text" class="bar-input" value="${bar.text}" maxlength="${CONST.MAX_BAR_LENGTH}" placeholder="Píš sem...">
+                            <span class="char-counter">${bar.text.length}/${CONST.MAX_BAR_LENGTH}</span>
+                            <button class="remove-bar-btn">&times;</button>
+                        </div>`).join('')}
+                    </div>
+                </div>`).join('');
+
+            this.renderOutputs();
+            this.updateStatusUI();
+            this.updateMirrorBtn();
+        },
+
+        renderOutputs() {
+            const output = this.trackData.map(s => `[${s.type}]\n${s.bars.map(b=>b.text).join('\n')}`).join('\n\n');
+            document.getElementById('maketaOutput').textContent = output;
+            document.getElementById('inspiration-palette').innerHTML = this.palette.map(p => `<div class="palette-item" data-id="${p.id}"><span>${p.text}</span><button class="remove-palette-item-btn">&times;</button></div>`).join('');
+        },
+
+        updateStatusUI() {
+            const status = document.getElementById('file-status');
+            status.textContent = this.isDirty ? '(Zmenené)' : '(Uložené)';
+            if(this.isDirty) status.classList.add('unsaved'); else status.classList.remove('unsaved');
+        },
+        
+        updateMirrorBtn() {
+            const btn = document.getElementById('mirrorBtn');
+            if(this.selectedSections.size === 2) {
+                btn.style.display = 'inline-flex';
+            } else {
+                btn.style.display = 'none';
+            }
+        },
+
+        markDirty() { this.isDirty = true; this.updateStatusUI(); },
+
+        toggleSectionSelection(id) {
+            if(this.selectedSections.has(id)) {
+                this.selectedSections.delete(id);
+            } else {
+                this.selectedSections.add(id);
+            }
+            this.render();
+        },
+
+        mirrorSections() {
+            const ids = Array.from(this.selectedSections);
+            if(ids.length !== 2) return;
+            
+            // Determine order in trackData to know which is source (first appearing)
+            const idx1 = this.trackData.findIndex(s => s.id === ids[0]);
+            const idx2 = this.trackData.findIndex(s => s.id === ids[1]);
+            
+            const source = this.trackData[Math.min(idx1, idx2)];
+            const target = this.trackData[Math.max(idx1, idx2)];
+            
+            if(confirm(`Naozaj chcete prepísať sekciu "${target.type}" obsahom zo sekcie "${source.type}"?`)) {
+                // Deep Copy Bars
+                target.bars = source.bars.map(b => ({ id: this.uid(), text: b.text }));
+                target.type = source.type; // Optional: sync type too? Yes for chorus.
+                
+                this.selectedSections.clear();
+                this.render();
+                this.markDirty();
+                Utils.notify('Sekcia zrkadlená!');
+            }
+        },
+
+        moveBar(secId, barId, direction) {
+            const sec = this.trackData.find(s => s.id === secId);
+            if (!sec) return;
+            const idx = sec.bars.findIndex(b => b.id === barId);
+            if (idx === -1) return;
+            
+            if (direction === 'up' && idx > 0) {
+                const temp = sec.bars[idx];
+                sec.bars[idx] = sec.bars[idx - 1];
+                sec.bars[idx - 1] = temp;
+                this.render(); this.markDirty();
+            } else if (direction === 'down' && idx < sec.bars.length - 1) {
+                const temp = sec.bars[idx];
+                sec.bars[idx] = sec.bars[idx + 1];
+                sec.bars[idx + 1] = temp;
+                this.render(); this.markDirty();
+            }
+        },
+
+        async openAction() {
+            const file = await FileSys.openFile();
+            if(file) {
+                try {
+                    const json = JSON.parse(file.content);
+                    if(json.trackData) {
+                        this.trackData = json.trackData; this.palette = json.palette || [];
+                        document.getElementById('prompt-style-input').value = json.prompt || '';
+                        document.getElementById('research-input').value = json.research || '';
+                        this.nextId = Date.now();
+                    } else throw new Error();
+                } catch(e) {
+                    document.getElementById('source-input').value = file.content;
+                    this.parseImporter();
+                }
+                document.getElementById('current-filename').textContent = file.name;
+                this.isDirty = false; this.render(); Utils.notify(`Súbor ${file.name} otvorený`);
+            }
+        },
+
+        async saveAction() {
+            const data = { trackData: this.trackData, palette: this.palette, research: document.getElementById('research-input').value, prompt: document.getElementById('prompt-style-input').value, output: document.getElementById('maketaOutput').textContent };
+            let content = JSON.stringify(data, null, 2);
+            if(FileSys.handle && FileSys.handle.name.endsWith('.txt')) content = data.output;
+
+            const result = await FileSys.saveFile(content);
+            if(result.success) { this.isDirty = false; this.updateStatusUI(); Utils.notify(`Uložené do ${result.name}`); }
+            else if (!FileSys.handle) {
+                const a = document.createElement('a'); a.href = URL.createObjectURL(new Blob([content], {type: 'text/plain'}));
+                a.download = 'projekt.json'; a.click(); this.isDirty = false; this.updateStatusUI();
+            }
+        },
+
+        bindEvents() {
+            const $ = (id) => document.getElementById(id);
+            $('refreshProjectBtn').onclick = () => { this.parseImporter(); this.render(); };
+            $('syncImporterBtn').onclick = () => { $('source-input').value = $('maketaOutput').textContent; };
+            $('addSectionBtn').onclick = () => { this.trackData.push({ id: this.uid(), type: 'Verse', bars: [{id:this.uid(), text:''}] }); this.render(); this.markDirty(); };
+            $('openFileBtn').onclick = () => this.openAction();
+            $('saveFileBtn').onclick = () => this.saveAction();
+            $('manualSyncBtn').onclick = () => { this.renderOutputs(); Utils.notify('Synchronizované'); };
+            $('mirrorBtn').onclick = () => this.mirrorSections();
+
+            $('assembler-content').onclick = (e) => {
+                const t = e.target; const secEl = t.closest('.section-container');
+                
+                if (t.classList.contains('section-checkbox')) {
+                    this.toggleSectionSelection(secEl.dataset.id);
+                    return;
+                }
+
+                if(t.tagName === 'INPUT') return; 
+
+                if (t.classList.contains('move-bar-btn')) {
+                    const barId = t.closest('.bar-item').dataset.id;
+                    const secId = secEl.dataset.id;
+                    this.moveBar(secId, barId, t.classList.contains('up') ? 'up' : 'down');
+                }
+                else if(t.classList.contains('add-bar-btn')) { this.trackData.find(s => s.id === secEl.dataset.id).bars.push({ id: this.uid(), text: '' }); this.render(); this.markDirty(); }
+                else if(t.classList.contains('remove-bar-btn')) { 
+                    const sec = this.trackData.find(s => s.id === secEl.dataset.id); 
+                    sec.bars = sec.bars.filter(b => b.id !== t.closest('.bar-item').dataset.id); 
+                    this.render(); this.markDirty(); 
+                }
+                else if(t.classList.contains('remove-section-btn')) { if(confirm('Zmazať sekciu?')) { this.trackData = this.trackData.filter(s => s.id !== secEl.dataset.id); this.selectedSections.delete(secEl.dataset.id); this.render(); this.markDirty(); } }
+            };
+
+            $('assembler-content').oninput = (e) => {
+                if(e.target.classList.contains('bar-input')) {
+                    const barEl = e.target.closest('.bar-item');
+                    const secEl = e.target.closest('.section-container');
+                    this.trackData.find(s=>s.id===secEl.dataset.id).bars.find(b=>b.id===barEl.dataset.id).text = e.target.value;
+                    e.target.nextElementSibling.textContent = `${e.target.value.length}/${CONST.MAX_BAR_LENGTH}`;
+                    this.markDirty(); 
+                }
+                else if(e.target.classList.contains('section-type-input')) {
+                    this.trackData.find(s=>s.id===e.target.closest('.section-container').dataset.id).type = e.target.value;
+                    this.markDirty();
+                }
+            };
+
+            const modal = $('unified-overlay');
+            $('openUnifiedBtn').onclick = () => modal.classList.remove('hidden');
+            $('closeUnifiedBtn').onclick = () => modal.classList.add('hidden');
+            document.querySelectorAll('.tab-btn').forEach(btn => btn.onclick = () => {
+                document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+                document.querySelectorAll('.tab-pane').forEach(p => p.classList.remove('active'));
+                btn.classList.add('active'); $(btn.dataset.tab + 'Tab').classList.add('active');
+                if(btn.dataset.tab === 'analysis') {
+                    const res = Analysis.analyzeText(this.trackData.map(s => s.bars.map(b=>b.text).join('\n')).join('\n'));
+                    $('analysis-layer').innerHTML = res.structured.map(l => `<div>${l.tokens.map(t => t.isDup?`<span class="duplicate-word">${t.text}</span>`:t.text).join('')}</div>`).join('');
+                    $('analysis-metrics-container').innerHTML = `Riadky: ${res.metrics.lines}<br>Slová: ${res.metrics.words}<br>Duplikáty: ${res.metrics.duplicates}`;
+                }
+            });
+            $('analyzeRhymesBtn').onclick = () => { const r = Analysis.findRhymes($('research-input').value); r.forEach(w=>this.palette.unshift({id:this.uid(),text:w})); this.renderOutputs(); if(r.length) Utils.notify(`Nájdených ${r.length} rýmov`); };
+            $('addToPaletteBtn').onclick = () => { const s = $('research-input').value.substring($('research-input').selectionStart, $('research-input').selectionEnd).trim(); if(s) { this.palette.unshift({id:this.uid(), text:s}); this.renderOutputs(); }};
+            $('inspiration-palette').onclick = e => { if(e.target.closest('.remove-palette-item-btn')) { this.palette = this.palette.filter(p => p.id !== e.target.closest('.palette-item').dataset.id); this.renderOutputs(); }};
+            
+            $('copyBtn').onclick = () => {
+                const text = document.getElementById('maketaOutput').textContent;
+                const textArea = document.createElement("textarea");
+                textArea.value = text;
+                textArea.style.position = "fixed";
+                document.body.appendChild(textArea);
+                textArea.focus();
+                textArea.select();
+                try { document.execCommand('copy'); Utils.notify('Skopírované!'); } catch (err) { Utils.notify('Chyba kopírovania', 'danger'); }
+                document.body.removeChild(textArea);
+            };
+
+            const canvas = $('assembler-content');
+            canvas.ondragstart = e => { 
+                if (e.target.closest('.section-header')) {
+                    this.dragSrc = e.target.closest('.section-container'); 
+                    e.dataTransfer.effectAllowed='move'; 
+                    setTimeout(()=>this.dragSrc.style.opacity='0.5',0); 
+                } else {
+                    e.preventDefault();
+                }
+            };
+            canvas.ondragend = () => { if(this.dragSrc) this.dragSrc.style.opacity='1'; this.dragSrc=null; };
+            canvas.ondragover = e => e.preventDefault();
+            canvas.ondrop = e => {
+                e.preventDefault();
+                const target = e.target.closest('.section-container');
+                if(this.dragSrc && target && this.dragSrc !== target) {
+                    if(this.dragSrc.classList.contains('section-container') && target.classList.contains('section-container')) {
+                        const arr = [...canvas.children]; const from = arr.indexOf(this.dragSrc); const to = arr.indexOf(target);
+                        const item = this.trackData.splice(from, 1)[0]; this.trackData.splice(to, 0, item);
+                        this.render(); this.markDirty();
+                    }
+                }
+            };
+        }
+    };
+
+    document.addEventListener('DOMContentLoaded', () => App.init());
+    </script>
+</body>
+</html>
