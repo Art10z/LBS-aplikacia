@@ -138,6 +138,17 @@ const Controller = {
             View.dom.exportAllBtn.addEventListener('click', () => this._exportAll());
         }
         
+        // Tlačidlá v overlay paneli
+        if (View.dom.syncFromOverlayBtn) {
+            View.dom.syncFromOverlayBtn.addEventListener('click', () => {
+                this._syncImporterFromCanvas();
+                showNotification('Synchronizované!');
+            });
+        }
+        if (View.dom.saveFromOverlayBtn) {
+            View.dom.saveFromOverlayBtn.addEventListener('click', () => this._performManualSave());
+        }
+        
         if (View.dom.inspirationPalette) {
             View.dom.inspirationPalette.addEventListener('click', e => this._handlePaletteClick(e));
         }
@@ -237,7 +248,7 @@ const Controller = {
             this.isDirty = true;
             View.updateSaveStatus('unsaved');
         }
-        this.debouncedSave();
+        // Automatické ukladanie vypnuté - ukladať len manuálne cez Ctrl+S
     },
 
     _performAutoSave() {
@@ -252,19 +263,19 @@ const Controller = {
 
     _performManualSave() {
         if (!this.activeProjectName) return;
-        // Cancel any pending auto-save
-        if (this.debouncedSave && this.debouncedSave.cancel) {
-            this.debouncedSave.cancel();
-        }
         
+        // 1. Najprv synchronizuj importer z plátna
+        this._syncImporterFromCanvas();
+        
+        // 2. Potom ulož projekt
         View.updateSaveStatus('saving');
         Model.saveProject(this.activeProjectName);
         this.isDirty = false;
         
         setTimeout(() => {
              View.updateSaveStatus('saved');
-             showNotification('Projekt uložený!');
-        }, 150); // Short delay for user feedback
+             showNotification('Synchronizované a uložené!');
+        }, 200);
     },
 
     // Prepíše plátno okamžite podľa aktuálneho textu v importéri (bez potvrdenia)

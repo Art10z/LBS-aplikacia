@@ -48,6 +48,8 @@ const View = {
             openUnifiedBtn: byId('openUnifiedBtn'),
             unifiedOverlay: byId('unified-overlay', 'unified-panel-overlay'),
             closeUnifiedBtn: byId('closeUnifiedBtn'),
+            syncFromOverlayBtn: byId('syncFromOverlayBtn'),
+            saveFromOverlayBtn: byId('saveFromOverlayBtn'),
             researchTabBtn: byId('researchTabBtn'),
             analysisTabBtn: byId('analysisTabBtn'),
             researchTab: byId('researchTab'),
