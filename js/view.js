@@ -36,12 +36,6 @@ const View = {
             templateInserter: byId('template-inserter'),
             promptStyleInput: byId('prompt-style-input'),
             copyPromptStyleBtn: byId('copyPromptStyleBtn'),
-                setPromptStyleValue(value) {
-                    if (this.dom.promptStyleInput) this.dom.promptStyleInput.value = value || '';
-                },
-                getPromptStyleValue() {
-                    return this.dom.promptStyleInput ? this.dom.promptStyleInput.value : '';
-                },
             projectTabsContainer: byId('project-tabs-container'),
             saveStatus: byId('save-status'),
             exportAllBtn: byId('exportAllBtn'),
@@ -56,6 +50,14 @@ const View = {
             analysisTab: byId('analysisTab'),
             analysisLayer: byId('analysis-layer'),
         };
+    },
+    
+    setPromptStyleValue(value) {
+        if (this.dom.promptStyleInput) this.dom.promptStyleInput.value = value || '';
+    },
+    
+    getPromptStyleValue() {
+        return this.dom.promptStyleInput ? this.dom.promptStyleInput.value : '';
     },
     
     updateSaveStatus(status) { // 'saved', 'unsaved', 'saving'

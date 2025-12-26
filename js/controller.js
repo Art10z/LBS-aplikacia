@@ -3,7 +3,7 @@ import View from './view.js';
 import { initPromptStyle } from './promptStyle.js';
 import { MAX_BAR_LENGTH } from './constants.js';
 import * as Storage from './storage.js';
-import { showNotification, debounce, showLoading, hideLoading } from './utils.js';
+import { showNotification, showLoading, hideLoading } from './utils.js';
 import { analyze, render, findRhymingWords } from './unifiedAnalysis.js';
 
 // =================================================================================
@@ -14,20 +14,15 @@ import { analyze, render, findRhymingWords } from './unifiedAnalysis.js';
 const Controller = {
     draggedItem: null,
     isDirty: false,
-    debouncedSave: null,
     projects: [],
     activeProjectName: null,
     MAX_PROJECTS: 5,
     singleProjectMode: false,
-    _hlTimer: null,
-    _hlScrollBound: new WeakSet(),
-    _hlRAF: new WeakMap(),
     highlightEnabled: true,
     promptStyleModule: null,
 
     init() {
         View.init();
-        this.debouncedSave = debounce(() => this._performAutoSave(), 1500);
         this._attachEventListeners();
         this.promptStyleModule = initPromptStyle(this); // Inicializácia nového modulu
         Storage.init();

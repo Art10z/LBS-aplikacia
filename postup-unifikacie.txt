@@ -1,7 +1,0 @@
-1. Identifikuj cieľovú funkciu alebo modul, ktorý chceš upraviť.
-2. Ponechaj iba aktívnu, jednotnú (unifikovanú) implementáciu.
-3. Odstráň staré/duplicitné handlery, exporty, event bindingy a zbytočné časti kódu.
-4. Skontroluj, že importy a CSS odkazujú len na jednotný modul.
-5. Otestuj funkciu; commitni zmeny s popisom „cleanup: unifikácia <funkcia>“.
-
-Tento postup slúži na udržiavanie čistoty a prehľadnosti kódu pri refaktoringu alebo zjednocovaní logiky v projekte.
