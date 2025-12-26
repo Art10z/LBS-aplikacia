@@ -5,6 +5,7 @@ import { MAX_BAR_LENGTH } from './constants.js';
 import * as Storage from './storage.js';
 import { showNotification, showLoading, hideLoading } from './utils.js';
 import { analyze, render, findRhymingWords } from './unifiedAnalysis.js';
+import { SectionSync } from './sectionSync.js';
 
 // =================================================================================
 // CONTROLLER ("The Conductor" / "Dirigent")
@@ -20,11 +21,13 @@ const Controller = {
     singleProjectMode: false,
     highlightEnabled: true,
     promptStyleModule: null,
+    sectionSync: null,
 
     init() {
         View.init();
         this._attachEventListeners();
         this.promptStyleModule = initPromptStyle(this); // Inicializácia nového modulu
+        this.sectionSync = new SectionSync(); // Inicializácia sync modulu
         Storage.init();
         // Detect preferred project from global variable or URL and enable single-project mode if present
         const preferred = this._readProjectFromURL();
@@ -142,6 +145,17 @@ const Controller = {
         }
         if (View.dom.saveFromOverlayBtn) {
             View.dom.saveFromOverlayBtn.addEventListener('click', () => this._performManualSave());
+        }
+        
+        // Tlačidlá v hlavnom headeri
+        if (View.dom.syncFromHeaderBtn) {
+            View.dom.syncFromHeaderBtn.addEventListener('click', () => {
+                this._syncImporterFromCanvas();
+                showNotification('Synchronizované!');
+            });
+        }
+        if (View.dom.saveFromHeaderBtn) {
+            View.dom.saveFromHeaderBtn.addEventListener('click', () => this._performManualSave());
         }
         
         if (View.dom.inspirationPalette) {
@@ -408,6 +422,19 @@ const Controller = {
             if(counter?.classList.contains('char-counter')) {
                 counter.textContent = `${e.target.value.length}/${MAX_BAR_LENGTH}`;
             }
+        } else if (e.target.classList.contains('section-type-input')) {
+            const sectionContainer = e.target.closest('.section-container');
+            const sectionId = sectionContainer.dataset.sectionId;
+            const newType = e.target.value.trim();
+            if (newType) {
+                Model.updateSectionType(sectionId, newType);
+                View.updateAllSectionLabelsInDOM(Model.state.trackData);
+                this._updateSyncUI(); // Update sync UI keď sa zmení typ
+                this._markAsDirty();
+            } else {
+                const section = Model.state.trackData.find(s => s.id === sectionId);
+                if (section) e.target.value = section.type;
+            }
         }
     },
     _handleBarKeydown(e) {
@@ -442,17 +469,12 @@ const Controller = {
         if (e.target.classList.contains('bar-input')) {
             const barItem = e.target.closest('.bar-item');
             Model.updateBarText(barItem.dataset.sectionId, barItem.dataset.barId, e.target.value);
-        } else if (e.target.classList.contains('section-type-input')) {
-            const sectionContainer = e.target.closest('.section-container');
-            const sectionId = sectionContainer.dataset.sectionId;
-            const newType = e.target.value.trim();
-            if (newType) {
-                Model.updateSectionType(sectionId, newType);
-                View.updateAllSectionLabelsInDOM(Model.state.trackData);
-                this._markAsDirty();
-            } else {
-                const section = Model.state.trackData.find(s => s.id === sectionId);
-                if (section) e.target.value = section.type;
+            
+            // Ak je sekcia master, synchronizuj obsah
+            const sectionId = barItem.dataset.sectionId;
+            const section = Model.state.trackData.find(s => s.id === sectionId);
+            if (section && this.sectionSync.isMaster(sectionId, section.type)) {
+                this._syncContentToSlaves(section.type, section.bars);
             }
         }
     },
@@ -470,6 +492,8 @@ const Controller = {
                View.addBarToDOM(sectionId, newBar);
                this._markAsDirty();
             }
+        } else if (target.closest('.section-sync-btn')) {
+            this._handleSectionSync(sectionId);
         } else if (target.closest('.remove-section-btn')) {
             View.showConfirmation('Naozaj chcete odstrániť túto sekciu?', () => {
                 Model.removeSection(sectionId);
@@ -901,6 +925,103 @@ const Controller = {
             this._updateAllViews();
             showNotification(`Projekt premenovaný na "${newName}".`);
         }
+    },
+
+    // =============================================================================
+    // SECTION SYNC METHODS
+    // =============================================================================
+
+    /**
+     * Spracuje kliknutie na sync tlačidlo
+     */
+    _handleSectionSync(sectionId) {
+        const section = Model.state.trackData.find(s => s.id === sectionId);
+        if (!section) return;
+
+        const isMaster = this.sectionSync.isMaster(sectionId, section.type);
+        
+        if (isMaster) {
+            // Zrušiť master status
+            this.sectionSync.removeFromSync(sectionId, section.type);
+            showNotification('Synchronizácia zrušená', 'info');
+        } else {
+            // Nastaviť ako master
+            this.sectionSync.setMaster(sectionId, section.type);
+            
+            // Najdime všetky ostatné sekcie s rovnakým typom a nastavme ich ako slaves
+            Model.state.trackData.forEach(s => {
+                if (s.type === section.type && s.id !== sectionId) {
+                    const group = this.sectionSync.syncGroups.get(section.type);
+                    group.slaves.add(s.id);
+                }
+            });
+
+            // Synchronizuj obsah do slaves
+            this._syncContentToSlaves(section.type, section.bars);
+            
+            const syncInfo = this.sectionSync.getSyncInfo(section.type);
+            showNotification(`🔗 Master nastavený (${syncInfo.count}x sekcie synchronizované)`, 'success');
+        }
+
+        this._updateSyncUI();
+        this._markAsDirty();
+    },
+
+    /**
+     * Synchronizuje obsah master sekcie do všetkých slave sekcií
+     */
+    _syncContentToSlaves(sectionType, masterBars) {
+        const slaves = this.sectionSync.getSlaves(sectionType);
+        
+        slaves.forEach(slaveId => {
+            const slaveSection = Model.state.trackData.find(s => s.id === slaveId);
+            if (!slaveSection) return;
+
+            // Skopíruj bars z master do slave
+            slaveSection.bars = masterBars.map(bar => ({
+                id: `bar-${Model.state.nextId++}`,
+                text: bar.text
+            }));
+
+            // Aktualizuj UI pre slave sekciu
+            const slaveSectionEl = document.querySelector(`[data-section-id="${slaveId}"]`);
+            if (slaveSectionEl) {
+                const barsContainer = slaveSectionEl.querySelector('.bars-container');
+                if (barsContainer) {
+                    barsContainer.innerHTML = '';
+                    slaveSection.bars.forEach(bar => {
+                        const barEl = View._createBarElement(bar, slaveId);
+                        barsContainer.appendChild(barEl);
+                    });
+                }
+            }
+        });
+    },
+
+    /**
+     * Aktualizuje UI pre sync tlačidlá
+     */
+    _updateSyncUI() {
+        Model.state.trackData.forEach(section => {
+            const btn = document.querySelector(`.section-sync-btn[data-section-id="${section.id}"]`);
+            if (!btn) return;
+
+            const isMaster = this.sectionSync.isMaster(section.id, section.type);
+            const isSlave = this.sectionSync.isSlave(section.id, section.type);
+            const syncInfo = this.sectionSync.getSyncInfo(section.type);
+
+            btn.classList.remove('sync-master', 'sync-slave');
+            
+            if (isMaster) {
+                btn.classList.add('sync-master');
+                btn.title = `Master sekcia (${syncInfo.count}x synchronizované)`;
+            } else if (isSlave) {
+                btn.classList.add('sync-slave');
+                btn.title = 'Slave sekcia (synchronizovaná s master)';
+            } else {
+                btn.title = 'Nastaviť ako master pre synchronizáciu';
+            }
+        });
     }
 };
 

@@ -44,6 +44,8 @@ const View = {
             closeUnifiedBtn: byId('closeUnifiedBtn'),
             syncFromOverlayBtn: byId('syncFromOverlayBtn'),
             saveFromOverlayBtn: byId('saveFromOverlayBtn'),
+            syncFromHeaderBtn: byId('syncFromHeaderBtn'),
+            saveFromHeaderBtn: byId('saveFromHeaderBtn'),
             researchTabBtn: byId('researchTabBtn'),
             analysisTabBtn: byId('analysisTabBtn'),
             researchTab: byId('researchTab'),
@@ -241,6 +243,13 @@ const View = {
         typeInput.value = section.type;
         typeInput.title = 'Typ sekcie';
 
+        // Sync tlačidlo
+        const syncBtn = document.createElement('button');
+        syncBtn.className = 'btn btn-secondary section-sync-btn';
+        syncBtn.dataset.sectionId = section.id;
+        syncBtn.title = 'Synchronizovať sekcie rovnakého typu';
+        syncBtn.innerHTML = '🔗';
+
         const addBarBtn = document.createElement('button');
         addBarBtn.className = 'btn btn-secondary add-bar-btn';
         addBarBtn.title = 'Pridať bar';
@@ -251,7 +260,7 @@ const View = {
         removeSectionBtn.title = 'Odstrániť sekciu';
         removeSectionBtn.innerHTML = '&times;';
 
-        controls.append(typeInput, addBarBtn, removeSectionBtn);
+        controls.append(typeInput, syncBtn, addBarBtn, removeSectionBtn);
         header.append(dragHandle, label, controls);
 
         const barsContainer = document.createElement('div');
