@@ -98,6 +98,10 @@ const Controller = {
             View.dom.assemblerContent.addEventListener('dragover', e => this._handleDragOver(e));
             View.dom.assemblerContent.addEventListener('drop', e => this._handleDrop(e));
             View.dom.assemblerContent.addEventListener('dragend', () => this._handleDragEnd());
+            // Word chip event handlers
+            View.dom.assemblerContent.addEventListener('keydown', e => this._handleWordInputKeydown(e));
+            View.dom.assemblerContent.addEventListener('dblclick', e => this._handleWordChipDblClick(e));
+            View.dom.assemblerContent.addEventListener('click', e => this._handleWordChipClick(e));
         }
 
         if (View.dom.openUnifiedBtn) {
@@ -319,8 +323,11 @@ const Controller = {
         Model.state.trackData.forEach(section => {
             lines.push(`[${section.type}]`);
             section.bars.forEach(bar => {
-                const txt = (bar.text || '').trim();
-                if (txt) lines.push(txt); else lines.push('');
+                // Podpora oboch formátov (legacy text aj nový words)
+                const txt = bar.words 
+                    ? bar.words.map(w => w.text).join(' ').trim()
+                    : (bar.text || '').trim();
+                lines.push(txt || '');
             });
         });
         View.dom.sourceInput.value = lines.join('\n');
@@ -333,6 +340,7 @@ const Controller = {
         const newTrackData = [];
         let currentSection = null;
         let globalBarCounter = 0; // Globálny počítadlo pre unikátne bar ID
+        let globalWordCounter = 0; // Globálny počítadlo pre unikátne word ID
 
         lines.forEach(line => {
             const sectionMatch = line.match(/^\[\s*(.+?)\s*\]$/);
@@ -346,9 +354,20 @@ const Controller = {
                 };
                 newTrackData.push(currentSection);
             } else if (currentSection) {
+                // Vytvorenie baru s words (nový formát)
+                const barText = line.substring(0, MAX_BAR_LENGTH);
+                const words = barText.split(/\s+/)
+                    .map(w => w.trim())
+                    .filter(w => w.length > 0)
+                    .map(w => ({
+                        id: `temp-word-${globalWordCounter++}`,
+                        text: w.replace(/^[.,!?;:„“”'()[\]{}\u2014\u2013\-]+|[.,!?;:„“”'()[\]{}\u2014\u2013\-]+$/g, '')
+                    }))
+                    .filter(w => w.text.length > 0);
+                
                 currentSection.bars.push({
-                    id: `temp-bar-${globalBarCounter++}`, // Použiť globálne počítadlo
-                    text: line.substring(0, MAX_BAR_LENGTH)
+                    id: `temp-bar-${globalBarCounter++}`,
+                    words: words
                 });
             }
         });
@@ -694,6 +713,19 @@ const Controller = {
     },
 
     _handleDragStart(e) {
+         // Kontrola či je to word-chip drag
+         const wordChip = e.target.closest('.word-chip');
+         if (wordChip) {
+             e.dataTransfer.setData('application/x-word-chip', JSON.stringify({
+                 wordId: wordChip.dataset.wordId,
+                 barId: wordChip.dataset.barId,
+                 sectionId: wordChip.dataset.sectionId
+             }));
+             e.dataTransfer.effectAllowed = 'move';
+             wordChip.classList.add('dragging');
+             return;
+         }
+         
          // Hľadať bar-drag-handle alebo section-header
          const barHandle = e.target.closest('.bar-drag-handle');
          const sectionHeader = e.target.closest('.section-header');
@@ -732,6 +764,9 @@ const Controller = {
     _handleDragEnd() {
         this._removePlaceholder();
         document.body.classList.remove('is-dragging');
+        
+        // Odstrániť dragging class z word chipov
+        document.querySelectorAll('.word-chip.dragging').forEach(el => el.classList.remove('dragging'));
 
         if (this.draggedItem) {
             this.draggedItem.classList.remove('dragging');
@@ -748,32 +783,49 @@ const Controller = {
         this._removePlaceholder();
         
         // Odstrániť drop-target highlight
-        document.querySelectorAll('.bar-input.drop-target').forEach(el => el.classList.remove('drop-target'));
+        document.querySelectorAll('.words-container.drop-target').forEach(el => el.classList.remove('drop-target'));
 
         // Kontrola či je to drop z palety inšpirácie
         const paletteData = e.dataTransfer.getData('application/x-palette-item');
         if (paletteData) {
-            // Drop z palety do bar-input
-            const barInput = e.target.closest('.bar-input');
-            if (barInput) {
-                const currentText = barInput.value;
-                const cursorPos = barInput.selectionStart || currentText.length;
-                const newText = currentText.slice(0, cursorPos) + paletteData + currentText.slice(cursorPos);
-                barInput.value = newText;
-                
-                // Aktualizovať model
-                const barItem = barInput.closest('.bar-item');
-                const sectionContainer = barInput.closest('.section-container');
-                if (barItem && sectionContainer) {
-                    Model.updateBarText(sectionContainer.dataset.sectionId, barItem.dataset.barId, newText);
-                    // Aktualizovať char counter
-                    const counter = barItem.querySelector('.char-counter');
-                    if (counter) {
-                        counter.textContent = `${newText.length}/60`;
-                    }
+            // Drop z palety do words-container
+            const wordsContainer = e.target.closest('.words-container');
+            if (wordsContainer) {
+                const sectionId = wordsContainer.dataset.sectionId;
+                const barId = wordsContainer.dataset.barId;
+                const newWord = Model.addWordToBar(sectionId, barId, paletteData);
+                if (newWord) {
+                    const wordInput = wordsContainer.querySelector('.word-input');
+                    const chip = View._createWordChip(newWord, sectionId, barId);
+                    wordsContainer.insertBefore(chip, wordInput);
+                    this._updateBarCharCounter(wordsContainer);
                     this._markAsDirty();
-                    showNotification('Text vložený z palety.');
+                    showNotification('Slovo vložené z palety.');
                 }
+            }
+            return;
+        }
+
+        // Kontrola či je to drop word chipu
+        const wordData = e.dataTransfer.getData('application/x-word-chip');
+        if (wordData) {
+            const data = JSON.parse(wordData);
+            const targetWordsContainer = e.target.closest('.words-container');
+            if (targetWordsContainer) {
+                const targetSectionId = targetWordsContainer.dataset.sectionId;
+                const targetBarId = targetWordsContainer.dataset.barId;
+                
+                // Zistiť pozíciu dropu
+                const afterChip = this._getDragAfterElement(targetWordsContainer, e.clientX, '.word-chip');
+                const chips = [...targetWordsContainer.querySelectorAll('.word-chip')];
+                let newIndex = afterChip ? chips.indexOf(afterChip) : chips.length;
+                
+                Model.moveWord(data.wordId, data.sectionId, data.barId, targetSectionId, targetBarId, newIndex);
+                this._refreshBarWords(data.sectionId, data.barId);
+                if (data.barId !== targetBarId) {
+                    this._refreshBarWords(targetSectionId, targetBarId);
+                }
+                this._markAsDirty();
             }
             return;
         }
@@ -831,14 +883,14 @@ const Controller = {
     _handleDragOver(e) {
         e.preventDefault();
         
-        // Kontrola či je to drag z palety inšpirácie
-        if (e.dataTransfer.types.includes('application/x-palette-item')) {
-            const barInput = e.target.closest('.bar-input');
+        // Kontrola či je to drag z palety inšpirácie alebo word chipu
+        if (e.dataTransfer.types.includes('application/x-palette-item') || e.dataTransfer.types.includes('application/x-word-chip')) {
+            const wordsContainer = e.target.closest('.words-container');
             // Odstrániť predchádzajúce drop-target triedy
-            document.querySelectorAll('.bar-input.drop-target').forEach(el => el.classList.remove('drop-target'));
-            if (barInput) {
-                barInput.classList.add('drop-target');
-                e.dataTransfer.dropEffect = 'copy';
+            document.querySelectorAll('.words-container.drop-target').forEach(el => el.classList.remove('drop-target'));
+            if (wordsContainer) {
+                wordsContainer.classList.add('drop-target');
+                e.dataTransfer.dropEffect = e.dataTransfer.types.includes('application/x-word-chip') ? 'move' : 'copy';
             }
             return;
         }
@@ -1061,10 +1113,13 @@ const Controller = {
             const slaveSection = Model.state.trackData.find(s => s.id === slaveId);
             if (!slaveSection) return;
 
-            // Skopíruj bars z master do slave
+            // Skopíruj bars z master do slave (nový words formát)
             slaveSection.bars = masterBars.map(bar => ({
                 id: `bar-${Model.state.nextId++}`,
-                text: bar.text
+                words: (bar.words || []).map(w => ({
+                    id: `word-${Model.state.nextId++}`,
+                    text: w.text
+                }))
             }));
 
             // Aktualizuj UI pre slave sekciu
@@ -1080,6 +1135,126 @@ const Controller = {
                 }
             }
         });
+    },
+
+    // === WORD CHIP HELPERS ===
+    
+    // Obnoviť word chips pre konkrétny bar
+    _refreshBarWords(sectionId, barId) {
+        const section = Model.state.trackData.find(s => s.id === sectionId);
+        const bar = section?.bars.find(b => b.id === barId);
+        if (!bar) return;
+        
+        const wordsContainer = document.querySelector(`.words-container[data-bar-id="${barId}"]`);
+        if (!wordsContainer) return;
+        
+        // Odstrániť všetky existujúce chips
+        wordsContainer.querySelectorAll('.word-chip').forEach(el => el.remove());
+        
+        // Pridať nové chips pred word-input
+        const wordInput = wordsContainer.querySelector('.word-input');
+        (bar.words || []).forEach(word => {
+            const chip = View._createWordChip(word, sectionId, barId);
+            wordsContainer.insertBefore(chip, wordInput);
+        });
+        
+        this._updateBarCharCounter(wordsContainer);
+    },
+    
+    // Aktualizovať char counter pre bar
+    _updateBarCharCounter(wordsContainer) {
+        const barItem = wordsContainer.closest('.bar-item');
+        if (!barItem) return;
+        
+        const counter = barItem.querySelector('.char-counter');
+        if (!counter) return;
+        
+        const words = wordsContainer.querySelectorAll('.word-chip');
+        const text = [...words].map(w => w.textContent).join(' ');
+        counter.textContent = `${text.length}/${MAX_BAR_LENGTH}`;
+    },
+
+    // Handler pre word-input (Enter pridá slovo)
+    _handleWordInputKeydown(e) {
+        if (e.target.classList.contains('word-input') && e.key === 'Enter') {
+            e.preventDefault();
+            const input = e.target;
+            const text = input.value.trim();
+            if (!text) return;
+            
+            const wordsContainer = input.closest('.words-container');
+            const sectionId = wordsContainer.dataset.sectionId;
+            const barId = wordsContainer.dataset.barId;
+            
+            // Rozdeliť text na slová (ak niekto napíše viac slov)
+            const newWords = text.split(/\s+/).filter(w => w.length > 0);
+            newWords.forEach(wordText => {
+                const newWord = Model.addWordToBar(sectionId, barId, wordText);
+                if (newWord) {
+                    const chip = View._createWordChip(newWord, sectionId, barId);
+                    wordsContainer.insertBefore(chip, input);
+                }
+            });
+            
+            input.value = '';
+            this._updateBarCharCounter(wordsContainer);
+            this._markAsDirty();
+        }
+    },
+
+    // Handler pre double-click na word chip (editácia)
+    _handleWordChipDblClick(e) {
+        const chip = e.target.closest('.word-chip');
+        if (!chip) return;
+        
+        const currentText = chip.textContent;
+        const input = document.createElement('input');
+        input.type = 'text';
+        input.className = 'word-edit-input';
+        input.value = currentText;
+        
+        chip.style.display = 'none';
+        chip.parentNode.insertBefore(input, chip);
+        input.focus();
+        input.select();
+        
+        const finishEdit = () => {
+            const newText = input.value.trim();
+            if (newText && newText !== currentText) {
+                chip.textContent = newText;
+                Model.updateWordText(chip.dataset.sectionId, chip.dataset.barId, chip.dataset.wordId, newText);
+                this._markAsDirty();
+            }
+            chip.style.display = '';
+            input.remove();
+            this._updateBarCharCounter(chip.closest('.words-container'));
+        };
+        
+        input.addEventListener('blur', finishEdit);
+        input.addEventListener('keydown', (ev) => {
+            if (ev.key === 'Enter') { ev.preventDefault(); finishEdit(); }
+            if (ev.key === 'Escape') { input.value = currentText; finishEdit(); }
+        });
+    },
+
+    // Handler pre kliknutie na word chip (Ctrl+click = odstránenie)
+    _handleWordChipClick(e) {
+        const chip = e.target.closest('.word-chip');
+        if (!chip) return;
+        
+        if (e.ctrlKey || e.metaKey) {
+            // Ctrl+click = odstrániť slovo
+            e.preventDefault();
+            const sectionId = chip.dataset.sectionId;
+            const barId = chip.dataset.barId;
+            const wordId = chip.dataset.wordId;
+            
+            Model.removeWordFromBar(sectionId, barId, wordId);
+            const wordsContainer = chip.closest('.words-container');
+            chip.remove();
+            this._updateBarCharCounter(wordsContainer);
+            this._markAsDirty();
+        }
     },
 
     /**

@@ -169,9 +169,13 @@ const View = {
 
     renderMaketa(trackData) {
         this.dom.maketaOutput.textContent = trackData.map(section =>
-            `[${section.label}]\n` + section.bars.map((bar, i) =>
-                bar.text + (((i + 1) % 4 === 0) ? '\n' : '')
-            ).join('\n') + (section.bars.length % 4 !== 0 ? '\n' : '')
+            `[${section.label}]\n` + section.bars.map((bar, i) => {
+                // Podpora oboch formátov (legacy text aj nový words)
+                const text = bar.words 
+                    ? bar.words.map(w => w.text).join(' ')
+                    : (bar.text || '');
+                return text + (((i + 1) % 4 === 0) ? '\n' : '');
+            }).join('\n') + (section.bars.length % 4 !== 0 ? '\n' : '')
         ).join('\n');
     },
     
@@ -192,8 +196,8 @@ const View = {
             const barsContainer = sectionEl.querySelector('.bars-container');
             const barEl = this._createBarElement(bar, sectionId);
             barsContainer.appendChild(barEl);
-            const ta = barEl.querySelector('textarea');
-            if (ta) ta.focus();
+            const wordInput = barEl.querySelector('.word-input');
+            if (wordInput) wordInput.focus();
         }
     },
 
@@ -284,24 +288,50 @@ const View = {
         dragHandle.textContent = '⠿';
         dragHandle.draggable = true;
 
-    const input = document.createElement('textarea');
-    input.className = 'bar-input';
-    input.value = bar.text;
-    input.maxLength = MAX_BAR_LENGTH;
-    input.rows = 1;
-    input.setAttribute('wrap', 'off');
+        // Word chips container namiesto textarea
+        const wordsContainer = document.createElement('div');
+        wordsContainer.className = 'words-container';
+        wordsContainer.dataset.barId = bar.id;
+        wordsContainer.dataset.sectionId = sectionId;
 
+        // Render existing words as chips
+        const words = bar.words || [];
+        words.forEach(word => {
+            wordsContainer.appendChild(this._createWordChip(word, sectionId, bar.id));
+        });
+
+        // Input pre pridanie nového slova
+        const wordInput = document.createElement('input');
+        wordInput.type = 'text';
+        wordInput.className = 'word-input';
+        wordInput.placeholder = '+';
+        wordInput.title = 'Napíš slovo a stlač Enter';
+        wordsContainer.appendChild(wordInput);
+
+        const barText = words.map(w => w.text).join(' ');
         const counter = document.createElement('span');
         counter.className = 'char-counter';
-        counter.textContent = `${bar.text.length}/${MAX_BAR_LENGTH}`;
+        counter.textContent = `${barText.length}/${MAX_BAR_LENGTH}`;
 
         const removeBtn = document.createElement('button');
         removeBtn.className = 'remove-bar-btn';
         removeBtn.title = 'Odstrániť bar';
         removeBtn.innerHTML = '&times;';
 
-        barItem.append(dragHandle, input, counter, removeBtn);
+        barItem.append(dragHandle, wordsContainer, counter, removeBtn);
         return barItem;
+    },
+
+    _createWordChip(word, sectionId, barId) {
+        const chip = document.createElement('span');
+        chip.className = 'word-chip';
+        chip.dataset.wordId = word.id;
+        chip.dataset.barId = barId;
+        chip.dataset.sectionId = sectionId;
+        chip.textContent = word.text;
+        chip.draggable = true;
+        chip.title = 'Presuň slovo';
+        return chip;
     },
     
     _createPaletteItemElement(item) {

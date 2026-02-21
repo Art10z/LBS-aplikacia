@@ -39,7 +39,36 @@ export function listProjects(){
 
 export function loadProject(name){
   const raw = _read(PROJECT_KEY_PREFIX+name);
-  return raw ? JSON.parse(raw) : null;
+  if (!raw) return null;
+  const data = JSON.parse(raw);
+  // Migrácia: bar.text -> bar.words
+  if (data && data.trackData) {
+    data.trackData.forEach(section => {
+      if (section.bars) {
+        section.bars.forEach(bar => {
+          if (bar.text !== undefined && !bar.words) {
+            bar.words = _textToWords(bar.text);
+            delete bar.text;
+          }
+        });
+      }
+    });
+  }
+  return data;
+}
+
+// Pomocná funkcia pre migráciu: text -> words array
+function _textToWords(text) {
+  if (!text || !text.trim()) return [];
+  let wordId = Date.now();
+  return text.split(/\s+/)
+    .map(w => w.trim())
+    .filter(w => w.length > 0)
+    .map(w => ({
+      id: `word-${wordId++}`,
+      text: w.replace(/^[.,!?;:„""'()[\]{}—–\-]+|[.,!?;:„""'()[\]{}—–\-]+$/g, '')
+    }))
+    .filter(w => w.text.length > 0);
 }
 
 export function saveProject(name,data){

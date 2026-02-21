@@ -50,7 +50,7 @@ const Model = {
     addBarToSection(sectionId) {
         const section = this.state.trackData.find(s => s.id === sectionId);
         if (section) {
-            const newBar = { id: `bar-${this.state.nextId++}`, text: '' };
+            const newBar = { id: `bar-${this.state.nextId++}`, words: [] };
             section.bars.push(newBar);
             return newBar;
         }
@@ -64,10 +64,122 @@ const Model = {
         }
     },
 
+    // LEGACY: Zachované pre spätnú kompatibilitu
     updateBarText(sectionId, barId, newText) {
         const section = this.state.trackData.find(s => s.id === sectionId);
         const bar = section?.bars.find(b => b.id === barId);
-        if (bar) bar.text = newText;
+        if (bar) {
+            // Konvertovať text na words
+            bar.words = this._textToWords(newText);
+        }
+    },
+
+    // === NOVÉ METÓDY PRE WORD CHIPS ===
+    
+    // Pomocná funkcia: text -> words array (odstraňuje interpunkciu zo slov)
+    _textToWords(text) {
+        if (!text || !text.trim()) return [];
+        return text.split(/\s+/)
+            .map(w => w.trim())
+            .filter(w => w.length > 0)
+            .map(w => ({
+                id: `word-${this.state.nextId++}`,
+                text: this._cleanWord(w)
+            }));
+    },
+    
+    // Očistiť slovo od interpunkcie na začiatku a konci
+    _cleanWord(word) {
+        return word.replace(/^[.,!?;:„""'()[\]{}—–\-]+|[.,!?;:„""'()[\]{}—–\-]+$/g, '');
+    },
+
+    // Získať bar ako text (words spojené medzerou)
+    getBarAsText(sectionId, barId) {
+        const section = this.state.trackData.find(s => s.id === sectionId);
+        const bar = section?.bars.find(b => b.id === barId);
+        if (!bar) return '';
+        // Podpora oboch formátov (legacy text aj nový words)
+        if (bar.words) {
+            return bar.words.map(w => w.text).join(' ');
+        }
+        return bar.text || '';
+    },
+
+    // Pridať slovo do baru na konkrétnu pozíciu
+    addWordToBar(sectionId, barId, wordText, index = -1) {
+        const section = this.state.trackData.find(s => s.id === sectionId);
+        const bar = section?.bars.find(b => b.id === barId);
+        if (!bar) return null;
+        
+        // Inicializovať words ak neexistuje
+        if (!bar.words) bar.words = [];
+        
+        const cleanedText = this._cleanWord(wordText.trim());
+        if (!cleanedText) return null;
+        
+        const newWord = {
+            id: `word-${this.state.nextId++}`,
+            text: cleanedText
+        };
+        
+        if (index < 0 || index >= bar.words.length) {
+            bar.words.push(newWord);
+        } else {
+            bar.words.splice(index, 0, newWord);
+        }
+        return newWord;
+    },
+
+    // Odstrániť slovo z baru
+    removeWordFromBar(sectionId, barId, wordId) {
+        const section = this.state.trackData.find(s => s.id === sectionId);
+        const bar = section?.bars.find(b => b.id === barId);
+        if (bar && bar.words) {
+            bar.words = bar.words.filter(w => w.id !== wordId);
+        }
+    },
+
+    // Presunúť slovo v rámci baru alebo medzi barmi
+    moveWord(wordId, fromSectionId, fromBarId, toSectionId, toBarId, newIndex) {
+        const fromSection = this.state.trackData.find(s => s.id === fromSectionId);
+        const fromBar = fromSection?.bars.find(b => b.id === fromBarId);
+        if (!fromBar || !fromBar.words) return;
+        
+        const wordIndex = fromBar.words.findIndex(w => w.id === wordId);
+        if (wordIndex === -1) return;
+        
+        const [word] = fromBar.words.splice(wordIndex, 1);
+        
+        const toSection = this.state.trackData.find(s => s.id === toSectionId);
+        const toBar = toSection?.bars.find(b => b.id === toBarId);
+        if (!toBar) return;
+        
+        if (!toBar.words) toBar.words = [];
+        
+        if (newIndex < 0 || newIndex >= toBar.words.length) {
+            toBar.words.push(word);
+        } else {
+            toBar.words.splice(newIndex, 0, word);
+        }
+    },
+
+    // Aktualizovať text slova
+    updateWordText(sectionId, barId, wordId, newText) {
+        const section = this.state.trackData.find(s => s.id === sectionId);
+        const bar = section?.bars.find(b => b.id === barId);
+        const word = bar?.words?.find(w => w.id === wordId);
+        if (word) {
+            word.text = this._cleanWord(newText.trim());
+        }
+    },
+
+    // Migrovať bar z text formátu na words formát
+    migrateBarToWords(bar) {
+        if (bar.text !== undefined && !bar.words) {
+            bar.words = this._textToWords(bar.text);
+            delete bar.text;
+        }
+        return bar;
     },
 
     updateSectionType(sectionId, newType) {

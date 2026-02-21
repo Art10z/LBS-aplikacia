@@ -276,6 +276,82 @@ body.is-dragging, body.is-dragging * {
 
 .bar-item { position: relative; }
 .bar-input { flex-grow: 1; background-color: transparent; border: none; color: var(--text-primary); padding: 2px 0; font-size: 0.85rem; outline: none; font-family: var(--font-mono); resize: none; min-height: 28px; line-height: 1.35; overflow-y: hidden; }
+
+/* === WORD CHIPS ŠTÝLY === */
+.words-container {
+    flex-grow: 1;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 4px;
+    align-items: center;
+    min-height: 28px;
+    padding: 2px 4px;
+    background-color: transparent;
+    border: 1px solid transparent;
+    border-radius: 4px;
+    transition: border-color 0.2s, box-shadow 0.2s;
+}
+
+.words-container.drop-target {
+    border-color: var(--accent-primary);
+    box-shadow: 0 0 0 2px var(--accent-glow);
+    background-color: rgba(99, 179, 237, 0.05);
+}
+
+.word-chip {
+    display: inline-flex;
+    align-items: center;
+    padding: 2px 8px;
+    background-color: #21262D;
+    border: 1px solid var(--border-color);
+    border-radius: 12px;
+    font-size: 0.8rem;
+    color: var(--text-primary);
+    cursor: grab;
+    user-select: none;
+    transition: all 0.15s ease;
+    font-family: var(--font-mono);
+}
+
+.word-chip:hover {
+    border-color: var(--accent-primary);
+    background-color: #2a3038;
+}
+
+.word-chip.dragging {
+    opacity: 0.5;
+    cursor: grabbing;
+}
+
+.word-input {
+    border: none;
+    background: transparent;
+    color: var(--text-primary);
+    font-size: 0.8rem;
+    font-family: var(--font-mono);
+    padding: 2px 4px;
+    min-width: 20px;
+    max-width: 80px;
+    outline: none;
+}
+
+.word-input::placeholder {
+    color: var(--text-secondary);
+    opacity: 0.6;
+}
+
+.word-edit-input {
+    border: 1px solid var(--accent-primary);
+    background: #21262D;
+    color: var(--text-primary);
+    font-size: 0.8rem;
+    font-family: var(--font-mono);
+    padding: 2px 8px;
+    border-radius: 12px;
+    outline: none;
+    min-width: 40px;
+}
+/* === KONIEC WORD CHIPS ŠTÝLOV === */
 .char-counter { font-family: var(--font-mono); font-size: 0.75rem; color: var(--text-secondary); min-width: 50px; text-align: right; user-select: none; }
 .remove-bar-btn { background: none; border: none; color: var(--text-secondary); cursor: pointer; visibility: hidden; opacity: 0; transition: all 0.2s ease; font-size: 1.2rem; }
 .bar-item:hover .remove-bar-btn { visibility: visible; opacity: 1; }
