@@ -184,7 +184,11 @@ body {
     overflow-y: auto; /* Pridá scrollbar, ak je obsahu veľa */
     display: flex;
     flex-direction: column;
-    gap: 8px; 
+    gap: 8px;
+    border: 2px dashed transparent;
+    border-radius: 6px;
+    padding: 4px;
+    transition: border-color 0.2s, background-color 0.2s, box-shadow 0.2s;
 }
 
 #inspiration-palette.placeholder { width: 100%; flex-grow: 1; border: 1px dashed var(--border-color); border-radius: 5px; display: flex; flex-direction: column; justify-content: center; align-items: center; text-align: center; color: var(--text-secondary); padding: 15px; }
@@ -321,6 +325,29 @@ body.is-dragging, body.is-dragging * {
 .word-chip.dragging {
     opacity: 0.5;
     cursor: grabbing;
+}
+
+/* Vizuálny indikátor pre drop pozíciu slova */
+.word-drop-indicator {
+    width: 2px;
+    height: 20px;
+    background-color: var(--accent-primary);
+    border-radius: 1px;
+    animation: word-drop-pulse 0.6s ease-in-out infinite alternate;
+    flex-shrink: 0;
+}
+
+@keyframes word-drop-pulse {
+    from { opacity: 0.5; }
+    to { opacity: 1; }
+}
+
+/* Drop target pre paletu */
+#inspiration-palette.drop-target,
+#inspiration-panel.drop-target {
+    background-color: rgba(99, 179, 237, 0.1);
+    border-color: var(--accent-primary);
+    border-style: dashed;
 }
 
 .word-input {
