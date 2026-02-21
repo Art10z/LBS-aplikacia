@@ -361,9 +361,8 @@ const Controller = {
                     .filter(w => w.length > 0)
                     .map(w => ({
                         id: `temp-word-${globalWordCounter++}`,
-                        text: w.replace(/^[.,!?;:„“”'()[\]{}\u2014\u2013\-]+|[.,!?;:„“”'()[\]{}\u2014\u2013\-]+$/g, '')
-                    }))
-                    .filter(w => w.text.length > 0);
+                        text: w
+                    }));
                 
                 currentSection.bars.push({
                     id: `temp-bar-${globalBarCounter++}`,

@@ -57,7 +57,7 @@ export function loadProject(name){
   return data;
 }
 
-// Pomocná funkcia pre migráciu: text -> words array
+// Pomocná funkcia pre migráciu: text -> words array (zachováva interpunkciu)
 function _textToWords(text) {
   if (!text || !text.trim()) return [];
   let wordId = Date.now();
@@ -66,9 +66,8 @@ function _textToWords(text) {
     .filter(w => w.length > 0)
     .map(w => ({
       id: `word-${wordId++}`,
-      text: w.replace(/^[.,!?;:„""'()[\]{}—–\-]+|[.,!?;:„""'()[\]{}—–\-]+$/g, '')
-    }))
-    .filter(w => w.text.length > 0);
+      text: w  // Zachovať interpunkciu pre finálnu maketu
+    }));
 }
 
 export function saveProject(name,data){

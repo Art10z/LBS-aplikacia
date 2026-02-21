@@ -76,7 +76,7 @@ const Model = {
 
     // === NOVÉ METÓDY PRE WORD CHIPS ===
     
-    // Pomocná funkcia: text -> words array (odstraňuje interpunkciu zo slov)
+    // Pomocná funkcia: text -> words array (zachováva interpunkciu)
     _textToWords(text) {
         if (!text || !text.trim()) return [];
         return text.split(/\s+/)
@@ -84,13 +84,8 @@ const Model = {
             .filter(w => w.length > 0)
             .map(w => ({
                 id: `word-${this.state.nextId++}`,
-                text: this._cleanWord(w)
+                text: w  // Zachovať interpunkciu
             }));
-    },
-    
-    // Očistiť slovo od interpunkcie na začiatku a konci
-    _cleanWord(word) {
-        return word.replace(/^[.,!?;:„""'()[\]{}—–\-]+|[.,!?;:„""'()[\]{}—–\-]+$/g, '');
     },
 
     // Získať bar ako text (words spojené medzerou)
@@ -114,12 +109,12 @@ const Model = {
         // Inicializovať words ak neexistuje
         if (!bar.words) bar.words = [];
         
-        const cleanedText = this._cleanWord(wordText.trim());
-        if (!cleanedText) return null;
+        const text = wordText.trim();
+        if (!text) return null;
         
         const newWord = {
             id: `word-${this.state.nextId++}`,
-            text: cleanedText
+            text: text  // Zachovať interpunkciu
         };
         
         if (index < 0 || index >= bar.words.length) {
@@ -169,7 +164,7 @@ const Model = {
         const bar = section?.bars.find(b => b.id === barId);
         const word = bar?.words?.find(w => w.id === wordId);
         if (word) {
-            word.text = this._cleanWord(newText.trim());
+            word.text = newText.trim();  // Zachovať interpunkciu
         }
     },
 
