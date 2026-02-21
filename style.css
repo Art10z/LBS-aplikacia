@@ -620,25 +620,52 @@ html, .panel-content, #maketaOutput, #project-list, #research-input {
 .panel-header h2 { letter-spacing:.7px; text-transform:uppercase; }
 
 /* Tools toolbar inside panels */
-.panel-tools { display:flex; flex-wrap:wrap; gap:8px; margin-bottom:10px; align-items: center; }
-.panel-tools .btn { padding:4px 10px; font-size:12.5px; line-height:1.2; }
+.panel-tools { 
+    display: flex; 
+    flex-wrap: nowrap; 
+    gap: 8px; 
+    margin-bottom: 10px; 
+    align-items: center;
+    justify-content: space-between;
+}
+.panel-tools .btn { padding: 4px 10px; font-size: 12.5px; line-height: 1.2; }
+.panel-tools > .icon-btn {
+    width: 28px;
+    height: 28px;
+    flex-shrink: 0;
+}
+.panel-tools > .icon-btn svg {
+    width: 14px;
+    height: 14px;
+}
 
 /* Quick add palette input */
 .quick-add-palette {
     display: flex;
     gap: 4px;
     flex: 1;
-    max-width: 200px;
+    min-width: 120px;
+    max-width: 180px;
 }
 .quick-add-palette input {
     flex: 1;
+    min-width: 0;
     background: var(--bg-input);
     border: 1px solid var(--border-color);
     border-radius: 6px;
     color: var(--text-primary);
-    padding: 4px 10px;
-    font-size: 0.85rem;
+    padding: 4px 8px;
+    font-size: 0.8rem;
     outline: none;
+}
+.quick-add-palette .icon-btn {
+    width: 28px;
+    height: 28px;
+    flex-shrink: 0;
+}
+.quick-add-palette .icon-btn svg {
+    width: 14px;
+    height: 14px;
 }
 .quick-add-palette input:focus {
     border-color: var(--accent-primary);
