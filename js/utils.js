@@ -9,10 +9,19 @@
  * @param {string} type The type of notification ('success' or 'danger').
  */
 export function showNotification(message, type = 'success') {
+    // Kontajner pre notifikácie (stacking)
+    let container = document.getElementById('notification-container');
+    if (!container) {
+        container = document.createElement('div');
+        container.id = 'notification-container';
+        document.body.appendChild(container);
+    }
+    
     const notification = document.createElement('div');
     notification.className = `notification ${type}`;
     notification.textContent = message;
-    document.body.appendChild(notification);
+    container.appendChild(notification);
+    
     setTimeout(() => notification.classList.add('show'), 10);
     setTimeout(() => {
         notification.classList.remove('show');

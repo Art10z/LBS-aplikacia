@@ -503,12 +503,32 @@ body.is-dragging, body.is-dragging * {
     background-color: var(--bg-input);
 }
 
-/* NOTIFIKÁCIE */
-.notification { position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%) translateY(100px); padding: 10px 20px; border-radius: 6px; color: white; font-weight: 500; z-index: 2000; transition: transform 0.4s ease-in-out, opacity 0.4s ease-in-out; opacity: 0; }
-.notification.show { transform: translateX(-50%) translateY(0); opacity: 1; }
+/* NOTIFIKÁCIE - stacking v pravom dolnom rohu */
+#notification-container {
+    position: fixed;
+    bottom: 20px;
+    right: 20px;
+    display: flex;
+    flex-direction: column-reverse;
+    gap: 8px;
+    z-index: 2000;
+    pointer-events: none;
+}
+.notification {
+    padding: 10px 16px;
+    border-radius: 6px;
+    color: white;
+    font-weight: 500;
+    font-size: 0.85rem;
+    transition: transform 0.3s ease, opacity 0.3s ease;
+    opacity: 0;
+    transform: translateX(100px);
+    pointer-events: auto;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.3);
+}
+.notification.show { transform: translateX(0); opacity: 1; }
 .notification.success { background-color: var(--accent-success); }
 .notification.danger { background-color: var(--accent-danger); }
-/* Added variants used in code */
 .notification.info { background-color: var(--accent-primary); }
 .notification.warning { background-color: var(--accent-warning); color: #1b1b1b; }
 
@@ -573,8 +593,33 @@ html, .panel-content, #maketaOutput, #project-list, #research-input {
 .panel-header h2 { letter-spacing:.7px; text-transform:uppercase; }
 
 /* Tools toolbar inside panels */
-.panel-tools { display:flex; flex-wrap:wrap; gap:8px; margin-bottom:10px; }
+.panel-tools { display:flex; flex-wrap:wrap; gap:8px; margin-bottom:10px; align-items: center; }
 .panel-tools .btn { padding:4px 10px; font-size:12.5px; line-height:1.2; }
+
+/* Quick add palette input */
+.quick-add-palette {
+    display: flex;
+    gap: 4px;
+    flex: 1;
+    max-width: 200px;
+}
+.quick-add-palette input {
+    flex: 1;
+    background: var(--bg-input);
+    border: 1px solid var(--border-color);
+    border-radius: 6px;
+    color: var(--text-primary);
+    padding: 4px 10px;
+    font-size: 0.85rem;
+    outline: none;
+}
+.quick-add-palette input:focus {
+    border-color: var(--accent-primary);
+    box-shadow: 0 0 0 2px var(--accent-glow);
+}
+.quick-add-palette input::placeholder {
+    color: var(--text-secondary);
+}
 
 /* Icon-only square buttons */
 .icon-btn { width: 34px; height: 34px; padding: 0 !important; display: inline-flex; align-items: center; justify-content: center; border-radius: 6px; }
@@ -619,27 +664,6 @@ button[disabled], .btn[disabled] { opacity:.55; cursor:not-allowed; }
 .bar-item { background:#1d2328; border-color:#2a333b; }
 .bar-item:hover { background:#253038; }
 .bar-item.dragging { background:rgba(88,166,255,.15); }
-
-/* Notification redesign - centered at bottom to avoid blocking UI elements */
-.notification { 
-    bottom: 24px; 
-    top: auto; 
-    left: 50%; 
-    right: auto; 
-    transform: translateX(-50%) translateY(80px); 
-    border-radius: 6px; 
-    box-shadow: 0 4px 18px -4px rgba(0,0,0,.55); 
-    font-size: 0.85rem; 
-    padding: 12px 20px; 
-    max-width: 500px;
-    z-index: 11000;
-    text-align: center;
-}
-.notification.show { 
-    transform: translateX(-50%) translateY(0); 
-}
-.notification.success, .notification.danger, .notification.info, .notification.warning { color:#fff; }
-.notification.warning { color:#1b1b1b; }
 
 /* Modal refinement */
 .modal { box-shadow: var(--shadow-1); background: linear-gradient(180deg,#1b2025 0%, #161a1e 100%); }

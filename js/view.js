@@ -32,6 +32,8 @@ const View = {
             addToPaletteBtn: byId('addToPaletteBtn'),
             analyzeRhymesBtn: byId('analyzeRhymesBtn'),
             resetRhymesMainBtn: byId('resetRhymesMainBtn'),
+            quickAddPaletteInput: byId('quickAddPaletteInput'),
+            quickAddPaletteBtn: byId('quickAddPaletteBtn'),
             inspirationPalette: byId('inspiration-palette'),
             templateInserter: byId('template-inserter'),
             promptStyleInput: byId('prompt-style-input'),

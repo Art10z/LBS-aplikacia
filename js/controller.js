@@ -136,6 +136,18 @@ const Controller = {
         if (View.dom.resetRhymesMainBtn) {
             View.dom.resetRhymesMainBtn.addEventListener('click', () => this._resetRhymes());
         }
+        // Quick add to palette
+        if (View.dom.quickAddPaletteInput) {
+            View.dom.quickAddPaletteInput.addEventListener('keydown', (e) => {
+                if (e.key === 'Enter') {
+                    e.preventDefault();
+                    this._quickAddToPalette();
+                }
+            });
+        }
+        if (View.dom.quickAddPaletteBtn) {
+            View.dom.quickAddPaletteBtn.addEventListener('click', () => this._quickAddToPalette());
+        }
         if (View.dom.exportAllBtn) {
             View.dom.exportAllBtn.addEventListener('click', () => this._exportAll());
         }
@@ -537,6 +549,25 @@ const Controller = {
             View.addPaletteItemToDOM(newItem);
             this._markAsDirty();
             showNotification('Položka pridaná do palety.');
+        }
+    },
+
+    _quickAddToPalette() {
+        const input = View.dom.quickAddPaletteInput;
+        if (!input) return;
+        
+        const text = input.value.trim();
+        if (!text) {
+            showNotification('Zadaj slovo na pridanie.', 'warning');
+            return;
+        }
+        
+        const newItem = Model.addPaletteItem(text);
+        if (newItem) {
+            View.addPaletteItemToDOM(newItem);
+            input.value = '';
+            this._markAsDirty();
+            showNotification('Pridané do palety.');
         }
     },
 
