@@ -182,6 +182,13 @@ const Controller = {
             View.dom.inspirationPalette.addEventListener('drop', e => this._handlePaletteDrop(e));
             View.dom.inspirationPalette.addEventListener('dragleave', e => this._handlePaletteDragLeave(e));
         }
+        
+        // Pridať listenery aj na celý panel pre väčšiu drop zónu
+        if (View.dom.inspirationPanel) {
+            View.dom.inspirationPanel.addEventListener('dragover', e => this._handlePaletteDragOver(e));
+            View.dom.inspirationPanel.addEventListener('drop', e => this._handlePaletteDrop(e));
+            View.dom.inspirationPanel.addEventListener('dragleave', e => this._handlePaletteDragLeave(e));
+        }
 
         if (View.dom.projectTabsContainer) {
             View.dom.projectTabsContainer.addEventListener('click', e => this._handleTabsClick(e));
@@ -607,34 +614,50 @@ const Controller = {
 
     // Drop word chip do palety
     _handlePaletteDragOver(e) {
-        if (e.dataTransfer.types.includes('application/x-word-chip')) {
+        // Akceptovať word-chip drag (typy sú viditeľné počas dragover)
+        const types = e.dataTransfer.types;
+        if (types && (types.includes('application/x-word-chip') || [...types].includes('application/x-word-chip'))) {
             e.preventDefault();
+            e.stopPropagation();
             e.dataTransfer.dropEffect = 'copy';
-            View.dom.inspirationPalette.classList.add('drop-target');
+            // Pridať highlight na paletu aj panel
+            if (View.dom.inspirationPalette) View.dom.inspirationPalette.classList.add('drop-target');
+            if (View.dom.inspirationPanel) View.dom.inspirationPanel.classList.add('drop-target');
         }
     },
 
     _handlePaletteDragLeave(e) {
-        View.dom.inspirationPalette.classList.remove('drop-target');
+        // Kontrola či skutočne opúšťame panel (nie len prechádzame na child element)
+        const panel = View.dom.inspirationPanel;
+        if (panel && !panel.contains(e.relatedTarget)) {
+            if (View.dom.inspirationPalette) View.dom.inspirationPalette.classList.remove('drop-target');
+            if (View.dom.inspirationPanel) View.dom.inspirationPanel.classList.remove('drop-target');
+        }
     },
 
     _handlePaletteDrop(e) {
         e.preventDefault();
-        View.dom.inspirationPalette.classList.remove('drop-target');
+        e.stopPropagation();  // Zastaviť bubbling
+        if (View.dom.inspirationPalette) View.dom.inspirationPalette.classList.remove('drop-target');
+        if (View.dom.inspirationPanel) View.dom.inspirationPanel.classList.remove('drop-target');
         
         const wordData = e.dataTransfer.getData('application/x-word-chip');
         if (wordData) {
-            const data = JSON.parse(wordData);
-            const section = Model.state.trackData.find(s => s.id === data.sectionId);
-            const bar = section?.bars.find(b => b.id === data.barId);
-            const word = bar?.words?.find(w => w.id === data.wordId);
-            if (word) {
-                const newItem = Model.addPaletteItem(word.text);
-                if (newItem) {
-                    View.addPaletteItemToDOM(newItem);
-                    showNotification('Slovo pridané do palety.');
-                    this._markAsDirty();
+            try {
+                const data = JSON.parse(wordData);
+                const section = Model.state.trackData.find(s => s.id === data.sectionId);
+                const bar = section?.bars.find(b => b.id === data.barId);
+                const word = bar?.words?.find(w => w.id === data.wordId);
+                if (word) {
+                    const newItem = Model.addPaletteItem(word.text);
+                    if (newItem) {
+                        View.addPaletteItemToDOM(newItem);
+                        showNotification('Slovo pridané do palety.');
+                        this._markAsDirty();
+                    }
                 }
+            } catch (err) {
+                console.error('Error parsing word data:', err);
             }
         }
     },
@@ -789,7 +812,7 @@ const Controller = {
                  barId: wordChip.dataset.barId,
                  sectionId: wordChip.dataset.sectionId
              }));
-             e.dataTransfer.effectAllowed = 'move';
+             e.dataTransfer.effectAllowed = 'copyMove';  // Povoliť aj copy aj move
              wordChip.classList.add('dragging');
              return;
          }

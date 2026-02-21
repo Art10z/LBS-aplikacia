@@ -34,6 +34,7 @@ const View = {
             resetRhymesMainBtn: byId('resetRhymesMainBtn'),
             quickAddPaletteInput: byId('quickAddPaletteInput'),
             quickAddPaletteBtn: byId('quickAddPaletteBtn'),
+            inspirationPanel: byId('inspiration-panel'),
             inspirationPalette: byId('inspiration-palette'),
             templateInserter: byId('template-inserter'),
             promptStyleInput: byId('prompt-style-input'),
