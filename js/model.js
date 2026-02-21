@@ -151,7 +151,9 @@ const Model = {
     _recalculateNextId() {
         let maxId = 0;
         const extractIdNum = (id) => {
-            const num = parseInt(id.split('-')[1]);
+            // Extrahuj číslo z POSLEDNEJ časti ID (napr. 'temp-section-5' -> 5, 'section-10' -> 10)
+            const parts = id.split('-');
+            const num = parseInt(parts[parts.length - 1]);
             return isNaN(num) ? 0 : num;
         };
 

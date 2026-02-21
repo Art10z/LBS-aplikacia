@@ -160,6 +160,7 @@ const Controller = {
         
         if (View.dom.inspirationPalette) {
             View.dom.inspirationPalette.addEventListener('click', e => this._handlePaletteClick(e));
+            View.dom.inspirationPalette.addEventListener('dragstart', e => this._handlePaletteDragStart(e));
         }
 
         if (View.dom.projectTabsContainer) {
@@ -331,6 +332,7 @@ const Controller = {
         const lines = raw.split('\n').map(line => line.trim()).filter(line => line !== '');
         const newTrackData = [];
         let currentSection = null;
+        let globalBarCounter = 0; // Globálny počítadlo pre unikátne bar ID
 
         lines.forEach(line => {
             const sectionMatch = line.match(/^\[\s*(.+?)\s*\]$/);
@@ -345,7 +347,7 @@ const Controller = {
                 newTrackData.push(currentSection);
             } else if (currentSection) {
                 currentSection.bars.push({
-                    id: `temp-bar-${currentSection.bars.length}`,
+                    id: `temp-bar-${globalBarCounter++}`, // Použiť globálne počítadlo
                     text: line.substring(0, MAX_BAR_LENGTH)
                 });
             }
@@ -530,6 +532,26 @@ const Controller = {
         }
     },
 
+    // Drag & Drop z palety do plátna
+    _handlePaletteDragStart(e) {
+        const itemEl = e.target.closest('.palette-item');
+        if (!itemEl) {
+            e.preventDefault();
+            return;
+        }
+        const textSpan = itemEl.querySelector('.palette-item-text');
+        const text = textSpan ? textSpan.textContent : '';
+        e.dataTransfer.setData('text/plain', text);
+        e.dataTransfer.setData('application/x-palette-item', text);
+        e.dataTransfer.effectAllowed = 'copy';
+        itemEl.classList.add('dragging');
+        
+        // Cleanup po drag ende
+        itemEl.addEventListener('dragend', () => {
+            itemEl.classList.remove('dragging');
+        }, { once: true });
+    },
+
     _analyzeRhymes() {
         if (!this.activeProjectName) {
             showNotification('Žiadny aktívny projekt.', 'danger');
@@ -672,16 +694,33 @@ const Controller = {
     },
 
     _handleDragStart(e) {
-         const handle = e.target.closest('.bar-drag-handle, .section-drag-handle');
+         // Hľadať bar-drag-handle alebo section-header
+         const barHandle = e.target.closest('.bar-drag-handle');
+         const sectionHeader = e.target.closest('.section-header');
          
-         if (!handle) { 
+         if (!barHandle && !sectionHeader) { 
              e.preventDefault();
              return; 
          }
+         
+         // Ak je to bar, nájsť bar-item; ak je to sekcia, nájsť section-container
+         if (barHandle) {
+             this.draggedItem = barHandle.closest('.bar-item');
+         } else if (sectionHeader) {
+             // Zabezpečiť, že sa neťahá, ak klikáme na input alebo button v headri
+             if (e.target.closest('input, button, .section-controls')) {
+                 e.preventDefault();
+                 return;
+             }
+             this.draggedItem = sectionHeader.closest('.section-container');
+         }
+         
+         if (!this.draggedItem) {
+             e.preventDefault();
+             return;
+         }
             
-        this.draggedItem = handle.closest('.bar-item, .section-container');
         e.dataTransfer.effectAllowed = 'move';
-        
         document.body.classList.add('is-dragging');
         
         setTimeout(() => {
@@ -707,6 +746,37 @@ const Controller = {
     _handleDrop(e) {
         e.preventDefault();
         this._removePlaceholder();
+        
+        // Odstrániť drop-target highlight
+        document.querySelectorAll('.bar-input.drop-target').forEach(el => el.classList.remove('drop-target'));
+
+        // Kontrola či je to drop z palety inšpirácie
+        const paletteData = e.dataTransfer.getData('application/x-palette-item');
+        if (paletteData) {
+            // Drop z palety do bar-input
+            const barInput = e.target.closest('.bar-input');
+            if (barInput) {
+                const currentText = barInput.value;
+                const cursorPos = barInput.selectionStart || currentText.length;
+                const newText = currentText.slice(0, cursorPos) + paletteData + currentText.slice(cursorPos);
+                barInput.value = newText;
+                
+                // Aktualizovať model
+                const barItem = barInput.closest('.bar-item');
+                const sectionContainer = barInput.closest('.section-container');
+                if (barItem && sectionContainer) {
+                    Model.updateBarText(sectionContainer.dataset.sectionId, barItem.dataset.barId, newText);
+                    // Aktualizovať char counter
+                    const counter = barItem.querySelector('.char-counter');
+                    if (counter) {
+                        counter.textContent = `${newText.length}/60`;
+                    }
+                    this._markAsDirty();
+                    showNotification('Text vložený z palety.');
+                }
+            }
+            return;
+        }
 
         if (!this.draggedItem) return;
         const isBar = this.draggedItem.classList.contains('bar-item');
@@ -760,6 +830,19 @@ const Controller = {
 
     _handleDragOver(e) {
         e.preventDefault();
+        
+        // Kontrola či je to drag z palety inšpirácie
+        if (e.dataTransfer.types.includes('application/x-palette-item')) {
+            const barInput = e.target.closest('.bar-input');
+            // Odstrániť predchádzajúce drop-target triedy
+            document.querySelectorAll('.bar-input.drop-target').forEach(el => el.classList.remove('drop-target'));
+            if (barInput) {
+                barInput.classList.add('drop-target');
+                e.dataTransfer.dropEffect = 'copy';
+            }
+            return;
+        }
+        
         if (!this.draggedItem) return;
 
         const isBar = this.draggedItem.classList.contains('bar-item');
@@ -778,7 +861,8 @@ const Controller = {
                 return;
             }
         } else {
-            container = e.target.closest('#assembler-content');
+            // Pre sekcie: vždy použiť assembler-content ako container
+            container = View.dom.assemblerContent;
             if (container) {
                 afterElement = this._getDragAfterElement(container, e.clientY, selector);
             } else {

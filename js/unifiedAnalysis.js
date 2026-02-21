@@ -1,7 +1,7 @@
 // Unified analysis: rhyme groups + duplicate detection for research and canvas.
 
 const HEADING_WORDS = [
-  'intro','verse','chorus','refrén','bridge','most','outro','pre-chorus','prechorus',
+  'intro','verse','chorus','refren','bridge','most','outro','pre-chorus','prechorus',
   'tag','solo','interlude'
 ];
 
@@ -9,10 +9,9 @@ const SKIP_WORDS = new Set([
     'a', 'aj', 'ako', 'ale', 'aby', 'ani', 'ak', 'do', 'da', 'de', 'di', 'je', 'ja', 'ju', 'jej',
     'ku', 'ka', 'ki', 'ma', 'mi', 'mu', 'me', 'mna', 'mne', 'na', 'no', 'ni', 'nad', 'od', 'o',
     'po', 'pre', 'pri', 'pred', 'sa', 'si', 'so', 'sme', 'ste', 'som', 'ta', 'to', 'ti', 'ty',
-    'te', 'tú', 'tu', 'ten', 'v', 've', 'vo', 'za', 'zo', 'že', 'ze', 'i', 'u', 'k', 's', 'z'
+    'te', 'tu', 'tu', 'ten', 'v', 've', 'vo', 'za', 'zo', 'ze', 'ze', 'i', 'u', 'k', 's', 'z'
 ]);
 const MIN_WORD_LENGTH_RHYME = 4;
-const MIN_RHYME_MATCH = 2;
 
 // Feature detection for Unicode property escapes (\p{L}) support.
 const SUPPORTS_UNICODE_PROPS = (() => {
@@ -22,11 +21,11 @@ const SUPPORTS_UNICODE_PROPS = (() => {
 function isHeadingLine(text) {
   const t = (text || '').trim();
   if (!t) return false;
-  if (/^\[[^\]]+\]$/.test(t)) return true; // [Verse], [Chorus 2]
+  if (/^\[[^\]]+\]$/.test(t)) return true;
   const headingRegex = SUPPORTS_UNICODE_PROPS
     ? /^[\p{L}\p{N} .#\-]+:\s*$/u
-    : /^[A-Za-z0-9ÁÄáäČĎčďÉéÍíÓóÔôÚúÝýŽžŤťŇňŔŕŠšŽž .#\-]+:\s*$/;
-  if (headingRegex.test(t)) return true; // Verse:, Refrén:
+    : /^[A-Za-z0-9]+:\s*$/;
+  if (headingRegex.test(t)) return true;
   const base = t.replace(/\s*\d+$/,'').toLowerCase();
   return HEADING_WORDS.includes(base);
 }
@@ -41,9 +40,9 @@ function stripDiacritics(s) {
 
 function tokenize(line) {
   if (SUPPORTS_UNICODE_PROPS) {
-    return line.match(/\p{L}+(?:['’\-]\p{L}+)*|\d+/gu) || [];
+    return line.match(/\p{L}+(?:[''\\-]\p{L}+)*|\d+/gu) || [];
   }
-  return line.match(/[A-Za-zÁÄáäČĎčďÉéÍíÓóÔôÚúÝýŽžŤťŇňŔŕŠšŽž]+(?:['’\-][A-Za-zÁÄáäČĎčďÉéÍíÓóÔôÚúÝýŽžŤťŇňŔŕŠšŽž]+)*|\d+/g) || [];
+  return line.match(/[A-Za-z\u00C0-\u017F]+(?:[''\\-][A-Za-z\u00C0-\u017F]+)*|\d+/g) || [];
 }
 
 function normalizeFullWord(raw) { return stripDiacritics(raw); }
@@ -135,37 +134,34 @@ export function render(result, layerEl, mode) {
   });
 }
 
+// Zjednodusena funkcia na hladanie rymov
 export function findRhymingWords(text) {
-    const normalizedText = normalizeFullWord(text.replace(/[.,!?;:„“"()[\]{}—–-]/g, ' '));
-    const words = normalizedText.split(/\s+/);
-    
-    const uniqueWords = new Set();
-    words.forEach(word => {
-        const cleaned = word.trim();
-        if (cleaned.length >= MIN_WORD_LENGTH_RHYME && !SKIP_WORDS.has(cleaned)) {
-            uniqueWords.add(cleaned);
-        }
-    });
-
-    const wordList = Array.from(uniqueWords);
+    const words = tokenize(text);
     const rhymeGroups = new Map();
-
-    wordList.forEach(word => {
-        const reversed = word.split('').reverse().join('');
-        const suffix = reversed.substring(0, MIN_RHYME_MATCH);
-
-        if (!rhymeGroups.has(suffix)) {
-            rhymeGroups.set(suffix, []);
+    const seenWords = new Set();
+    
+    words.forEach(word => {
+        const norm = normalizeFullWord(word);
+        if (norm.length < MIN_WORD_LENGTH_RHYME || SKIP_WORDS.has(norm) || seenWords.has(norm)) {
+            return;
         }
-        rhymeGroups.get(suffix).push(word);
+        seenWords.add(norm);
+        
+        const rhymeKey = deriveRhymeKey(word);
+        if (!rhymeKey) return;
+        
+        if (!rhymeGroups.has(rhymeKey)) {
+            rhymeGroups.set(rhymeKey, []);
+        }
+        rhymeGroups.get(rhymeKey).push(norm);
     });
 
-    const rhymingWords = [];
-    rhymeGroups.forEach((group) => {
+    const result = [];
+    rhymeGroups.forEach(group => {
         if (group.length > 1) {
-            rhymingWords.push(...group);
+            result.push(...group);
         }
     });
-
-    return [...new Set(rhymingWords)];
+    
+    return result;
 }

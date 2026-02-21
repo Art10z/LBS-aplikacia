@@ -223,12 +223,13 @@ const View = {
 
         const header = document.createElement('div');
         header.className = 'section-header';
+        header.draggable = true; // Celý header je draggable
+        header.style.cursor = 'move';
+        header.title = 'Ťahajte pre presunutie sekcie';
 
         const dragHandle = document.createElement('span');
         dragHandle.className = 'section-drag-handle';
-        dragHandle.title = 'Presunúť sekciu';
         dragHandle.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="5" r="1"></circle><circle cx="12" cy="12" r="1"></circle><circle cx="12" cy="19" r="1"></circle><circle cx="5" cy="5" r="1"></circle><circle cx="5" cy="12" r="1"></circle><circle cx="5" cy="19" r="1"></circle><circle cx="19" cy="5" r="1"></circle><circle cx="19" cy="12" r="1"></circle><circle cx="19" cy="19" r="1"></circle></svg>`;
-        dragHandle.draggable = true;
 
         const label = document.createElement('span');
         label.className = 'section-label';
@@ -307,6 +308,8 @@ const View = {
         const itemEl = document.createElement('div');
         itemEl.className = 'palette-item';
         itemEl.dataset.itemId = item.id;
+        itemEl.draggable = true; // Umožniť presúvanie do plátna
+        itemEl.title = 'Presuň do baru na plátne';
         
         const textSpan = document.createElement('span');
         textSpan.className = 'palette-item-text';

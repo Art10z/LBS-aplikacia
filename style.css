@@ -528,9 +528,14 @@ button[disabled], .btn[disabled] { opacity:.55; cursor:not-allowed; }
 .btn.btn-danger:hover { border-color:#a44; color:#fff; background: rgba(164, 68, 68, .18); }
 
 /* Tag / palette refinement */
-.palette-item { border-radius: 999px; padding:6px 12px; background:#1f252b; border-color:#2d343c; font-size:12.5px; line-height:1.25; }
+.palette-item { border-radius: 999px; padding:6px 12px; background:#1f252b; border-color:#2d343c; font-size:12.5px; line-height:1.25; cursor: grab; }
 .palette-item:hover { background:#272e35; border-color:#3a434c; }
+.palette-item.dragging { opacity: 0.5; cursor: grabbing; border-color: var(--accent-primary); }
+.palette-item:active { cursor: grabbing; }
 .remove-palette-item-btn { font-size:14px; }
+
+/* Drop target highlight pre bary */
+.bar-input:focus, .bar-input.drop-target { border-color: var(--accent-primary); box-shadow: 0 0 0 2px var(--accent-glow); }
 
 /* Section / bar elevated look */
 .section-container { background:#14191e; border:1px solid #262d34; }
