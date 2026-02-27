@@ -116,14 +116,19 @@ const View = {
             newIds.add(bar.id);
             let barEl = existingBars.get(bar.id);
             if (barEl) {
-                const ta = barEl.querySelector('.bar-input');
-                if (ta && ta.value !== bar.text) ta.value = bar.text;
+                // Aktualizovať word chips a counter
+                const wordsContainer = barEl.querySelector('.words-container');
                 const counter = barEl.querySelector('.char-counter');
+                
+                // Podpora oboch formátov (legacy text aj nový words)
+                const words = bar.words || [];
+                const barText = words.map(w => w.text).join(' ');
+                
                 if (counter) {
-                    const len = bar.text.length;
-                    const current = counter.textContent.split('/')[0];
-                    if (String(len) !== current) counter.textContent = `${len}/${MAX_BAR_LENGTH}`;
+                    counter.textContent = `${barText.length}/${MAX_BAR_LENGTH}`;
                 }
+                
+                // Word chips sa synchronizujú cez _refreshBarWords v controlleri
             } else {
                 barEl = this._createBarElement(bar, section.id);
             }

@@ -232,11 +232,17 @@ const Controller = {
 
     _getCanvasText() {
         // Convert trackData to text format for analysis
+        // Podporuje nový formát bar.words aj legacy bar.text
         const lines = [];
         Model.state.trackData.forEach(section => {
             lines.push(`[${section.type}]`);
             section.bars.forEach(bar => {
-                lines.push(bar.text || '');
+                // Preferovať words formát, fallback na text
+                if (bar.words && bar.words.length > 0) {
+                    lines.push(bar.words.map(w => w.text).join(' '));
+                } else {
+                    lines.push(bar.text || '');
+                }
             });
         });
         return lines.join('\n');
