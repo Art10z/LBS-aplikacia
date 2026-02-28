@@ -136,6 +136,18 @@ const Controller = {
             });
         }
         
+        // Escape key pre zatvorenie overlays
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'Escape') {
+                if (View.dom.sunoGuideOverlay && !View.dom.sunoGuideOverlay.classList.contains('hidden')) {
+                    View.dom.sunoGuideOverlay.classList.add('hidden');
+                }
+                if (View.dom.unifiedOverlay && !View.dom.unifiedOverlay.classList.contains('hidden')) {
+                    View.dom.unifiedOverlay.classList.add('hidden');
+                }
+            }
+        });
+        
         // Tab switching
         if (View.dom.researchTabBtn) {
             View.dom.researchTabBtn.addEventListener('click', () => this._switchTab('research'));
