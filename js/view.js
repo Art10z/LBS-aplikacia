@@ -91,7 +91,7 @@ const View = {
                 const typeInput = el.querySelector('.section-type-input');
                 if (typeInput && typeInput.value !== section.type) typeInput.value = section.type;
                 const labelEl = el.querySelector('.section-label');
-                if (labelEl && labelEl.textContent !== section.label) labelEl.textContent = section.label;
+                if (labelEl && labelEl.textContent !== section.type) labelEl.textContent = section.type;
                 // Sync bars
                 this._syncBars(el.querySelector('.bars-container'), section);
             } else {
@@ -175,11 +175,8 @@ const View = {
 
     renderMaketa(trackData) {
         this.dom.maketaOutput.textContent = trackData.map(section =>
-            `[${section.label}]\n` + section.bars.map((bar, i) => {
-                // Podpora oboch formátov (legacy text aj nový words)
-                const text = bar.words 
-                    ? bar.words.map(w => w.text).join(' ')
-                    : (bar.text || '');
+            `[${section.type}]\n` + section.bars.map((bar, i) => {
+                const text = (bar.words || []).map(w => w.text).join(' ');
                 return text + (((i + 1) % 4 === 0) ? '\n' : '');
             }).join('\n') + (section.bars.length % 4 !== 0 ? '\n' : '')
         ).join('\n');
@@ -216,7 +213,7 @@ const View = {
             const sectionEl = this.dom.assemblerContent.querySelector(`[data-section-id="${section.id}"]`);
             if (sectionEl) {
                 const labelEl = sectionEl.querySelector('.section-label');
-                if (labelEl) labelEl.textContent = section.label;
+                if (labelEl) labelEl.textContent = section.type;
 
                 const typeInputEl = sectionEl.querySelector('.section-type-input');
                 if (typeInputEl && typeInputEl.value !== section.type) {
@@ -242,7 +239,7 @@ const View = {
 
         const label = document.createElement('span');
         label.className = 'section-label';
-        label.textContent = section.label;
+        label.textContent = section.type;
 
         const controls = document.createElement('div');
         controls.className = 'section-controls';

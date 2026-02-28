@@ -83,10 +83,7 @@ const Controller = {
         if (View.dom.assemblerContent) {
             View.dom.assemblerContent.addEventListener('input', e => this._handleCanvasInput(e));
             View.dom.assemblerContent.addEventListener('change', e => this._handleCanvasChange(e)); // Pre select dropdown
-            View.dom.assemblerContent.addEventListener('focusout', e => this._handleCanvasBlur(e));
             View.dom.assemblerContent.addEventListener('click', e => this._handleCanvasClick(e));
-            View.dom.assemblerContent.addEventListener('keydown', e => this._handleBarKeydown(e));
-            View.dom.assemblerContent.addEventListener('paste', e => this._handleBarPaste(e));
             View.dom.assemblerContent.addEventListener('dragstart', e => this._handleDragStart(e));
             View.dom.assemblerContent.addEventListener('dragover', e => this._handleDragOver(e));
             View.dom.assemblerContent.addEventListener('drop', e => this._handleDrop(e));
@@ -244,18 +241,11 @@ const Controller = {
     },
 
     _getCanvasText() {
-        // Convert trackData to text format for analysis
-        // Podporuje nový formát bar.words aj legacy bar.text
         const lines = [];
         Model.state.trackData.forEach(section => {
             lines.push(`[${section.type}]`);
             section.bars.forEach(bar => {
-                // Preferovať words formát, fallback na text
-                if (bar.words && bar.words.length > 0) {
-                    lines.push(bar.words.map(w => w.text).join(' '));
-                } else {
-                    lines.push(bar.text || '');
-                }
+                lines.push((bar.words || []).map(w => w.text).join(' '));
             });
         });
         return lines.join('\n');
@@ -305,16 +295,6 @@ const Controller = {
             View.updateSaveStatus('unsaved');
         }
         // Automatické ukladanie vypnuté - ukladať len manuálne cez Ctrl+S
-    },
-
-    _performAutoSave() {
-        if (!this.isDirty || !this.activeProjectName) return;
-        View.updateSaveStatus('saving');
-        setTimeout(() => {
-            Model.saveProject(this.activeProjectName);
-            this.isDirty = false;
-            View.updateSaveStatus('saved');
-        }, 300);
     },
 
     _performManualSave() {
@@ -379,7 +359,6 @@ const Controller = {
                 currentSection = {
                     id: `temp-section-${newTrackData.length}`,
                     type: sectionName,
-                    label: '',
                     bars: []
                 };
                 newTrackData.push(currentSection);
@@ -389,7 +368,6 @@ const Controller = {
                     currentSection = {
                         id: `temp-section-${newTrackData.length}`,
                         type: 'Verse',
-                        label: '',
                         bars: []
                     };
                     newTrackData.push(currentSection);
@@ -455,16 +433,7 @@ const Controller = {
 
 
     _handleCanvasInput(e) {
-        if (e.target.classList.contains('bar-input')) {
-            this._markAsDirty();
-            if (e.target.value.includes('\n')) {
-                e.target.value = e.target.value.replace(/\r?\n/g, ' ');
-            }
-            const counter = e.target.nextElementSibling;
-            if(counter?.classList.contains('char-counter')) {
-                counter.textContent = `${e.target.value.length}/${MAX_BAR_LENGTH}`;
-            }
-        } else if (e.target.classList.contains('section-type-input')) {
+        if (e.target.classList.contains('section-type-input')) {
             const sectionContainer = e.target.closest('.section-container');
             const sectionId = sectionContainer.dataset.sectionId;
             const newType = e.target.value.trim();
@@ -491,48 +460,6 @@ const Controller = {
                 View.updateAllSectionLabelsInDOM(Model.state.trackData);
                 this._updateSyncUI();
                 this._markAsDirty();
-            }
-        }
-    },
-    
-    _handleBarKeydown(e) {
-        if (!e.target.classList || !e.target.classList.contains('bar-input')) return;
-        if (e.key === 'Enter') {
-            e.preventDefault();
-        }
-    },
-    _handleBarPaste(e) {
-        if (!e.target.classList || !e.target.classList.contains('bar-input')) return;
-        e.preventDefault();
-        const ta = e.target;
-        const data = (e.clipboardData || window.clipboardData)?.getData('text') || '';
-        const sanitized = data.replace(/\r?\n/g, ' ');
-        const start = ta.selectionStart ?? ta.value.length;
-        const end = ta.selectionEnd ?? ta.value.length;
-        const before = ta.value.slice(0, start);
-        const after = ta.value.slice(end);
-        const allowed = Math.max(0, MAX_BAR_LENGTH - (before.length + after.length));
-        const insert = sanitized.slice(0, allowed);
-        ta.value = before + insert + after;
-        const caret = before.length + insert.length;
-        ta.setSelectionRange(caret, caret);
-        this._markAsDirty();
-        const counter = ta.nextElementSibling;
-        if(counter?.classList.contains('char-counter')) {
-            counter.textContent = `${ta.value.length}/${MAX_BAR_LENGTH}`;
-        }
-    },
-
-    _handleCanvasBlur(e) {
-        if (e.target.classList.contains('bar-input')) {
-            const barItem = e.target.closest('.bar-item');
-            Model.updateBarText(barItem.dataset.sectionId, barItem.dataset.barId, e.target.value);
-            
-            // Ak je sekcia master, synchronizuj obsah
-            const sectionId = barItem.dataset.sectionId;
-            const section = Model.state.trackData.find(s => s.id === sectionId);
-            if (section && this.sectionSync.isMaster(sectionId, section.type)) {
-                this._syncContentToSlaves(section.type, section.bars);
             }
         }
     },
