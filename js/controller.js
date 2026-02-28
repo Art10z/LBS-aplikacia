@@ -415,7 +415,17 @@ const Controller = {
                     bars: []
                 };
                 newTrackData.push(currentSection);
-            } else if (currentSection) {
+            } else {
+                // Ak neexistuje žiadna sekcia, automaticky vytvoríme predvolenú "Verse"
+                if (!currentSection) {
+                    currentSection = {
+                        id: `temp-section-${newTrackData.length}`,
+                        type: 'Verse',
+                        label: '',
+                        bars: []
+                    };
+                    newTrackData.push(currentSection);
+                }
                 // Vytvorenie baru s words (nový formát)
                 const barText = line.substring(0, MAX_BAR_LENGTH);
                 const words = barText.split(/\s+/)
