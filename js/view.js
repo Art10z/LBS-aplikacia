@@ -250,11 +250,45 @@ const View = {
         const controls = document.createElement('div');
         controls.className = 'section-controls';
         
-        const typeInput = document.createElement('input');
-        typeInput.type = 'text';
-        typeInput.className = 'section-type-input';
-        typeInput.value = section.type;
-        typeInput.title = 'Typ sekcie';
+        // Dropdown pre typ sekcie namiesto textového inputu
+        const typeSelect = document.createElement('select');
+        typeSelect.className = 'section-type-input';
+        typeSelect.title = 'Typ sekcie';
+        
+        // Preddefinované Suno meta-značky
+        const sectionTypes = [
+            'Verse', 'Verse 1', 'Verse 2', 'Verse 3',
+            'Chorus', 
+            'Pre-Chorus',
+            'Bridge',
+            'Outro',
+            'Intro',
+            'Hook',
+            'Drop',
+            'Breakdown',
+            'Interlude',
+            'Instrumental',
+            'Guitar Solo',
+            'Piano Solo',
+            'Solo'
+        ];
+        
+        sectionTypes.forEach(type => {
+            const option = document.createElement('option');
+            option.value = type;
+            option.textContent = type;
+            if (type === section.type) option.selected = true;
+            typeSelect.appendChild(option);
+        });
+        
+        // Ak aktuálny typ nie je v zozname, pridať ho
+        if (!sectionTypes.includes(section.type)) {
+            const customOption = document.createElement('option');
+            customOption.value = section.type;
+            customOption.textContent = section.type;
+            customOption.selected = true;
+            typeSelect.insertBefore(customOption, typeSelect.firstChild);
+        }
 
         // Sync tlačidlo
         const syncBtn = document.createElement('button');
@@ -273,7 +307,7 @@ const View = {
         removeSectionBtn.title = 'Odstrániť sekciu';
         removeSectionBtn.innerHTML = '&times;';
 
-        controls.append(typeInput, syncBtn, addBarBtn, removeSectionBtn);
+        controls.append(typeSelect, syncBtn, addBarBtn, removeSectionBtn);
         header.append(dragHandle, label, controls);
 
         const barsContainer = document.createElement('div');

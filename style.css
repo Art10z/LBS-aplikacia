@@ -404,24 +404,40 @@ body.is-dragging, body.is-dragging * {
 #analyzeRhymesBtn:disabled { opacity: 0.5; cursor: not-allowed; }
 
 
-/* INPUT PRE TYP SEKCIE */
+/* INPUT PRE TYP SEKCIE (teraz select dropdown) */
 .section-type-input {
     background-color: var(--bg-input);
     border: 1px solid var(--border-color);
     color: var(--accent-primary);
     border-radius: 4px;
-    padding: 2px 6px;
+    padding: 4px 8px;
     font-size: 0.8rem;
     font-weight: 500;
     font-family: var(--font-mono);
-    width: 110px;
+    min-width: 110px;
     text-align: left;
     transition: all 0.2s ease;
+    cursor: pointer;
+    appearance: none;
+    -webkit-appearance: none;
+    -moz-appearance: none;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%2358a6ff' stroke-width='2'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: right 6px center;
+    padding-right: 24px;
+}
+.section-type-input:hover {
+    border-color: var(--accent-primary);
 }
 .section-type-input:focus {
     outline: none;
     border-color: var(--accent-primary);
     box-shadow: 0 0 0 3px var(--accent-glow);
+}
+.section-type-input option {
+    background-color: var(--bg-panel);
+    color: var(--text-primary);
+    padding: 8px;
 }
 
 

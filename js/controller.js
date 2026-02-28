@@ -90,6 +90,7 @@ const Controller = {
 
         if (View.dom.assemblerContent) {
             View.dom.assemblerContent.addEventListener('input', e => this._handleCanvasInput(e));
+            View.dom.assemblerContent.addEventListener('change', e => this._handleCanvasChange(e)); // Pre select dropdown
             View.dom.assemblerContent.addEventListener('focusout', e => this._handleCanvasBlur(e));
             View.dom.assemblerContent.addEventListener('click', e => this._handleCanvasClick(e));
             View.dom.assemblerContent.addEventListener('keydown', e => this._handleBarKeydown(e));
@@ -486,6 +487,22 @@ const Controller = {
             }
         }
     },
+    
+    // Handler pre select dropdown (section type)
+    _handleCanvasChange(e) {
+        if (e.target.classList.contains('section-type-input')) {
+            const sectionContainer = e.target.closest('.section-container');
+            const sectionId = sectionContainer.dataset.sectionId;
+            const newType = e.target.value.trim();
+            if (newType) {
+                Model.updateSectionType(sectionId, newType);
+                View.updateAllSectionLabelsInDOM(Model.state.trackData);
+                this._updateSyncUI();
+                this._markAsDirty();
+            }
+        }
+    },
+    
     _handleBarKeydown(e) {
         if (!e.target.classList || !e.target.classList.contains('bar-input')) return;
         if (e.key === 'Enter') {
