@@ -27,7 +27,6 @@
       </div>
       <div class="header-right-controls">
         <span id="save-status" class="save-status"></span>
-        <button id="syncFromHeaderBtn" class="btn btn-secondary" title="Synchronizovať plátno → importér">🔄 Sync</button>
         <button id="saveFromHeaderBtn" class="btn btn-primary" title="Uložiť projekt (Ctrl+S)">💾 Uložiť</button>
       <button id="openUnifiedBtn" class="btn btn-secondary icon-btn" title="Výskum & Analýza" aria-label="Výskum & Analýza">
         <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
@@ -46,17 +45,11 @@
           </div>
           <div class="panel-content source-content">
             <div class="panel-tools">
-              <button id="refreshProjectBtn" class="btn btn-secondary icon-btn" title="Prepísať plátno z importu bez potvrdenia" aria-label="Aktualizovať projekt">
-                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M4.5 4.5v6h6m9 9v-6h-6M4.5 15a7.5 7.5 0 0112.546-5.303L21 13.5M19.5 9a7.5 7.5 0 01-12.546 5.303L3 10.5" /></svg>
-              </button>
-              <button id="syncImporterBtn" class="btn btn-secondary icon-btn" title="Prepísať importér podľa aktuálneho plátna" aria-label="Sync z plátna">
-                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M12 3v4.5m0 9V21m6.364-13.364l-3.182 3.182M8.818 14.182l-3.182 3.182M21 12h-4.5M7.5 12H3m13.364 6.364l-3.182-3.182M8.818 9.818l-3.182-3.182" /></svg>
-              </button>
-              <button id="addTemplateTagBtn" class="btn btn-secondary icon-btn" title="Vložiť značku [ Značka ]" aria-label="Pridať značku">
-                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path stroke-linecap="round" stroke-linejoin="round" d="M7 7h6a2 2 0 012 2v6l-5 5-6-6 5-5z"/><path stroke-linecap="round" stroke-linejoin="round" d="M12 9v4m-2-2h4"/></svg>
+              <button id="moveImporterToCanvasBtn" class="btn btn-primary icon-btn" title="Presunúť text na plátno a vyčistiť importér" aria-label="Presunúť na plátno">
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M13.5 4.5L21 12m0 0l-7.5 7.5M21 12H3" /></svg>
               </button>
             </div>
-            <textarea id="source-input" placeholder="Vlož sem text a použi tlačidlá vyššie. Po kliknutí na ↻ sa obsah prenesie na plátno aktuálneho projektu. Názvy sekcií uvádzaj v hranatých zátvorkách, napr. [Verse]."></textarea>
+            <textarea id="source-input" placeholder="Vlož text v štruktúre čitateľnej aplikáciou. Názvy sekcií v hranatých zátvorkách: [Verse], [Chorus], [Bridge] atď. Po kliknutí tlačidla vpravo sa obsah presunie na plátno."></textarea>
           </div>
         </div>
          <div id="output-panel" class="panel">
@@ -183,7 +176,6 @@
               <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16M4 12h16"/></svg>
             </button>
             <div style="margin-left: auto; display: flex; gap: 8px;">
-              <button id="syncFromOverlayBtn" class="btn btn-secondary" title="Synchronizovať plátno → importér">🔄 Sync</button>
               <button id="saveFromOverlayBtn" class="btn btn-primary" title="Uložiť projekt (Ctrl+S)">💾 Uložiť</button>
             </div>
           </div>

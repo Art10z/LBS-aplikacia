@@ -12,9 +12,7 @@ const View = {
         const byId = (primary, fallback) => document.getElementById(primary) || (fallback ? document.getElementById(fallback) : null);
         this.dom = {
             sourceInput: byId('source-input'),
-            refreshProjectBtn: byId('refreshProjectBtn'),
-            syncImporterBtn: byId('syncImporterBtn'),
-            addTemplateTagBtn: byId('addTemplateTagBtn'),
+            moveImporterToCanvasBtn: byId('moveImporterToCanvasBtn'),
             assemblerContent: byId('assembler-content', 'dynamic-canvas'),
             addSectionBtn: byId('addSectionBtn', 'add-section-btn'),
             maketaOutput: byId('maketaOutput'),
@@ -36,7 +34,6 @@ const View = {
             quickAddPaletteBtn: byId('quickAddPaletteBtn'),
             inspirationPanel: byId('inspiration-panel'),
             inspirationPalette: byId('inspiration-palette'),
-            templateInserter: byId('template-inserter'),
             promptStyleInput: byId('prompt-style-input'),
             copyPromptStyleBtn: byId('copyPromptStyleBtn'),
             projectTabsContainer: byId('project-tabs-container'),
@@ -45,9 +42,7 @@ const View = {
             openUnifiedBtn: byId('openUnifiedBtn'),
             unifiedOverlay: byId('unified-overlay', 'unified-panel-overlay'),
             closeUnifiedBtn: byId('closeUnifiedBtn'),
-            syncFromOverlayBtn: byId('syncFromOverlayBtn'),
             saveFromOverlayBtn: byId('saveFromOverlayBtn'),
-            syncFromHeaderBtn: byId('syncFromHeaderBtn'),
             saveFromHeaderBtn: byId('saveFromHeaderBtn'),
             researchTabBtn: byId('researchTabBtn'),
             analysisTabBtn: byId('analysisTabBtn'),
@@ -238,12 +233,11 @@ const View = {
 
         const header = document.createElement('div');
         header.className = 'section-header';
-        header.draggable = true; // Celý header je draggable
-        header.style.cursor = 'move';
-        header.title = 'Ťahajte pre presunutie sekcie';
 
         const dragHandle = document.createElement('span');
         dragHandle.className = 'section-drag-handle';
+        dragHandle.draggable = true;
+        dragHandle.title = 'Ťahajte pre presunutie sekcie';
         dragHandle.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="5" r="1"></circle><circle cx="12" cy="12" r="1"></circle><circle cx="12" cy="19" r="1"></circle><circle cx="5" cy="5" r="1"></circle><circle cx="5" cy="12" r="1"></circle><circle cx="5" cy="19" r="1"></circle><circle cx="19" cy="5" r="1"></circle><circle cx="19" cy="12" r="1"></circle><circle cx="19" cy="19" r="1"></circle></svg>`;
 
         const label = document.createElement('span');

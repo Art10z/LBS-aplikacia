@@ -22,6 +22,8 @@ const Controller = {
     highlightEnabled: true,
     promptStyleModule: null,
     sectionSync: null,
+    _lastWordDrop: null,   // cache poslednej dragover pozície pre word chipy
+    _lastDrop: null,       // cache poslednej dragover pozície pre bary/sekcie
 
     init() {
         View.init();
@@ -60,11 +62,8 @@ const Controller = {
     },
 
     _attachEventListeners() {
-        if (View.dom.refreshProjectBtn) {
-            View.dom.refreshProjectBtn.addEventListener('click', () => this._forceRefreshFromImporter());
-        }
-        if (View.dom.syncImporterBtn) {
-            View.dom.syncImporterBtn.addEventListener('click', () => this._syncImporterFromCanvas());
+        if (View.dom.moveImporterToCanvasBtn) {
+            View.dom.moveImporterToCanvasBtn.addEventListener('click', () => this._moveImporterToCanvas());
         }
         if (View.dom.addSectionBtn) {
             View.dom.addSectionBtn.addEventListener('click', () => this._addSection());
@@ -76,14 +75,7 @@ const Controller = {
             View.dom.copyBtn.addEventListener('click', () => this._copyMaketa());
         }
         if (View.dom.saveAsTxtBtn) {
-            View.dom.saveAsTxtBtn.addEventListener('click', () => this._saveMaketaAsTxt()); // PRIDANÝ RIADOK
-        }
-        
-        if (View.dom.templateInserter) {
-            View.dom.templateInserter.addEventListener('click', (e) => this._handleTagButtonClick(e));
-        }
-        if (View.dom.addTemplateTagBtn) {
-            View.dom.addTemplateTagBtn.addEventListener('click', () => this._insertTextAtCursor(View.dom.sourceInput, '[ Značka ]'));
+            View.dom.saveAsTxtBtn.addEventListener('click', () => this._saveMaketaAsTxt());
         }
         
         document.addEventListener('keydown', e => this._handleGlobalKeyDown(e));
@@ -186,23 +178,11 @@ const Controller = {
         }
         
         // Tlačidlá v overlay paneli
-        if (View.dom.syncFromOverlayBtn) {
-            View.dom.syncFromOverlayBtn.addEventListener('click', () => {
-                this._syncImporterFromCanvas();
-                showNotification('Synchronizované!');
-            });
-        }
         if (View.dom.saveFromOverlayBtn) {
             View.dom.saveFromOverlayBtn.addEventListener('click', () => this._performManualSave());
         }
         
         // Tlačidlá v hlavnom headeri
-        if (View.dom.syncFromHeaderBtn) {
-            View.dom.syncFromHeaderBtn.addEventListener('click', () => {
-                this._syncImporterFromCanvas();
-                showNotification('Synchronizované!');
-            });
-        }
         if (View.dom.saveFromHeaderBtn) {
             View.dom.saveFromHeaderBtn.addEventListener('click', () => this._performManualSave());
         }
@@ -340,60 +320,48 @@ const Controller = {
     _performManualSave() {
         if (!this.activeProjectName) return;
         
-        // 1. Najprv synchronizuj importer z plátna
-        this._syncImporterFromCanvas();
-        
-        // 2. Potom ulož projekt
         View.updateSaveStatus('saving');
         Model.saveProject(this.activeProjectName);
         this.isDirty = false;
         
         setTimeout(() => {
              View.updateSaveStatus('saved');
-             showNotification('Synchronizované a uložené!');
+             showNotification('Uložené!');
         }, 200);
     },
 
-    // Prepíše plátno okamžite podľa aktuálneho textu v importéri (bez potvrdenia)
-    _forceRefreshFromImporter() {
+    // Presunúť obsah importéra na plátno s upozornením a vyčistením importéra
+    _moveImporterToCanvas() {
         const raw = View.dom.sourceInput.value;
         if (!raw.trim()) {
-            showNotification('Importér je prázdny – nič na aktualizáciu.', 'warning');
+            showNotification('Importér je prázdny – nič na presun.', 'warning');
             return;
         }
-        showLoading('Aktualizujem plátno…');
+        
+        // Upozornenie
+        const shouldProceed = confirm('⚠️ Prepísať dynamické plátno novým textom z importéra?');
+        if (!shouldProceed) return;
+        
+        showLoading('Prenášam text na plátno…');
         const newTrackData = this._parseImporterText(raw);
         if (newTrackData.length === 0) {
             hideLoading();
             showNotification('Žiadne použiteľné riadky.', 'warning');
             return;
         }
+        
+        // Prepísať model
         Model.setData({ trackData: newTrackData, paletteItems: Model.state.paletteItems });
+        
+        // Aktualizovať UI
         this._updateCanvasAndMaketa();
         this._markAsDirty();
+        
+        // Vyčistiť importér
+        View.dom.sourceInput.value = '';
+        
         hideLoading();
-        showNotification('Projekt bol aktualizovaný z importéru.');
-    },
-
-    // Zapíše späť do importéra aktuálnu štruktúru z plátna – zjednoduší cyklus úpravy
-    _syncImporterFromCanvas() {
-        if (Model.state.trackData.length === 0) {
-            showNotification('Plátno je prázdne – nič na synchronizáciu.', 'warning');
-            return;
-        }
-        const lines = [];
-        Model.state.trackData.forEach(section => {
-            lines.push(`[${section.type}]`);
-            section.bars.forEach(bar => {
-                // Podpora oboch formátov (legacy text aj nový words)
-                const txt = bar.words 
-                    ? bar.words.map(w => w.text).join(' ').trim()
-                    : (bar.text || '').trim();
-                lines.push(txt || '');
-            });
-        });
-        View.dom.sourceInput.value = lines.join('\n');
-        showNotification('Importér bol aktualizovaný z plátna.');
+        showNotification('✅ Plátno bolo aktualizované a importér vyčistený.');
     },
     
     // Jednotná logika parsovania importéra -> trackData (odstránená duplicita)
@@ -484,25 +452,7 @@ const Controller = {
         showNotification(`Súbor "${fileName}" sa sťahuje.`);
     },
 
-    _handleTagButtonClick(e) {
-        if (e.target.classList.contains('template-tag-btn')) {
-            const template = e.target.dataset.template;
-            this._insertTextAtCursor(View.dom.sourceInput, template);
-        }
-    },
 
-    _insertTextAtCursor(textarea, textToInsert) {
-        const start = textarea.selectionStart;
-        const end = textarea.selectionEnd;
-        const text = textarea.value;
-        let before = text.substring(0, start);
-        const after = text.substring(end);
-        if (before.length > 0 && !before.endsWith('\n')) before += '\n';
-        textarea.value = before + textToInsert + '\n' + after;
-        const newCursorPos = (before + textToInsert + '\n').length;
-        textarea.focus();
-        textarea.setSelectionRange(newCursorPos, newCursorPos);
-    },
 
     _handleCanvasInput(e) {
         if (e.target.classList.contains('bar-input')) {
@@ -886,11 +836,11 @@ const Controller = {
              return;
          }
          
-         // Hľadať bar-drag-handle alebo section-header
+         // Hľadať bar-drag-handle alebo section-drag-handle
          const barHandle = e.target.closest('.bar-drag-handle');
-         const sectionHeader = e.target.closest('.section-header');
+         const sectionHandle = e.target.closest('.section-drag-handle');
          
-         if (!barHandle && !sectionHeader) { 
+         if (!barHandle && !sectionHandle) { 
              e.preventDefault();
              return; 
          }
@@ -898,13 +848,8 @@ const Controller = {
          // Ak je to bar, nájsť bar-item; ak je to sekcia, nájsť section-container
          if (barHandle) {
              this.draggedItem = barHandle.closest('.bar-item');
-         } else if (sectionHeader) {
-             // Zabezpečiť, že sa neťahá, ak klikáme na input alebo button v headri
-             if (e.target.closest('input, button, .section-controls')) {
-                 e.preventDefault();
-                 return;
-             }
-             this.draggedItem = sectionHeader.closest('.section-container');
+         } else if (sectionHandle) {
+             this.draggedItem = sectionHandle.closest('.section-container');
          }
          
          if (!this.draggedItem) {
@@ -924,6 +869,8 @@ const Controller = {
     _handleDragEnd() {
         this._removePlaceholder();
         this._removeWordDropIndicator();
+        this._lastWordDrop = null;
+        this._lastDrop = null;
         document.body.classList.remove('is-dragging');
         
         // Odstrániť dragging class z word chipov
@@ -951,14 +898,14 @@ const Controller = {
         // Kontrola či je to drop z palety inšpirácie
         const paletteData = e.dataTransfer.getData('application/x-palette-item');
         if (paletteData) {
-            // Drop z palety do words-container
-            const wordsContainer = e.target.closest('.words-container');
+            // Drop z palety do words-container - použi cachovanú pozíciu
+            const wordsContainer = (this._lastWordDrop?.container) || e.target.closest('.words-container');
             if (wordsContainer) {
                 const sectionId = wordsContainer.dataset.sectionId;
                 const barId = wordsContainer.dataset.barId;
                 
-                // Zistiť pozíciu dropu - horizontálne porovnanie
-                const afterChip = this._getDragAfterElement(wordsContainer, e.clientX, '.word-chip', true);
+                // Použi cachovanú pozíciu z posledného dragover
+                const afterChip = this._lastWordDrop?.afterChip ?? this._getDragAfterElement(wordsContainer, e.clientX, '.word-chip', true);
                 const chips = [...wordsContainer.querySelectorAll('.word-chip')];
                 const insertIndex = afterChip ? chips.indexOf(afterChip) : -1;
                 
@@ -997,13 +944,14 @@ const Controller = {
                 return;
             }
             
-            const targetWordsContainer = e.target.closest('.words-container');
+            // Použi cachovanú pozíciu z posledného dragover pre presnú drop pozíciu
+            const targetWordsContainer = (this._lastWordDrop?.container) || e.target.closest('.words-container');
             if (targetWordsContainer) {
                 const targetSectionId = targetWordsContainer.dataset.sectionId;
                 const targetBarId = targetWordsContainer.dataset.barId;
                 
-                // Zistiť pozíciu dropu - horizontálne porovnanie
-                const afterChip = this._getDragAfterElement(targetWordsContainer, e.clientX, '.word-chip', true);
+                // Cachovaná pozícia pre presné umiestnenie
+                const afterChip = this._lastWordDrop?.afterChip ?? this._getDragAfterElement(targetWordsContainer, e.clientX, '.word-chip', true);
                 const chips = [...targetWordsContainer.querySelectorAll('.word-chip')];
                 let newIndex = afterChip ? chips.indexOf(afterChip) : chips.length;
                 
@@ -1060,13 +1008,16 @@ const Controller = {
         }
     },
     _getDragAfterElement(container, pos, selector, horizontal = false) {
-        const draggableElements = [...container.querySelectorAll(`${selector}:not(.dragging)`)];
+        const draggableElements = [...container.querySelectorAll(`${selector}:not(.dragging):not(#drag-placeholder)`)]; 
         return draggableElements.reduce((closest, child) => {
             const box = child.getBoundingClientRect();
-            // Použiť horizontálnu alebo vertikálnu pozíciu podľa parametra
-            const offset = horizontal 
-                ? pos - box.left - box.width / 2
-                : pos - box.top - box.height / 2;
+            // Threshold: 35% od začiatku prvku (nie stred 50%).
+            // Znamená to: ak si v horných/ľavých 35% prvku → vlož pred neho.
+            // Výsledok: placeholder sa objaví skôr a presúvanie smerom nadol/doprava je prirodzenejšie.
+            const threshold = horizontal
+                ? box.left + box.width * 0.35
+                : box.top + box.height * 0.35;
+            const offset = pos - threshold;
             return (offset < 0 && offset > closest.offset) ? { offset: offset, element: child } : closest;
         }, { offset: Number.NEGATIVE_INFINITY }).element;
     },
@@ -1096,10 +1047,12 @@ const Controller = {
                 wordsContainer.classList.add('drop-target');
                 e.dataTransfer.dropEffect = e.dataTransfer.types.includes('application/x-word-chip') ? 'move' : 'copy';
                 
-                // Zobraziť vizuálny indikátor medzi slová
+                // Zobraziť vizuálny indikátor medzi slová + cachuj pozíciu
                 const afterChip = this._getDragAfterElement(wordsContainer, e.clientX, '.word-chip', true);
+                this._lastWordDrop = { container: wordsContainer, afterChip };
                 this._showWordDropIndicator(wordsContainer, afterChip);
             } else {
+                this._lastWordDrop = null;
                 this._removeWordDropIndicator();
             }
             return;
@@ -1134,8 +1087,10 @@ const Controller = {
         }
         
         if (container) {
+            this._lastDrop = { container, afterElement, isBar };
             this._updatePlaceholder(container, afterElement, isBar);
         } else {
+            this._lastDrop = null;
             this._removePlaceholder();
         }
     },
@@ -1456,14 +1411,25 @@ const Controller = {
         
         const finishEdit = () => {
             const newText = input.value.trim();
-            if (newText && newText !== currentText) {
+            const wordsContainer = chip.closest('.words-container');
+            input.remove();
+            
+            if (!newText) {
+                // Prázdny obsah = vymazať bublinu úplne
+                Model.removeWordFromBar(chip.dataset.sectionId, chip.dataset.barId, chip.dataset.wordId);
+                chip.remove();
+                this._updateBarCharCounter(wordsContainer);
+                this._markAsDirty();
+                return;
+            }
+            
+            if (newText !== currentText) {
                 chip.textContent = newText;
                 Model.updateWordText(chip.dataset.sectionId, chip.dataset.barId, chip.dataset.wordId, newText);
                 this._markAsDirty();
             }
             chip.style.display = '';
-            input.remove();
-            this._updateBarCharCounter(chip.closest('.words-container'));
+            this._updateBarCharCounter(wordsContainer);
         };
         
         input.addEventListener('blur', finishEdit);
