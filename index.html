@@ -32,6 +32,9 @@
       <button id="openUnifiedBtn" class="btn btn-secondary icon-btn" title="Výskum & Analýza" aria-label="Výskum & Analýza">
         <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
       </button>
+      <button id="openSunoGuideBtn" class="btn btn-secondary icon-btn" title="Suno AI Návod" aria-label="Suno AI Návod">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path stroke-linecap="round" stroke-linejoin="round" d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z"/></svg>
+      </button>
       </div>
     </header>
 
@@ -205,6 +208,115 @@
             </div>
           </div>
         </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Suno AI Guide Overlay -->
+  <div id="suno-guide-overlay" class="overlay hidden">
+    <div class="overlay-content suno-guide-content">
+      <div class="overlay-header">
+        <h2>🎵 Suno AI - Sprievodca pre LBS</h2>
+        <button id="closeSunoGuideBtn" class="close-overlay-btn">&times;</button>
+      </div>
+      <div class="overlay-body suno-guide-body">
+        
+        <div class="guide-section">
+          <h3>📋 Hlavná myšlienka</h3>
+          <p><strong>LBS</strong> je vizuálny editor pre prípravu textov optimalizovaných pre <strong>Suno AI</strong> generátor hudby.</p>
+          <p>Suno používa <strong>Custom Mode</strong> s dvoma poliami:</p>
+          <ul>
+            <li><strong>Style of Music</strong> - globálny štýl (žáner, nálada, inštrumentácia)</li>
+            <li><strong>Lyrics</strong> - text s meta-značkami pre kontrolu štruktúry</li>
+          </ul>
+        </div>
+
+        <div class="guide-section">
+          <h3>🏷️ Meta-značky pre štruktúru (použite v Lyrics)</h3>
+          <div class="tags-grid">
+            <div class="tag-category">
+              <h4>Základné sekcie</h4>
+              <code>[Verse]</code> <code>[Verse 1]</code> <code>[Chorus]</code>
+              <code>[Pre-Chorus]</code> <code>[Bridge]</code> <code>[Outro]</code>
+            </div>
+            <div class="tag-category">
+              <h4>Špeciálne sekcie</h4>
+              <code>[Intro]</code> <code>[Hook]</code> <code>[Drop]</code>
+              <code>[Breakdown]</code> <code>[Interlude]</code>
+            </div>
+            <div class="tag-category">
+              <h4>Inštrumentálne</h4>
+              <code>[Guitar Solo]</code> <code>[Piano Solo]</code>
+              <code>[Instrumental]</code>
+            </div>
+          </div>
+        </div>
+
+        <div class="guide-section">
+          <h3>🎤 Vokálne značky (v texte)</h3>
+          <div class="tags-grid">
+            <div class="tag-category">
+              <h4>Prednes</h4>
+              <code>(whispered)</code> <code>(belted)</code> <code>(shouted)</code>
+              <code>(spoken-word)</code>
+            </div>
+            <div class="tag-category">
+              <h4>Efekty</h4>
+              <code>[Falsetto]</code> <code>[Auto-tuned]</code>
+              <code>[Harmonized]</code> <code>(reverb)</code>
+            </div>
+          </div>
+        </div>
+
+        <div class="guide-section">
+          <h3>🎨 Style of Music - 4 Piliere</h3>
+          <div class="pillars-grid">
+            <div class="pillar">
+              <strong>1. Žáner</strong>
+              <p>90s grunge, synthwave, indie folk, trap metal, lo-fi hip hop</p>
+            </div>
+            <div class="pillar">
+              <strong>2. Nálada</strong>
+              <p>melancholic, triumphant, nostalgic, dark, uplifting, dreamy</p>
+            </div>
+            <div class="pillar">
+              <strong>3. Inštrumentácia</strong>
+              <p>acoustic guitar, punchy 909 drums, synth pads, slap bass</p>
+            </div>
+            <div class="pillar">
+              <strong>4. Vokály</strong>
+              <p>soft airy female vocals, deep male vocals, aggressive power vocals</p>
+            </div>
+          </div>
+        </div>
+
+        <div class="guide-section">
+          <h3>🔄 Workflow - Generatívna slučka</h3>
+          <ol>
+            <li><strong>Generovanie</strong> - Vytvorte prvú časť (verse + chorus)</li>
+            <li><strong>Kurátorstvo</strong> - Vyberte lepšiu z 2 verzií</li>
+            <li><strong>Rozširovanie</strong> - "Continue From This Song"</li>
+            <li><strong>Zostavenie</strong> - "Get Whole Song" na spojenie</li>
+          </ol>
+          <p class="workflow-note">💡 LBS pomáha v kroku 1 - príprava štruktúrovaného textu!</p>
+        </div>
+
+        <div class="guide-section">
+          <h3>💡 Tipy pre LBS</h3>
+          <ul>
+            <li>Použite <strong>dropdown typu sekcie</strong> pre správne meta-značky</li>
+            <li><strong>Word chips</strong> umožňujú presné usporiadanie slov</li>
+            <li><strong>Analýza duplikátov</strong> upozorní na opakujúce sa slová</li>
+            <li><strong>Maketa</strong> zobrazuje finálny text pripravený pre Suno Lyrics</li>
+            <li>Skopírujte text z Makety priamo do Suno Custom Mode → Lyrics</li>
+          </ul>
+        </div>
+
+        <div class="guide-section guide-footer">
+          <p><strong>📚 Viac info:</strong> <a href="https://help.suno.com/en/" target="_blank">help.suno.com</a></p>
+          <p><strong>📄 Detailná dokumentácia:</strong> <a href="LBS_SUNO_DOKUMENTACIA.md" target="_blank">LBS_SUNO_DOKUMENTACIA.md</a></p>
+        </div>
+
       </div>
     </div>
   </div>

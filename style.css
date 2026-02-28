@@ -1027,3 +1027,138 @@ textarea, #source-input, #research-input { line-height:1.55; }
     box-shadow: 0 0 6px rgba(88, 166, 255, 0.3);
 }
 
+/* === SUNO GUIDE OVERLAY ========================================= */
+.suno-guide-content {
+    max-width: 900px;
+    width: 90%;
+    max-height: 85vh;
+}
+
+.suno-guide-body {
+    overflow-y: auto;
+    padding: 20px;
+    font-size: 0.95rem;
+    line-height: 1.6;
+}
+
+.guide-section {
+    margin-bottom: 32px;
+    padding: 20px;
+    background: var(--bg-panel);
+    border: 1px solid var(--border-color);
+    border-radius: 8px;
+}
+
+.guide-section h3 {
+    color: var(--accent-primary);
+    margin-bottom: 16px;
+    font-size: 1.2rem;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.guide-section h4 {
+    color: var(--text-secondary);
+    margin-bottom: 8px;
+    font-size: 0.9rem;
+    font-weight: 600;
+}
+
+.guide-section p {
+    margin-bottom: 12px;
+    color: var(--text-primary);
+}
+
+.guide-section ul,
+.guide-section ol {
+    margin-left: 20px;
+    color: var(--text-primary);
+}
+
+.guide-section li {
+    margin-bottom: 8px;
+}
+
+.guide-section code {
+    background: var(--bg-input);
+    color: var(--accent-warning);
+    padding: 2px 8px;
+    border-radius: 4px;
+    font-family: var(--font-mono);
+    font-size: 0.85em;
+    border: 1px solid var(--border-color);
+    display: inline-block;
+    margin: 2px;
+}
+
+.tags-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap: 16px;
+    margin-top: 12px;
+}
+
+.tag-category {
+    background: var(--bg-input);
+    padding: 12px;
+    border-radius: 6px;
+    border: 1px solid var(--border-color);
+}
+
+.tag-category h4 {
+    margin-bottom: 8px;
+    color: var(--accent-primary);
+}
+
+.pillars-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 16px;
+    margin-top: 12px;
+}
+
+.pillar {
+    background: var(--bg-input);
+    padding: 16px;
+    border-radius: 6px;
+    border-left: 3px solid var(--accent-primary);
+}
+
+.pillar strong {
+    color: var(--accent-primary);
+    display: block;
+    margin-bottom: 8px;
+    font-size: 1rem;
+}
+
+.pillar p {
+    color: var(--text-secondary);
+    font-size: 0.85rem;
+    margin: 0;
+}
+
+.workflow-note {
+    background: var(--accent-glow);
+    padding: 12px;
+    border-radius: 6px;
+    border-left: 3px solid var(--accent-primary);
+    margin-top: 16px;
+    font-style: italic;
+}
+
+.guide-footer {
+    text-align: center;
+    background: var(--bg-input);
+    border-color: var(--accent-primary);
+}
+
+.guide-footer a {
+    color: var(--accent-primary);
+    text-decoration: none;
+    font-weight: 600;
+}
+
+.guide-footer a:hover {
+    text-decoration: underline;
+}

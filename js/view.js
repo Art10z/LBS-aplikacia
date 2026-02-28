@@ -54,6 +54,9 @@ const View = {
             researchTab: byId('researchTab'),
             analysisTab: byId('analysisTab'),
             analysisLayer: byId('analysis-layer'),
+            openSunoGuideBtn: byId('openSunoGuideBtn'),
+            sunoGuideOverlay: byId('suno-guide-overlay'),
+            closeSunoGuideBtn: byId('closeSunoGuideBtn'),
         };
     },
     

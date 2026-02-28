@@ -116,6 +116,26 @@ const Controller = {
             View.dom.closeUnifiedBtn.addEventListener('click', () => View.dom.unifiedOverlay.classList.add('hidden'));
         }
         
+        // Suno Guide overlay
+        if (View.dom.openSunoGuideBtn) {
+            View.dom.openSunoGuideBtn.addEventListener('click', () => {
+                View.dom.sunoGuideOverlay.classList.remove('hidden');
+            });
+        }
+        if (View.dom.closeSunoGuideBtn) {
+            View.dom.closeSunoGuideBtn.addEventListener('click', () => {
+                View.dom.sunoGuideOverlay.classList.add('hidden');
+            });
+        }
+        // Zatvoriť Suno guide kliknutím mimo obsah
+        if (View.dom.sunoGuideOverlay) {
+            View.dom.sunoGuideOverlay.addEventListener('click', (e) => {
+                if (e.target === View.dom.sunoGuideOverlay) {
+                    View.dom.sunoGuideOverlay.classList.add('hidden');
+                }
+            });
+        }
+        
         // Tab switching
         if (View.dom.researchTabBtn) {
             View.dom.researchTabBtn.addEventListener('click', () => this._switchTab('research'));
