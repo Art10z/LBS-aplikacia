@@ -136,7 +136,12 @@ export function render(result, layerEl, mode) {
 
 // Zjednodusena funkcia na hladanie rymov
 export function findRhymingWords(text) {
-    const words = tokenize(text);
+    // Odstranenie meta-znaciek (Suno tags) pred analyzou
+    const cleanedText = text
+        .replace(/\[[^\]]+\]/g, '') // odstranenie [Verse], [Chorus], atd.
+        .replace(/\([^)]+\)/g, '');  // odstranenie (whispered), [Falsetto], atd.
+    
+    const words = tokenize(cleanedText);
     const rhymeGroups = new Map();
     const seenWords = new Set();
     

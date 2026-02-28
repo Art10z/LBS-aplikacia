@@ -609,7 +609,11 @@ const Controller = {
     
     _addSelectedTextToPalette() {
         const { value, selectionStart, selectionEnd } = View.dom.researchInput;
-        const selectedText = value.substring(selectionStart, selectionEnd);
+        let selectedText = value.substring(selectionStart, selectionEnd);
+        // Odstranenie meta-znaciek (Suno tags)
+        selectedText = selectedText
+            .replace(/\[[^\]]+\]/g, '') // odstranenie [Verse], [Chorus], atd.
+            .replace(/\([^)]+\)/g, '');  // odstranenie (whispered), [Falsetto], atd.
         const newItem = Model.addPaletteItem(selectedText);
         if (newItem) {
             View.addPaletteItemToDOM(newItem);
