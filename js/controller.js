@@ -3,7 +3,7 @@ import View from './view.js';
 import { initPromptStyle } from './promptStyle.js';
 import { MAX_BAR_LENGTH } from './constants.js';
 import * as Storage from './storage.js';
-import { showNotification, showLoading, hideLoading } from './utils.js';
+import { showNotification, showLoading, hideLoading, debounce } from './utils.js';
 import { analyze, render, findRhymingWords } from './unifiedAnalysis.js';
 import { SectionSync } from './sectionSync.js';
 
@@ -24,9 +24,15 @@ const Controller = {
     sectionSync: null,
     _lastWordDrop: null,   // cache poslednej dragover pozície pre word chipy
     _lastDrop: null,       // cache poslednej dragover pozície pre bary/sekcie
+    _debouncedSaveResearch: null,
+    _analysisCache: {
+        text: null,
+        result: null
+    },
 
     init() {
         View.init();
+        this._debouncedSaveResearch = debounce(() => this._saveResearch(), 500);
         this._attachEventListeners();
         this.promptStyleModule = initPromptStyle(this); // Inicializácia nového modulu
         this.sectionSync = new SectionSync(); // Inicializácia sync modulu
@@ -145,9 +151,8 @@ const Controller = {
             View.dom.analysisTabBtn.addEventListener('click', () => this._switchTab('analysis'));
         }
         if (View.dom.researchInput) {
-            View.dom.researchInput.addEventListener('input', () => {
-                this._saveResearch();
-            });
+            View.dom.researchInput.addEventListener('input', () => this._debouncedSaveResearch());
+            View.dom.researchInput.addEventListener('blur', () => this._flushResearchSave());
         }
         if (View.dom.addToPaletteBtn) {
             View.dom.addToPaletteBtn.addEventListener('click', () => this._addSelectedTextToPalette());
@@ -206,6 +211,8 @@ const Controller = {
             View.dom.projectTabsContainer.addEventListener('focusout', e => this._handleTabBlur(e));
             View.dom.projectTabsContainer.addEventListener('keydown', e => this._handleTabKeyDown(e));
         }
+
+        window.addEventListener('pagehide', () => this._flushResearchSave());
     },
 
     _handleGlobalKeyDown(e) {
@@ -263,7 +270,17 @@ const Controller = {
             return;
         }
 
-        const result = analyze(canvasText);
+        const cached = this._analysisCache;
+        const result = cached.text === canvasText && cached.result
+            ? cached.result
+            : analyze(canvasText);
+
+        if (cached.text !== canvasText) {
+            this._analysisCache = {
+                text: canvasText,
+                result
+            };
+        }
 
         // Render metrics (pravý stĺpec)
         if (metricsContainer && result.metrics) {
@@ -299,7 +316,8 @@ const Controller = {
 
     _performManualSave() {
         if (!this.activeProjectName) return;
-        
+
+        this._flushResearchSave();
         View.updateSaveStatus('saving');
         Model.saveProject(this.activeProjectName);
         this.isDirty = false;
@@ -434,33 +452,14 @@ const Controller = {
 
     _handleCanvasInput(e) {
         if (e.target.classList.contains('section-type-input')) {
-            const sectionContainer = e.target.closest('.section-container');
-            const sectionId = sectionContainer.dataset.sectionId;
-            const newType = e.target.value.trim();
-            if (newType) {
-                Model.updateSectionType(sectionId, newType);
-                View.updateAllSectionLabelsInDOM(Model.state.trackData);
-                this._updateSyncUI(); // Update sync UI keď sa zmení typ
-                this._markAsDirty();
-            } else {
-                const section = Model.state.trackData.find(s => s.id === sectionId);
-                if (section) e.target.value = section.type;
-            }
+            this._handleSectionTypeUpdate(e.target);
         }
     },
     
     // Handler pre select dropdown (section type)
     _handleCanvasChange(e) {
         if (e.target.classList.contains('section-type-input')) {
-            const sectionContainer = e.target.closest('.section-container');
-            const sectionId = sectionContainer.dataset.sectionId;
-            const newType = e.target.value.trim();
-            if (newType) {
-                Model.updateSectionType(sectionId, newType);
-                View.updateAllSectionLabelsInDOM(Model.state.trackData);
-                this._updateSyncUI();
-                this._markAsDirty();
-            }
+            this._handleSectionTypeUpdate(e.target);
         }
     },
     
@@ -720,6 +719,7 @@ const Controller = {
     },
 
     _loadAndDisplayProject(projectName) {
+        this._flushResearchSave();
         if (!projectName || !Model.loadProject(projectName)) {
             Model.init(); // Fallback to empty state
         }
@@ -744,7 +744,17 @@ const Controller = {
         View.renderMaketa(Model.state.trackData);
     },
     
-    _saveResearch() { Storage.saveResearch(this.activeProjectName, View.dom.researchInput.value); },
+    _saveResearch() {
+        if (!this.activeProjectName || !View.dom.researchInput) return;
+        Storage.saveResearch(this.activeProjectName, View.dom.researchInput.value);
+    },
+    _flushResearchSave() {
+        if (this._debouncedSaveResearch?.flush) {
+            this._debouncedSaveResearch.flush();
+        } else {
+            this._saveResearch();
+        }
+    },
     _loadResearchForActive() { 
         View.dom.researchInput.value = Storage.loadResearch(this.activeProjectName) || '';
     },
@@ -905,31 +915,21 @@ const Controller = {
             if (!section) return;
             
             targetContainer = section.querySelector('.bars-container');
-            afterElement = this._getDragAfterElement(targetContainer, e.clientY, '.bar-item');
+            // Odstrániť placeholder pred výpočtom indexu
+            this._removePlaceholder();
+            // Použiť cachovanú pozíciu
+            afterElement = this._lastDrop?.afterElement ?? null;
             newIndex = afterElement ? Array.from(targetContainer.children).indexOf(afterElement) : targetContainer.children.length;
-            
-            const placeholder = targetContainer.querySelector('.bar-drag-placeholder');
-            if (placeholder && newIndex > 0) {
-                 const placeholderIndex = Array.from(targetContainer.children).indexOf(placeholder);
-                 if (placeholderIndex !== -1 && placeholderIndex < newIndex) {
-                     newIndex--;
-                 }
-            }
             
             Model.moveBar(this.draggedItem.dataset.barId, this.draggedItem.dataset.sectionId, section.dataset.sectionId, newIndex);
 
         } else {
             targetContainer = View.dom.assemblerContent;
-            afterElement = this._getDragAfterElement(targetContainer, e.clientY, '.section-container');
+            // Odstrániť placeholder pred výpočtom indexu
+            this._removePlaceholder();
+            // Použiť cachovanú pozíciu
+            afterElement = this._lastDrop?.afterElement ?? null;
             newIndex = afterElement ? Array.from(targetContainer.children).indexOf(afterElement) : targetContainer.children.length;
-
-            const placeholder = targetContainer.querySelector('.section-drag-placeholder');
-             if (placeholder && newIndex > 0) {
-                 const placeholderIndex = Array.from(targetContainer.children).indexOf(placeholder);
-                 if (placeholderIndex !== -1 && placeholderIndex < newIndex) {
-                     newIndex--;
-                 }
-            }
             
             Model.moveSection(this.draggedItem.dataset.sectionId, newIndex);
         }
@@ -1410,6 +1410,30 @@ const Controller = {
                 btn.title = 'Nastaviť ako master pre synchronizáciu';
             }
         });
+    },
+
+    _handleSectionTypeUpdate(inputEl) {
+        const sectionContainer = inputEl.closest('.section-container');
+        if (!sectionContainer) return;
+
+        const sectionId = sectionContainer.dataset.sectionId;
+        const section = Model.state.trackData.find(s => s.id === sectionId);
+        if (!section) return;
+
+        const newType = inputEl.value.trim();
+        if (!newType) {
+            inputEl.value = section.type;
+            return;
+        }
+
+        if (section.type === newType) {
+            return;
+        }
+
+        Model.updateSectionType(sectionId, newType);
+        View.updateAllSectionLabelsInDOM(Model.state.trackData);
+        this._updateSyncUI();
+        this._markAsDirty();
     }
 };
 

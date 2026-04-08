@@ -38,11 +38,24 @@ export function showNotification(message, type = 'success') {
  */
 export function debounce(func, delay) {
     let timeout;
+    let lastArgs;
+    let lastThis;
     function debounced(...args) {
+        lastArgs = args;
+        lastThis = this;
         clearTimeout(timeout);
-        timeout = setTimeout(() => func.apply(this, args), delay);
+        timeout = setTimeout(() => {
+            timeout = null;
+            func.apply(this, args);
+        }, delay);
     }
     debounced.cancel = () => { clearTimeout(timeout); };
+    debounced.flush = () => {
+        if (!timeout) return;
+        clearTimeout(timeout);
+        timeout = null;
+        func.apply(lastThis, lastArgs || []);
+    };
     return debounced;
 }
 
