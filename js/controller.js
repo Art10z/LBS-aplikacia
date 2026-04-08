@@ -905,31 +905,21 @@ const Controller = {
             if (!section) return;
             
             targetContainer = section.querySelector('.bars-container');
-            afterElement = this._getDragAfterElement(targetContainer, e.clientY, '.bar-item');
+            // Odstrániť placeholder pred výpočtom indexu
+            this._removePlaceholder();
+            // Použiť cachovanú pozíciu
+            afterElement = this._lastDrop?.afterElement ?? null;
             newIndex = afterElement ? Array.from(targetContainer.children).indexOf(afterElement) : targetContainer.children.length;
-            
-            const placeholder = targetContainer.querySelector('.bar-drag-placeholder');
-            if (placeholder && newIndex > 0) {
-                 const placeholderIndex = Array.from(targetContainer.children).indexOf(placeholder);
-                 if (placeholderIndex !== -1 && placeholderIndex < newIndex) {
-                     newIndex--;
-                 }
-            }
             
             Model.moveBar(this.draggedItem.dataset.barId, this.draggedItem.dataset.sectionId, section.dataset.sectionId, newIndex);
 
         } else {
             targetContainer = View.dom.assemblerContent;
-            afterElement = this._getDragAfterElement(targetContainer, e.clientY, '.section-container');
+            // Odstrániť placeholder pred výpočtom indexu
+            this._removePlaceholder();
+            // Použiť cachovanú pozíciu
+            afterElement = this._lastDrop?.afterElement ?? null;
             newIndex = afterElement ? Array.from(targetContainer.children).indexOf(afterElement) : targetContainer.children.length;
-
-            const placeholder = targetContainer.querySelector('.section-drag-placeholder');
-             if (placeholder && newIndex > 0) {
-                 const placeholderIndex = Array.from(targetContainer.children).indexOf(placeholder);
-                 if (placeholderIndex !== -1 && placeholderIndex < newIndex) {
-                     newIndex--;
-                 }
-            }
             
             Model.moveSection(this.draggedItem.dataset.sectionId, newIndex);
         }
