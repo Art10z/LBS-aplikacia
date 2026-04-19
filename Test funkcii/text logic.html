@@ -1,0 +1,481 @@
+<!DOCTYPE html>
+<html lang="sk">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>LBS Rhythmic Studio V3.0</title>
+    <style>
+        :root {
+            --bg-main: #0b0d10;
+            --bg-panel: #161920;
+            --bg-panel-light: #1e222b;
+            --text-main: #e2e8f0;
+            --text-muted: #8b949e;
+            --grid-line: #2d3748;
+            --accent-tag: #ff79c6;
+            --accent-rhyme: #00ffcc;
+            --accent-long: #ffb86c;
+            --accent-punct: #bd93f9;
+            --success: #50fa7b;
+            --warning: #f1fa8c;
+            --danger: #ff5555;
+            --heavy-flow: #ff922b;
+            --light-flow: #38d9a9;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            background-color: var(--bg-main);
+            color: var(--text-main);
+            display: flex;
+            flex-direction: column;
+            height: 100vh;
+            overflow: hidden;
+        }
+
+        /* HEADER */
+        header {
+            padding: 15px 25px;
+            background-color: var(--bg-panel);
+            border-bottom: 1px solid var(--grid-line);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-shrink: 0;
+        }
+
+        header h1 {
+            font-size: 1.4rem;
+            color: var(--text-main);
+            letter-spacing: 1px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        header h1 span {
+            color: var(--accent-rhyme);
+            font-size: 0.9rem;
+            background: rgba(0,255,204,0.1);
+            padding: 3px 8px;
+            border-radius: 4px;
+        }
+
+        .header-stats {
+            color: var(--text-muted);
+            font-size: 0.9rem;
+        }
+
+        /* WORKSPACE */
+        .workspace {
+            display: flex;
+            flex: 1;
+            overflow: hidden;
+        }
+
+        /* LEFT PANEL: EDITOR */
+        .editor-panel {
+            width: 35%;
+            min-width: 300px;
+            background-color: var(--bg-panel);
+            border-right: 1px solid var(--grid-line);
+            display: flex;
+            flex-direction: column;
+        }
+
+        .panel-header {
+            padding: 10px 20px;
+            font-size: 0.85rem;
+            font-weight: bold;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            background-color: var(--bg-panel-light);
+            border-bottom: 1px solid var(--grid-line);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .refresh-btn {
+            background: rgba(0, 255, 204, 0.1);
+            color: var(--accent-rhyme);
+            border: 1px solid var(--accent-rhyme);
+            padding: 4px 10px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 0.75rem;
+            font-weight: bold;
+            transition: all 0.2s;
+        }
+
+        .refresh-btn:hover {
+            background: var(--accent-rhyme);
+            color: var(--bg-main);
+        }
+        
+        .refresh-btn:active {
+            transform: scale(0.95);
+        }
+
+        textarea {
+            flex: 1;
+            width: 100%;
+            background-color: transparent;
+            color: var(--text-main);
+            border: none;
+            padding: 20px;
+            font-family: 'Courier New', Courier, monospace;
+            font-size: 15px;
+            line-height: 1.6;
+            resize: none;
+            outline: none;
+        }
+
+        /* RIGHT PANEL: BLUEPRINT ENGINE */
+        .blueprint-panel {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            background-color: var(--bg-main);
+        }
+
+        .canvas-container {
+            flex: 1;
+            padding: 30px;
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        /* LBS UI COMPONENTS */
+        .section-tag {
+            font-size: 1.1rem;
+            color: var(--accent-tag);
+            font-weight: bold;
+            margin-top: 20px;
+            margin-bottom: 5px;
+            padding-bottom: 5px;
+            border-bottom: 1px solid rgba(255, 121, 198, 0.3);
+            display: inline-block;
+            letter-spacing: 2px;
+        }
+
+        .bar-row {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 4px 0;
+            transition: background-color 0.2s;
+        }
+        
+        .bar-row:hover {
+            background-color: rgba(255,255,255,0.03);
+            border-radius: 4px;
+        }
+
+        /* STAT BOXES */
+        .stat-group {
+            display: flex;
+            gap: 5px;
+            width: 150px;
+        }
+
+        .stat-box {
+            background-color: var(--bg-panel-light);
+            border: 1px solid var(--grid-line);
+            padding: 6px 10px;
+            border-radius: 4px;
+            font-size: 0.75rem;
+            font-weight: bold;
+            color: var(--text-muted);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            flex: 1;
+        }
+
+        .stat-box.sl-perfect { border-color: var(--success); color: var(--success); background: rgba(80, 250, 123, 0.1); }
+        .stat-box.sl-warning { border-color: var(--warning); color: var(--warning); }
+        .stat-box.sl-danger { border-color: var(--danger); color: var(--danger); }
+
+        .stat-box.flow-heavy { color: var(--heavy-flow); border-color: var(--heavy-flow); }
+        .stat-box.flow-light { color: var(--light-flow); border-color: var(--light-flow); }
+
+        /* MAGICKÁ MRIEŽKA */
+        .rhythmic-grid {
+            font-family: 'Courier New', Courier, monospace;
+            font-size: 16px;
+            white-space: pre;
+            width: 70ch;
+            height: 32px;
+            line-height: 32px;
+            position: relative;
+            background-image: repeating-linear-gradient(
+                to right,
+                transparent 0,
+                transparent calc(1ch - 1px),
+                var(--grid-line) calc(1ch - 1px),
+                var(--grid-line) 1ch
+            );
+            border-bottom: 1px solid var(--grid-line);
+        }
+
+        .slot-2 { padding-right: 1ch; }
+        .slot-3 { padding-right: 2ch; }
+
+        .vowel-long { color: var(--accent-long); }
+        .punct-comma { color: var(--accent-punct); font-weight: bold; }
+        .punct-period { color: var(--accent-punct); font-weight: bold; }
+        
+        .rhyme-anchor {
+            background-color: rgba(0, 255, 204, 0.15);
+            color: var(--accent-rhyme);
+            border-radius: 3px;
+            padding: 2px 0;
+            text-shadow: 0 0 5px rgba(0, 255, 204, 0.3);
+        }
+
+        .grid-limit-marker {
+            position: absolute;
+            right: 0;
+            top: 0;
+            bottom: 0;
+            width: 2px;
+            background-color: var(--danger);
+            z-index: 10;
+        }
+        
+        .slots-count {
+            font-family: monospace;
+            font-size: 0.8rem;
+            color: var(--text-muted);
+            width: 50px;
+            text-align: right;
+        }
+        .slots-count.over { color: var(--danger); font-weight: bold; }
+
+    </style>
+</head>
+<body>
+
+    <header>
+        <h1>LBS Studio <span>V3.0 MATRIX</span></h1>
+        <div class="header-stats" id="global-stats">Načítavam...</div>
+    </header>
+
+    <div class="workspace">
+        <!-- ĽAVÝ PANEL: Písanie textu a štruktúry -->
+        <div class="editor-panel">
+            <div class="panel-header">
+                <span>📝 RAW Text Editor</span>
+                <button id="refresh-btn" class="refresh-btn" title="Vynútiť prepočet">🔄 PREPOČÍTAŤ</button>
+            </div>
+            <textarea id="lbs-input" spellcheck="false" placeholder="Zadaj tag [Verse 1] a začni písať..."></textarea>
+        </div>
+
+        <!-- PRAVÝ PANEL: Dynamický analyzátor -->
+        <div class="blueprint-panel">
+            <div class="panel-header">📐 LBS Blueprint Engine</div>
+            <div class="canvas-container" id="canvas">
+                <!-- Riadky sa vygenerujú automaticky -->
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const inputEl = document.getElementById('lbs-input');
+        const canvasEl = document.getElementById('canvas');
+        const globalStatsEl = document.getElementById('global-stats');
+        const refreshBtn = document.getElementById('refresh-btn');
+
+        // Regex definície pre analýzu
+        const VOWELS_ALL = /[aäeioóuúyýáéíôAÄEIOÓUÚYÝÁÉÍÔ]/gi;
+        const SYLLABIC_CONSONANTS = /(?<=^|[^aäeioóuúyýáéíôAÄEIOÓUÚYÝÁÉÍÔ\s])[rŕlĺRŔLĹ](?=[^aäeioóuúyýáéíôAÄEIOÓUÚYÝÁÉÍÔ\s]|$)/gi;
+        const LONG_VOWELS_REGEX = /[áéíóúýĺŕÁÉÍÓÚÝĹŔ]/g;
+        const LONG_VOWELS_STR = 'áéíóúýĺŕÁÉÍÓÚÝĹŔ';
+        const WORD_REGEX = /[a-zA-ZáéíóúýčďěňřšťžľĺŕäôÁÉÍÓÚÝČĎĚŇŘŠŤŽĽĹŔÄÔ]+/g;
+        const TAG_REGEX = /^\[(.*?)\]$/; // Detekuje štruktúrne tagy ako [Verse 1]
+
+        // Predvolený text aplikácie
+        const defaultText = `[Verse 1]
+Mám dobrý plán, túto hru hrám.
+Idem vpred rýchlo, kým nedojdem tam.
+Zmrznutý krk, to neni klam.
+Je to čistá matematika. A flow si robím sám.
+
+[Chorus]
+Ťažký flow, má veľa dlhých tónov.
+Dávaj pozor, nesmieš vypadnúť.
+Rýchle vety bežia mimo týchto zón,
+musia presne do beatu zapadnúť.`;
+
+        // Funkcia na výpočet slabík
+        function countSyllables(text) {
+            if (!text) return 0;
+            let count = 0;
+            const vowelMatches = text.match(VOWELS_ALL);
+            if (vowelMatches) count += vowelMatches.length;
+            const syllabicMatches = text.match(SYLLABIC_CONSONANTS);
+            if (syllabicMatches) count += syllabicMatches.length;
+            return count;
+        }
+
+        // Hlavný renderovací algoritmus
+        function renderBlueprint() {
+            const text = inputEl.value;
+            const lines = text.split('\n');
+            let html = '';
+            
+            let totalBars = 0;
+            let totalSyllables = 0;
+
+            lines.forEach(line => {
+                const trimmedLine = line.trim();
+
+                // 1. Preskočenie prázdnych riadkov
+                if (trimmedLine === '') {
+                    html += `<div style="height: 10px;"></div>`;
+                    return;
+                }
+
+                // 2. Detekcia Štruktúrnych Tagov (napr. [Verse 1])
+                const tagMatch = trimmedLine.match(TAG_REGEX);
+                if (tagMatch) {
+                    html += `<div class="section-tag">[ ${tagMatch[1].toUpperCase()} ]</div>`;
+                    return;
+                }
+
+                // --- 3. SPRACOVANIE BARU (VERŠA) ---
+                totalBars++;
+                const syllables = countSyllables(trimmedLine);
+                totalSyllables += syllables;
+                
+                // Analýza flowu (Ťažký vs Ľahký)
+                const longVowelsCount = (trimmedLine.match(LONG_VOWELS_REGEX) || []).length;
+                const isHeavyFlow = longVowelsCount >= 3;
+                const flowName = isHeavyFlow ? 'ŤAŽKÝ' : 'ĽAHKÝ';
+                const flowClass = isHeavyFlow ? 'flow-heavy' : 'flow-light';
+                
+                // Vyhodnotenie kvality slabík
+                let slClass = 'sl-danger';
+                if (isHeavyFlow) {
+                    if (syllables === 11 || syllables === 12) slClass = 'sl-perfect';
+                    else if (syllables === 10 || syllables === 13) slClass = 'sl-warning';
+                } else {
+                    if (syllables === 13 || syllables === 14) slClass = 'sl-perfect';
+                    else if (syllables === 12 || syllables === 15) slClass = 'sl-warning';
+                }
+
+                let slots = 0;
+                let parsedHtml = '';
+
+                // Hľadanie koncového slova (Rým Kotva)
+                let lastWordStart = -1, lastWordEnd = -1, match;
+                while ((match = WORD_REGEX.exec(trimmedLine)) !== null) {
+                    lastWordStart = match.index;
+                    lastWordEnd = match.index + match[0].length;
+                }
+
+                // Znak po znaku - analýza dĺžok
+                for (let i = 0; i < trimmedLine.length; i++) {
+                    const char = trimmedLine[i];
+                    let charSlots = 1;
+                    let cssClasses = [];
+
+                    if (i >= lastWordStart && i < lastWordEnd) {
+                        cssClasses.push('rhyme-anchor');
+                    }
+
+                    if (LONG_VOWELS_STR.includes(char)) {
+                        charSlots = 2;
+                        cssClasses.push('slot-2', 'vowel-long');
+                    } else if (char === ',') {
+                        charSlots = 2;
+                        cssClasses.push('slot-2', 'punct-comma');
+                    } else if (char === '.') {
+                        charSlots = 3;
+                        cssClasses.push('slot-3', 'punct-period');
+                    }
+
+                    slots += charSlots;
+                    
+                    if (cssClasses.length > 0) {
+                        parsedHtml += `<span class="${cssClasses.join(' ')}">${char}</span>`;
+                    } else {
+                        parsedHtml += char;
+                    }
+                }
+
+                // Generovanie HTML riadku
+                html += `
+                    <div class="bar-row">
+                        <div class="stat-group">
+                            <div class="stat-box ${slClass}" title="Počet slabík">
+                                <span>${syllables} sl.</span>
+                            </div>
+                            <div class="stat-box ${flowClass}" title="${isHeavyFlow ? '3+ dlhých hlások' : '<3 dlhých hlások'}">
+                                <span>${flowName}</span>
+                            </div>
+                        </div>
+                        
+                        <div class="rhythmic-grid">
+                            ${parsedHtml}
+                            <div class="grid-limit-marker" title="Hranica 70 slotov"></div>
+                        </div>
+                        
+                        <div class="slots-count ${slots > 70 ? 'over' : ''}">
+                            ${slots}
+                        </div>
+                    </div>
+                `;
+            });
+
+            canvasEl.innerHTML = html;
+            globalStatsEl.innerHTML = `Bary: <strong>${totalBars}</strong> | Slabiky: <strong>${totalSyllables}</strong>`;
+        }
+
+        // Inicializácia
+        inputEl.value = defaultText;
+        
+        // ZRUŠENÉ: Ťažké automatické prepočítavanie pri každom stlačení
+        // inputEl.addEventListener('input', renderBlueprint);
+        
+        // PRIDANÉ: Ľahké upozornenie pre používateľa, že text bol zmenený a matica je neaktuálna
+        inputEl.addEventListener('input', () => {
+            refreshBtn.innerHTML = '⚠️ PREPOČÍTAŤ';
+            refreshBtn.style.background = 'rgba(255, 85, 85, 0.15)';
+            refreshBtn.style.color = 'var(--danger)';
+            refreshBtn.style.borderColor = 'var(--danger)';
+        });
+        
+        // Manuálny refresh s vizuálnym feedbackom a tvrdým prepočtom
+        refreshBtn.addEventListener('click', () => {
+            renderBlueprint();
+            
+            // Vizuálna odozva po kliknutí (Úspech)
+            refreshBtn.innerHTML = '✔️ HOTOVO';
+            refreshBtn.style.background = 'var(--success)';
+            refreshBtn.style.color = '#000';
+            refreshBtn.style.borderColor = 'var(--success)';
+            
+            setTimeout(() => {
+                refreshBtn.innerHTML = '🔄 PREPOČÍTAŤ';
+                refreshBtn.style.background = 'rgba(0, 255, 204, 0.1)';
+                refreshBtn.style.color = 'var(--accent-rhyme)';
+                refreshBtn.style.borderColor = 'var(--accent-rhyme)';
+            }, 800);
+        });
+
+        renderBlueprint(); // Prvé vykreslenie po načítaní stránky
+    </script>
+</body>
+</html>

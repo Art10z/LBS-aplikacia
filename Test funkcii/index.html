@@ -1,0 +1,40 @@
+<!doctype html>
+<html lang="sk">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>LBS Rhythmic Studio</title>
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+  <header>
+    <h1>
+      LBS Studio
+      <span id="subtitle">V3.0 MATRIX</span>
+      <button id="edit-subtitle" class="subtitle-edit" title="Upraviť subtitul">✏️</button>
+    </h1>
+    <div class="header-right">
+      <div class="version-badge">v1.0</div>
+      <div id="global-stats" class="header-stats">Načítavam...</div>
+    </div>
+  </header>
+
+  <div class="workspace">
+    <aside class="editor-panel">
+      <div class="panel-header">
+        <span>📝 RAW Text Editor</span>
+        <button id="refresh-btn" class="refresh-btn" title="Vynútiť prepočet">🔄 PREPOČÍTAŤ</button>
+      </div>
+      <textarea id="lbs-input" spellcheck="false" placeholder="Zadaj tag [Verse 1] a začni písať..."></textarea>
+    </aside>
+
+    <main class="blueprint-panel">
+      <div class="panel-header">📐 LBS Blueprint Engine</div>
+      <div id="canvas" class="canvas-container"></div>
+    </main>
+  </div>
+
+  <script src="js/utils.js"></script>
+  <script src="js/app.js"></script>
+</body>
+</html>
